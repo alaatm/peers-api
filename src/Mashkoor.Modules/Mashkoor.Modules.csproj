@@ -5,7 +5,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="MediatR;" />
+    <Using Include="FluentValidation;" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="Microsoft.Extensions.Localization" />
+    <Using Include="Microsoft.AspNetCore.Identity" />
+    <Using Include="Microsoft.AspNetCore.Authorization" />
+    <Using Include="Mashkoor.Resources" />
+    <Using Include="Microsoft.Extensions.Localization.IStringLocalizer&lt;Mashkoor.Resources.res&gt;" Alias="IStrLoc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVer)" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Mashkoor.Core\Mashkoor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mashkoor.Modules.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

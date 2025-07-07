@@ -11,7 +11,7 @@
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    
+
     <Authors>Shiftlee</Authors>
     <Copyright>Copyright © Shiftlee</Copyright>
     <PackageProjectUrl>https://github.com/be-unit/shiftlee-api</PackageProjectUrl>
@@ -19,6 +19,7 @@
     <RespositoryType>git</RespositoryType>
 
     <VersionPrefix>1.0.1009</VersionPrefix>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
