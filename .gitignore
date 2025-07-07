@@ -28,5 +28,3 @@ src/*.Modules/Properties
 # Database bundles
 .migrations/
 ef-migrations.txt
-
-shiftlee-firebase-adminsdk.json
