@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 namespace Mashkoor.Core.Background.Jobs;
 
 public static class ServiceCollectionExtensions
@@ -10,5 +12,11 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddBackgroundJob<T>(this IServiceCollection services)
         where T : IJob
-        => services.AddHostedService<BackgroundJob<T>>();
+    {
+        services
+            .AddHostedService<BackgroundJob<T>>()
+            .TryAddSingleton(TimeProvider.System);
+
+        return services;
+    }
 }

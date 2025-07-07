@@ -39,7 +39,7 @@ public sealed class HmacHash : IHmacHash
             return false;
         }
 
-        // Constant-time compare to prevents timing attacks
+        // Constant-time compare to prevent timing attacks
         return CryptographicOperations.FixedTimeEquals(computedBytes, incomingBytes);
     }
 }
