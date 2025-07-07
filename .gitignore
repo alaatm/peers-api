@@ -1,0 +1,32 @@
+.DS_Store
+obj/
+bin/
+.vs/
+.build/
+artifacts/
+*.user
+TestResults/
+.idea/
+*.iml
+/node_modules
+
+# cake build
+/tools/
+
+# build artifacts
+.coverage/
+.coverage-history/
+lcov.info
+
+# Ignore auto generated properties folder in Core and Modules projects
+src/*.Core/Properties
+src/*.Modules/Properties
+
+# publish folders
+.publish/
+
+# Database bundles
+.migrations/
+ef-migrations.txt
+
+shiftlee-firebase-adminsdk.json

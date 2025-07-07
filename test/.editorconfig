@@ -1,0 +1,22 @@
+[*.cs]
+
+# CA1707: Identifiers should not contain underscores
+# This is our code style for unit test method names
+dotnet_diagnostic.CA1707.severity = none
+# CA1711: Identifiers should not have incorrect suffix
+dotnet_diagnostic.CA1711.severity = none
+# CA1305: Identifiers should not have incorrect suffix
+dotnet_diagnostic.CA1305.severity = none
+# IDE0230: Use UTF-8 string literals
+dotnet_diagnostic.IDE0230.severity = none
+# IDE0017: Simplify object initialization
+dotnet_diagnostic.IDE0017.severity = none
+# IDE0017: Simplify object initialization
+dotnet_style_object_initializer = true
+# CA1852: Seal types
+dotnet_diagnostic.CA1852.severity = none
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = none
+
+# Default severity for analyzer diagnostics with category 'Usage'
+dotnet_analyzer_diagnostic.category-Usage.severity = none

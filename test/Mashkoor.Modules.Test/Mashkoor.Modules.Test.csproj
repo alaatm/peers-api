@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Mashkoor.Modules\Mashkoor.Modules.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <DotNetVer>9.0.6</DotNetVer>
+    <DotNetExtVer>9.6.0</DotNetExtVer>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+</Project>
