@@ -32,7 +32,7 @@ public abstract class IdentityUserBase : IdentityUser<int>, IEntity
         CheckedRules.Add(rule);
         if (rule.IsBroken())
         {
-            Entity.ThrowBusinessRuleValidationException(rule);
+            throw new BusinessRuleValidationException(rule);
         }
     }
 

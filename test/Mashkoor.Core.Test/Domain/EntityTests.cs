@@ -36,7 +36,7 @@ public class EntityTests
     public void Mutation_throws_when_rule_is_broken()
     {
         // Arrange
-        var entity = new TestEntity();
+        var entity = new TestEntity() { Id = 1 };
 
         // Act & assert
         var ex = Assert.Throws<BusinessRuleValidationException>(entity.TestFailingMutation);

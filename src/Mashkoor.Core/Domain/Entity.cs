@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Mashkoor.Core.Domain.Rules;
 
 namespace Mashkoor.Core.Domain;
@@ -52,7 +51,7 @@ public abstract class Entity : IEntity
         CheckedRules.Add(rule);
         if (rule.IsBroken())
         {
-            ThrowBusinessRuleValidationException(rule);
+            throw new BusinessRuleValidationException(rule);
         }
     }
 
@@ -75,8 +74,4 @@ public abstract class Entity : IEntity
 
         return events;
     }
-
-    [DoesNotReturn]
-    public static void ThrowBusinessRuleValidationException(IBusinessRule rule)
-        => throw new BusinessRuleValidationException(rule);
 }
