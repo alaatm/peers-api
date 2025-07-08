@@ -17,7 +17,7 @@ public static class HttpRequestExtensions
     {
         if (!request.ContentType.AsSpan().StartsWith("multipart/form-data"))
         {
-            Throw($"{nameof(BindFormDataAsync)}<T>() can only be used with form data.");
+            throw new InvalidOperationException($"{nameof(BindFormDataAsync)}<T>() can only be used with form data.");
         }
 
         var kvp = await request.ReadFormAsync();
@@ -37,12 +37,11 @@ public static class HttpRequestExtensions
             }
             catch (JsonException ex)
             {
-                Throw($"{nameof(BindFormDataAsync)}<T>() form data 'data' key value must be a valid json string.", ex);
+                throw new InvalidOperationException($"{nameof(BindFormDataAsync)}<T>() form data 'data' key value must be a valid json string.", ex);
             }
         }
 
-        Throw($"{nameof(BindFormDataAsync)}<T>() form data must have a 'data' key with json content.");
-        return default!;
+        throw new InvalidOperationException($"{nameof(BindFormDataAsync)}<T>() form data must have a 'data' key with json content.");
     }
 
     /// <summary>
@@ -56,7 +55,7 @@ public static class HttpRequestExtensions
     {
         if (!request.ContentType.AsSpan().StartsWith("multipart/form-data"))
         {
-            Throw($"{nameof(BindFilesAsync)}<T>() can only be used with form data.");
+            throw new InvalidOperationException($"{nameof(BindFilesAsync)}() can only be used with form data.");
         }
 
         return BindFiles(await request.ReadFormAsync());
@@ -72,12 +71,12 @@ public static class HttpRequestExtensions
 
             if (string.IsNullOrEmpty(file.ContentType))
             {
-                Throw($"{nameof(BindFiles)}() no content type was set for file '{file.Name}'.");
+                throw new InvalidOperationException($"{nameof(BindFiles)}() no content type was set for file '{file.Name}'.");
             }
 
             if (string.IsNullOrWhiteSpace(Path.GetExtension(file.FileName)))
             {
-                Throw($"{nameof(BindFiles)}() the file '{file.FileName}' has no extension.");
+                throw new InvalidOperationException($"{nameof(BindFiles)}() the file '{file.FileName}' has no extension.");
             }
 
             files[i] = new()
@@ -91,10 +90,6 @@ public static class HttpRequestExtensions
 
         return files;
     }
-
-    [DoesNotReturn]
-    private static void Throw(string message, Exception? inner = null)
-        => throw new InvalidOperationException(message, inner);
 }
 
 public sealed class FormData<T>

@@ -11,7 +11,7 @@ public static class WebApplicationExtensions
     /// Adds robots txt middleware.
     /// </summary>
     /// <param name="app">The web application.</param>
-    public static void UseRobotsTxt([NotNull] this WebApplication app) => app.MapWhen(
+    public static void UseRobotsTxt([NotNull] this IApplicationBuilder app) => app.MapWhen(
         context => context.Request.Path.StartsWithSegments("/robots.txt", StringComparison.OrdinalIgnoreCase),
         appBuilder => appBuilder.Run(async context =>
         {

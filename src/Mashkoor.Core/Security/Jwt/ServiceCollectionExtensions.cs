@@ -15,12 +15,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddJwt(
         this IServiceCollection services,
         [NotNull] IConfiguration config)
-        => AddJwtCore(services, config, null);
-
-    private static IServiceCollection AddJwtCore(
-        this IServiceCollection services,
-        [NotNull] IConfiguration config,
-        JwtBearerEvents? bearerEvents)
     {
         var jwtConfig = config.GetSection(JwtConfig.ConfigSection).Get<JwtConfig>() ?? throw new InvalidOperationException("JWT configuration is missing.");
 
@@ -33,10 +27,6 @@ public static class ServiceCollectionExtensions
                 // Prevent inbound claims mapping so that we can use the specified claims types for name/role in the TokenValidationParameters
                 p.MapInboundClaims = false;
                 p.TokenValidationParameters = jwtConfig.TokenValidationParameters;
-                if (bearerEvents is not null)
-                {
-                    p.Events = bearerEvents;
-                }
             });
 
         return services;

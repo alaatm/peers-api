@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Mashkoor.Core.Common;
 
+[ExcludeFromCodeCoverage]
 public sealed class TaskTimer : IDisposable
 {
     private readonly ILogger _log;

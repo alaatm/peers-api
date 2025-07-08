@@ -207,6 +207,21 @@ public class TotpTokenProviderTests
     }
 
     [Fact]
+    public void Validate_returns_false_for_non_numerical_otp()
+    {
+        // Arrange
+        var purpose = TotpPurpose.SignInPurpose;
+        var provider = new TotpTokenProvider(TimeProvider.System, Mock.Of<IMemoryCache>());
+        var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
+
+        // Act
+        var result = provider.Validate("invalid", user, purpose);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
     public void IsStillValid_checks_cache_to_determine_result()
     {
         // Arrange

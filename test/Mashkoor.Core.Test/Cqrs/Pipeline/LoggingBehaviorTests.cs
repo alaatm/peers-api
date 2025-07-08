@@ -12,8 +12,10 @@ namespace Mashkoor.Core.Test.Cqrs.Pipeline;
 
 public class LoggingBehaviorTests
 {
-    [Fact]
-    public async Task Returns_result_of_command_execution()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Returns_result_of_command_execution(bool isNullRequest)
     {
         // Arrange
         var logMoq = new Mock<ILogger<LoggingBehavior<TestCommand, IResult>>>();
@@ -21,7 +23,7 @@ public class LoggingBehaviorTests
         var exception = new BusinessRuleValidationException(new BrokenRule());
 
         // Act
-        var result = await handler.Handle(new TestCommand(), (_) => Task.FromResult(Result.Ok(new TestResponse("test"))));
+        var result = await handler.Handle(isNullRequest ? null : new TestCommand(), (_) => Task.FromResult(Result.Ok(new TestResponse("test"))));
 
         // Assert
         var okResult = Assert.IsType<Ok<TestResponse>>(result);

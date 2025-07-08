@@ -14,7 +14,7 @@ internal static class Rfc6238AuthenticationService
     private static readonly TimeSpan _timestep = TimeSpan.FromSeconds(TimeStepSeconds);
     private static readonly Encoding _encoding = new UTF8Encoding(false, true);
 
-    private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string? modifier)
+    private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
     {
         // # of 0's = length of pin
         const int Mod = 10000;
@@ -35,13 +35,8 @@ internal static class Rfc6238AuthenticationService
         return binaryCode % Mod;
     }
 
-    private static byte[] ApplyModifier(byte[] input, string? modifier)
+    private static byte[] ApplyModifier(byte[] input, string modifier)
     {
-        if (string.IsNullOrEmpty(modifier))
-        {
-            return input;
-        }
-
         var modifierBytes = _encoding.GetBytes(modifier);
         var combined = new byte[checked(input.Length + modifierBytes.Length)];
         Buffer.BlockCopy(input, 0, combined, 0, input.Length);
@@ -56,7 +51,7 @@ internal static class Rfc6238AuthenticationService
         return (ulong)(delta.Ticks / _timestep.Ticks);
     }
 
-    public static int GenerateCode(TimeProvider timeProvider, byte[] securityToken, string? modifier = null)
+    public static int GenerateCode(TimeProvider timeProvider, byte[] securityToken, string modifier)
     {
         Debug.Assert(securityToken is not null);
 
@@ -65,7 +60,7 @@ internal static class Rfc6238AuthenticationService
         return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
     }
 
-    public static bool ValidateCode(TimeProvider timeProvider, byte[] securityToken, int code, string? modifier = null)
+    public static bool ValidateCode(TimeProvider timeProvider, byte[] securityToken, int code, string modifier)
     {
         Debug.Assert(securityToken is not null);
 

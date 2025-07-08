@@ -193,6 +193,54 @@ public class HttpRequestExtensionsTests
     }
 
     [Fact]
+    public async Task BindFilesAsync_throws_for_non_form_data_content()
+    {
+        // Arrange
+        var client = await GetTestClientAsync(
+            epCgf: ep => ep.MapPost("/files", async (ctx) =>
+            {
+                // Assert
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await ctx.Request.BindFilesAsync());
+                Assert.Equal("BindFilesAsync() can only be used with form data.", ex.Message);
+            }));
+
+        // Act
+        var result = await client.PostAsJsonAsync("/files", new { Name = "Test" });
+    }
+
+    [Fact]
+    public async Task BindFilesAsync_binds_files()
+    {
+        // Arrange
+        var f1 = new Memory<byte>(new byte[2]);
+        var f2 = new Memory<byte>(new byte[2]);
+
+        var client = await GetTestClientAsync(
+            epCgf: ep =>
+                ep.MapPost("/files", async (ctx) =>
+                {
+                    var files = await ctx.Request.BindFilesAsync();
+                    await files[0].Stream.ReadExactlyAsync(f1);
+                    await files[1].Stream.ReadExactlyAsync(f2);
+                })
+            );
+
+        var content = new MultipartFormDataContent
+        {
+            { GetImageContent([1, 1]), "Description for file #1", "subFile1.abc" },
+            { GetImageContent([2, 2]), "Description for file #2", "subFile2.xyz" }
+        };
+
+        // Act
+        var result = await client.PostAsync("/files", content);
+
+        // Assert
+        result.EnsureSuccessStatusCode();
+        Assert.Equal(f1.ToArray(), [1, 1,]);
+        Assert.Equal(f2.ToArray(), [2, 2,]);
+    }
+
+    [Fact]
     public void FormFile_with_clones_instance_with_override_values()
     {
         // Arrange
@@ -211,6 +259,7 @@ public class HttpRequestExtensionsTests
         Assert.Equal(ff.Description, ff1.Description);
         Assert.Equal(ff.ContentType, ff1.ContentType);
         Assert.Same(ff.Stream, ff1.Stream);
+        Assert.Equal("{ Name = name2, Descr = description, ContentType = image/heif }", ff1.ToString());
 
         var ff2 = ff.With(contentType: "audio/mp3");
         Assert.NotSame(ff, ff2);
@@ -218,6 +267,7 @@ public class HttpRequestExtensionsTests
         Assert.Equal(ff.Description, ff2.Description);
         Assert.Equal("audio/mp3", ff2.ContentType);
         Assert.Same(ff.Stream, ff2.Stream);
+        Assert.Equal("{ Name = name, Descr = description, ContentType = audio/mp3 }", ff2.ToString());
 
         var stream = new MemoryStream();
         var ff3 = ff.With(stream: stream);
@@ -226,6 +276,7 @@ public class HttpRequestExtensionsTests
         Assert.Equal(ff.Description, ff3.Description);
         Assert.Equal(ff.ContentType, ff3.ContentType);
         Assert.Same(stream, ff3.Stream);
+        Assert.Equal("{ Name = name, Descr = description, ContentType = image/heif }", ff3.ToString());
     }
 
     private record Model(string Name);

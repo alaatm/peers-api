@@ -21,6 +21,58 @@ public class BackgroundJobTests
     }
 
     [Fact]
+    public async Task Exists_job_when_cancellation_is_requested_fromLoop()
+    {
+        // Arrange
+        var loggerFactoryMoq = new Mock<ILoggerFactory>();
+        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+        var backgroundJob = new BackgroundJob<TestJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act
+        await backgroundJob.StartAsync(cts.Token);
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+    }
+
+    [Fact]
+    public async Task Exists_job_when_cancellation_is_requested()
+    {
+        // Arrange
+        var loggerFactoryMoq = new Mock<ILoggerFactory>();
+        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+        var backgroundJob = new BackgroundJob<SlowJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+
+        var cts = new CancellationTokenSource();
+
+        // Act
+        await backgroundJob.StartAsync(cts.Token);
+        cts.Cancel();
+        await backgroundJob.ExecuteTask;
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+    }
+
+    [Fact]
+    public async Task Does_not_run_when_there_is_no_next_occurrence()
+    {
+        // Arrange
+        var loggerFactoryMoq = new Mock<ILoggerFactory>();
+        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+        var backgroundJob = new BackgroundJob<ImpossibleJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+
+        // Act
+        await backgroundJob.StartAsync(default);
+
+        // Assert
+        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+    }
+
+    [Fact]
     public async Task Executes_job()
     {
         // Arrange
@@ -34,7 +86,6 @@ public class BackgroundJobTests
         // Assert
         var job = GetJobRef(backgroundJob);
         Assert.True(SpinWait.SpinUntil(() => job.DidRun, 40_000));
-        Assert.False(job.DidUpdateCron);
     }
 
     [Fact]
@@ -83,7 +134,6 @@ public class BackgroundJobTests
     private class TestJob : IJob
     {
         public bool DidRun { get; set; }
-        public bool DidUpdateCron { get; set; }
         public string Name => "TestJob";
         public string CronExpression => "@every_second";
         public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
@@ -93,6 +143,24 @@ public class BackgroundJobTests
             DidRun = true;
             return Task.CompletedTask;
         }
+    }
+
+    private class SlowJob : IJob
+    {
+        public string Name => "SlowJob";
+        public string CronExpression => "@daily";
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+
+        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken) => Task.CompletedTask;
+    }
+
+    private class ImpossibleJob : IJob
+    {
+        public string Name => "ImpossibleJob";
+        public string CronExpression => "0 0 31 2 *";
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+
+        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken) => Task.CompletedTask;
     }
 
     private class TestCrashingJob : IJob

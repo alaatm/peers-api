@@ -31,7 +31,7 @@ public class QueryableExtensionsTests
     }
 
     [Fact]
-    public void ApplyFilters_throw_when_invalid_operation_regx_mismatch()
+    public void ApplyFilters_throw_when_invalid_operation_regex_mismatch()
     {
         // Arrange
         var models = Enumerable.Empty<Model>().AsQueryable();
@@ -42,7 +42,7 @@ public class QueryableExtensionsTests
     }
 
     [Fact]
-    public void ApplyFilters_throw_when_invalid_operation_regx_mismatch_no_args()
+    public void ApplyFilters_throw_when_invalid_operation_regex_mismatch_no_args()
     {
         // Arrange
         var models = Enumerable.Empty<Model>().AsQueryable();
@@ -61,6 +61,17 @@ public class QueryableExtensionsTests
         // Act & assert
         var ex = Assert.Throws<InvalidOperationException>(() => models.ApplyFilters(/*lang=json,strict*/ "{\"myKey\":[\"INVLD(1)\"]}"));
         Assert.Equal("Query filter parsing error at key 'myKey'. Invalid operation 'INVLD(1)'.", ex.Message);
+    }
+
+    [Fact]
+    public void ApplyFilters_throw_when_invalid_filter_key()
+    {
+        // Arrange
+        var models = Enumerable.Empty<Model>().AsQueryable();
+
+        // Act & assert
+        var ex = Assert.Throws<InvalidOperationException>(() => models.ApplyFilters(/*lang=json,strict*/ "{\"   \":[\"INVLD(1)\"]}"));
+        Assert.Equal("Query filter parsing error. One or more keys are empty.", ex.Message);
     }
 
     [Theory]
@@ -504,27 +515,33 @@ public class QueryableExtensionsTests
         Assert.Equal(models.Skip(1).First(), q.First());
     }
 
-    [Fact]
-    public void ApplyPaging_page_defaults_to_1_when_zero_or_negative()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(null)]
+    public void ApplyPaging_page_defaults_to_1_when_zero_or_negative_or_null(int? page)
     {
         // Arrange
         var models = Enumerable.Range(1, 50).Select(i => new Model(null, i, $"{i}", new DateTime(1900, 1, 1))).ToList().AsQueryable();
 
         // Act
-        var q = models.ApplyPaging(0, 10);
+        var q = models.ApplyPaging(page, 10);
 
         // Assert
         Assert.Equal(models.First(), q.First());
     }
 
-    [Fact]
-    public void ApplyPaging_pageSize_defaults_to_15_when_zero_or_negative()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(null)]
+    public void ApplyPaging_pageSize_defaults_to_15_when_zero_or_negative_or_null(int? pageSize)
     {
         // Arrange
         var models = Enumerable.Range(1, 50).Select(i => new Model(null, i, $"{i}", new DateTime(1900, 1, 1))).ToList().AsQueryable();
 
         // Act
-        var q = models.ApplyPaging(3, 0);
+        var q = models.ApplyPaging(3, pageSize);
 
         // Assert
         Assert.Equal(models.Skip(30).First(), q.First());

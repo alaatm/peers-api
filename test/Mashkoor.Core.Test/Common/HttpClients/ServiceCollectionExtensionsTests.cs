@@ -13,6 +13,18 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange & act
         var services = new ServiceCollection()
+            .RegisterHttpClient<TestClient>()
+            .BuildServiceProvider();
+
+        // Assert
+        services.GetRequiredService<TestClient>();
+    }
+
+    [Fact]
+    public void RegisterHttpClient_registers_implementationClient()
+    {
+        // Arrange & act
+        var services = new ServiceCollection()
             .RegisterHttpClient<ITestClient, TestClient>()
             .BuildServiceProvider();
 

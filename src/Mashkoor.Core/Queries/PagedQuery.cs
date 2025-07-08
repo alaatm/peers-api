@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Mashkoor.Core.Queries;
 
 /// <summary>
@@ -8,6 +10,7 @@ namespace Mashkoor.Core.Queries;
 /// <param name="SortField">The sort field.</param>
 /// <param name="SortOrder">he sort order.</param>
 /// <param name="Filters">The filters.</param>
+[ExcludeFromCodeCoverage]
 public abstract record PagedQuery(
     int? Page,
     int? PageSize,

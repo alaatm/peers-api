@@ -58,7 +58,13 @@ public sealed class BackgroundJob<T> : BackgroundService
 
                 _logger.JobScheduled(_job.Name, delay, next.Value);
 
-                await Task.Delay(delay, _timeProvider, stoppingToken);
+                try
+                {
+                    await Task.Delay(delay, _timeProvider, stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                }
 
                 if (stoppingToken.IsCancellationRequested)
                 {

@@ -34,7 +34,7 @@ public class TrackingStringLocalizer<T> : StringLocalizer<T>
         if (localizedString.ResourceNotFound)
         {
             var feature = _httpContextAccessor.HttpContext?.Features.Get<IRequestCultureFeature>();
-            var language = feature?.RequestCulture?.Culture?.Name;
+            var language = feature?.RequestCulture.Culture.Name;
 
             _missingKeyTracker.TrackMissingKey(name, language);
         }

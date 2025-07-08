@@ -12,6 +12,22 @@ namespace Mashkoor.Core.Test.Security.Jwt;
 public class ServiceCollectionExtensionsTests
 {
     [Fact]
+    public void AddJwt_throws_when_jwtConfig_isnt_registered()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder().Build();
+        var serviceCollection = new ServiceCollection();
+
+        // Act & assert
+        var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection
+            .AddSingleton<IConfiguration>(config)
+            .AddJwt(config)
+            .BuildServiceProvider());
+
+        Assert.Equal("JWT configuration is missing.", ex.Message);
+    }
+
+    [Fact]
     public async Task AddJwt_registers_required_auth_services()
     {
         // Arrange
