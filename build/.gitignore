@@ -1,0 +1,14 @@
+.DS_Store
+obj/
+bin/
+.vs/
+.build/
+artifacts/
+*.user
+TestResults/
+.idea/
+*.iml
+/node_modules
+
+# cake build
+/tools/
