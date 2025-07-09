@@ -21,7 +21,7 @@ public class FirebaseMessagingServiceTests
   ""client_x509_cert_url"": ""https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40test.iam.gserviceaccount.com""
 }";
 
-    private static readonly FirebaseConfig _config = new() { ProjectId = "test", ServiceAccountKey = TestFirebaseServiceAccount };
+    private static readonly FirebaseConfig _config = new() { ServiceAccountKey = TestFirebaseServiceAccount };
 
     [Fact]
     public void Ctor_throws_when_firebaseServiceKey_is_not_set_on_the_tenant()

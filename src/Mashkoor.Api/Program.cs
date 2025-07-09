@@ -1,22 +1,15 @@
-var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+using Mashkoor.Modules.Kernel;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(p => p.AddServerHeader = false);
+
+builder.Services.Configure<RouteHandlerOptions>(p => p.ThrowOnBadRequest = true);
+builder.Services.AddMashkoor(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+app.UseMashkoor();
 
-app.UseDefaultFiles();
-app.MapStaticAssets();
+await app.RunAsync();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-app.MapFallbackToFile("/index.html");
-
-app.Run();
+public partial class Program { }

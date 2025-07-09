@@ -100,7 +100,7 @@ public sealed class StartupBackgroundService : BackgroundService
         string[] superRoles = [.. allRoles, Roles.MaintenanceAdmin, Roles.PowerAdmin];
 
         var now = _timeProvider.UtcNow();
-        await AddAdmin(now, userManager, "alaa@shiftlee.net", "506494560", "Alaa", "Masoud", superRoles);
+        await AddAdmin(now, userManager, "alaa@mashkoor.net", "506494560", "Alaa", "Masoud", superRoles);
 
         static async Task AddAdmin(
             DateTime date,

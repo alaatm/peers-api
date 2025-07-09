@@ -26,6 +26,8 @@ public sealed class UserStatusChange : Entity
     /// </summary>
     public string ChangeReason { get; set; } = default!;
 
+    private UserStatusChange() { }
+
     /// <summary>
     /// Initializes a new instance of the class.
     /// </summary>

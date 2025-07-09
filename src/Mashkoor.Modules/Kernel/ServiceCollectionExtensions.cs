@@ -1,5 +1,5 @@
 using System.Reflection;
-//using Mashkoor.Core.AzureServices;
+using Mashkoor.Core.AzureServices;
 using Mashkoor.Core.Background;
 using Mashkoor.Core.Communication.Email;
 using Mashkoor.Core.Communication.Push;
@@ -11,6 +11,7 @@ using Mashkoor.Core.Security.Totp;
 using Mashkoor.Modules.BackgroundJobs;
 using Mashkoor.Modules.Kernel.Pipelines;
 using Mashkoor.Modules.Kernel.RateLimiting;
+using Mashkoor.Modules.Kernel.Startup;
 using Mashkoor.Modules.Users.Domain;
 using Mashkoor.Modules.Users.Services;
 
@@ -30,8 +31,8 @@ public static class ServiceCollectionExtensions
         [NotNull] IConfiguration config,
         [NotNull] IWebHostEnvironment env)
     {
+        services.AddHostedService<StartupBackgroundService>();
         services.AddMvcCore().AddRazorPages();
-        services.AddCors();
 
         AddMashkoor(
             services,
@@ -56,7 +57,7 @@ public static class ServiceCollectionExtensions
         }
         else if (env.IsProduction())
         {
-            //services.AddAzureAppInsights();
+            services.AddAzureAppInsights();
         }
 
         return services;
@@ -98,6 +99,8 @@ public static class ServiceCollectionExtensions
             .AddEmail(config)
             .AddIdentityInfo()
             .AddJwt(config)
+            // Technically not used, as AuthorizationBehaviour is used instead but this is still required by other services.
+            .AddAuthorization()
             .AddRateLimiting(config)
             .AddTotpTokenProvider()
             .AddCqrs(cfg => cfg.AddOpenBehavior(typeof(IdentityCheckBehavior<,>)), mergedAssemblies)

@@ -57,9 +57,6 @@ public static class WebApplicationExtensions
         app.UseAuthentication();
         //app.UseOutputCache();
         app.UseRateLimiter();
-        // Required for signalr hub auth only, others use AuthorizationBehavior. Note that while the middleware will run
-        // for all endpoints, it will short-circuit for non-signalr requests since they dont use the [Authorize] attribute.
-        app.UseAuthorization();
         app.UseLocalization();
 
         var all = app.MapGroup("/api/v1");

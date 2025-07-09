@@ -25,8 +25,7 @@ public sealed class IdentityCheckBehavior<TRequest, TResponse> : IPipelineBehavi
                 .Select(p => p.Status)
                 .FirstOrDefault());
 
-    // Used for resolving ShiftleeContext only when receiving authenticated requests.
-    // For non-authenticated requests, the HttpContext maybe missing tenant information which will make constructing the context (via ctor DI) impossible.
+    // Used for resolving MashkoorContext only when receiving authenticated requests.
     private readonly IServiceProvider _services;
     private readonly IIdentityInfo _identity;
     private readonly ILogger<IdentityCheckBehavior<TRequest, TResponse>> _log;
@@ -61,7 +60,7 @@ public sealed class IdentityCheckBehavior<TRequest, TResponse> : IPipelineBehavi
             {
                 // UserStatus.None is the default value for the enum which means that the user does not exist.
                 _log.AuthenticatedUserNotFound(_identity.Username);
-                return (TResponse)Result.Problem("Unexpected state.", statusCode: 500);
+                return (TResponse)Result.Problem(_l["Unexpected state."], statusCode: 500);
             }
         }
 
