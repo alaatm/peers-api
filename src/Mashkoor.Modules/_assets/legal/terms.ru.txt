@@ -1,0 +1,757 @@
+<div class="row"> 
+<div class="col-sm-12"> 
+<div class="text-center"> 
+<h1 class="section-title" _msttexthash="7145697" _msthash="0">Условия предоставления услуг</h1> 
+</div> 
+<ol> 
+<li> 
+<p> 
+<strong _msttexthash="4290065" _msthash="1">Договорные отношения</strong> 
+</p> 
+<p _msttexthash="126775285" _msthash="2">Настоящие условия предоставления услуг представляют собой юридически обязывающее соглашение («Соглашение») 
+между вами и юридическим лицом «Машкоор».</p> 
+<p _msttexthash="2535682331" _msthash="3">Настоящее Соглашение регулирует использование вами приложения, сайта, колл-центра «Машкур» 
+и технологической платформы (совместно именуемые «Машкоорская платформа»). В общем, право 
+для управления Платформой «Машкур» лицензируется «Машкуром» своим соответствующим Аффилированным лицам, 
+и соответствующий Партнер в вашей юрисдикции предоставляет вам право на доступ 
+и использовать Платформу «Машкур» в вашей юрисдикции. ПОЖАЛУЙСТА, ВНИМАТЕЛЬНО ОЗНАКОМЬТЕСЬ С НАСТОЯЩИМ СОГЛАШЕНИЕМ 
+ПЕРЕД ДОСТУПОМ К ПЛАТФОРМЕ «МАШКУР» ИЛИ ЕЕ ИСПОЛЬЗОВАНИЕМ. ЕСЛИ ВЫ НЕ СОГЛАСНЫ С ОБЯЗАТЕЛЬСТВАМИ 
+В СООТВЕТСТВИИ С УСЛОВИЯМИ НАСТОЯЩЕГО СОГЛАШЕНИЯ ВЫ НЕ ИМЕЕТЕ ПРАВА ИСПОЛЬЗОВАТЬ ИЛИ ПОЛУЧАТЬ ДОСТУП К MASHKOOR 
+ПЛАТФОРМА.</p> 
+<p _msttexthash="4890057042" _msthash="4">Ваш доступ к Платформе «Машкур» и ее использование означают Ваше согласие с обязательствами 
+настоящим Соглашением, которое устанавливает договорные отношения между Вами и 
+Машкур. Машкур может немедленно расторгнуть настоящее Соглашение в отношении Вас, или 
+в целом прекращать предложение или отказывать в доступе к Платформе «Машкур» или любой ее части, 
+в любое время по любой причине без предварительного уведомления. Дополнительные условия могут применяться к определенным 
+Услуги (как определено ниже), такие как политика для конкретного мероприятия, программа лояльности, 
+деятельности или рекламной акции, и такие дополнительные условия будут раскрыты вам в 
+подключение к соответствующим Услугам. Дополнительными условиями являются дополнительные, 
+и считается частью настоящего Соглашения в целях применимого 
+Услуги. Дополнительные условия имеют преимущественную силу по отношению к настоящему Соглашению в случае 
+конфликт в отношении применимых Услуг.</p> 
+<p _msttexthash="4774336450" _msthash="5">Машкур может время от времени вносить изменения в настоящее Соглашение. Поправки вступят в силу 
+после размещения Машкуром обновленного Соглашения по этому адресу или измененных политик 
+или дополнительные условия соответствующей Услуги. Ваш постоянный доступ или использование 
+Платформа «Машкур» после такого размещения означает Ваше согласие с обязательствами 
+настоящего Соглашения с поправками. Сбор и использование нами персональных данных в связи с 
+с Платформой «Машкур» в соответствии с Политикой конфиденциальности «Машкур», расположенной по адресу https://www.mashkoor.net. 
+«Машкур» может предоставить специалисту по урегулированию убытков или страховщику любую необходимую информацию 
+(включая вашу контактную информацию) в случае возникновения жалобы, спора или конфликта, 
+которые могут включать в себя несчастный случай с участием вас и стороннего поставщика и тому подобное 
+Информация или данные необходимы для разрешения жалобы, спора или конфликта.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="3127397" _msthash="6">Платформа «Машкур»</strong> 
+</p> 
+<p _msttexthash="2919989358" _msthash="7">Платформа «Машкур» представляет собой цифровую сеть, которая функционирует как маркетплейс 
+в случае лиц («Пользователи»), которые обращаются за доставкой мебели и/или логистикой 
+услуги («Услуги») могут быть согласованы с лицами, в том числе водителями («Капитаны») 
+или сторонние компании («Торговые партнеры»), которые могут предоставлять Услуги. Каждый 
+Пользователь должен создать учетную запись Пользователя, обеспечивающую доступ к Платформе «Машкур». Любой 
+решение Пользователя использовать или принять Услуги является решением, принятым в таких 
+Исключительное усмотрение пользователя. Каждая Услуга предоставляется капитаном или другой третьей стороной 
+поставщик Пользователю является отдельным соглашением между такими лицами.</p> 
+<p _msttexthash="955906445" _msthash="8">В отношении товаров или услуг, которые Вы можете заказать через Платформу «Машкур», 
+или если Машкур поддерживает ваш платеж стороннему продавцу, который не поддерживает 
+присутствует на Платформе «Машкур» или в Off-App Merchant (как определено ниже), но который 
+услуги или товары предоставляются Торговыми партнерами, эти товары или услуги 
+подготовлены, предприняты и предоставлены соответствующим независимым Партнером Продавца. </p> 
+<p _msttexthash="630746701" _msthash="9">Материалы, размещенные на Платформе «Машкур», не носят характера рекомендаций по 
+на что следует положиться. Таким образом, мы отказываемся от любой ответственности и ответственности 
+в связи с тем, что любой посетитель Машкоора полагается на такие материалы 
+Платформа, или любым лицом, которое может быть проинформировано о любом ее содержимом.</p> 
+<p _msttexthash="788670506" _msthash="10">Мы стремимся регулярно обновлять Платформу «Машкур» и можем изменить контент в любой момент 
+Время. В случае необходимости мы можем приостановить доступ к Платформе «Машкур» и 
+Сервисы или закрыть их на неопределенный срок. Любой из материалов на платформе «Машкур» 
+или Услуги могут быть устаревшими в любой момент времени, и мы не несем никаких обязательств 
+актуализировать такой материал.</p> 
+<p _msttexthash="1235240903" _msthash="11">ВЫ ПРИЗНАЕТЕ, ЧТО НИ МАШКООР, НИ ЕГО АФФИЛИРОВАННЫЕ ЛИЦА НЕ ПРЕДОСТАВЛЯЮТ ПЕРЕВОЗКИ, 
+ТОВАРЫ ИЛИ ЛОГИСТИЧЕСКИЕ УСЛУГИ ИЛИ ФУНКЦИИ В КАЧЕСТВЕ ТРАНСПОРТА, ТОВАРОВ ИЛИ ЛОГИСТИКИ 
+ПЕРЕВОЗЧИК ИЛИ ПОСТАВЩИК ТРАНСПОРТНЫХ, ТОВАРНЫХ ИЛИ ЛОГИСТИЧЕСКИХ УСЛУГ, ИЛИ ВЛАДЕТЬ ЛЮБЫМИ ТРАНСПОРТНЫМИ СРЕДСТВАМИ 
+ДЛЯ ТРАНСПОРТИРОВКИ, ТОВАРОВ ИЛИ ЛОГИСТИКИ И ЧТО ВСЕ ТАКИЕ УСЛУГИ ПРЕДОСТАВЛЯЮТСЯ 
+НЕЗАВИСИМЫМИ СТОРОННИМИ ПОДРЯДЧИКАМИ, КОТОРЫЕ НЕ ЯВЛЯЮТСЯ СОТРУДНИКАМИ «МАШКООРА» ИЛИ ЛЮБОГО ИЗ НИХ 
+ЕГО ФИЛИАЛЫ.</p> 
+<p> 
+<strong _msttexthash="1191684" _msthash="12">Лицензия.</strong> 
+</p> 
+<p _msttexthash="2450106269" _msthash="13">При условии соблюдения Вами настоящего Договора, Машкур предоставляет Вам ограниченное, неисключительное, 
+Не подлежащая сублицензированию, отзыву и передаче лицензия на: (i) доступ и использование 
+Платформа «Машкур» на Вашем личном устройстве исключительно в связи с Вашим использованием 
+платформы «Машкур»; и (ii) получать доступ к любому контенту, информации и связанным с ним контенту и использовать их 
+материалы, которые могут быть доступны через Платформу «Машкур», в каждом конкретном случае 
+исключительно для вашего личного, некоммерческого использования. Любые права, не предоставленные в явной форме 
+здесь зарезервированы компанией «Машкур» и лицензиарами компании «Машкур».</p> 
+<p> 
+<strong _msttexthash="6285162" _msthash="14">Услуги и контент третьих лиц.</strong> 
+</p> 
+<p _msttexthash="569308870" _msthash="15">Платформа «Машкур» может быть доступна или доступна в связи с третьим 
+услуги и контент для вечеринок (включая рекламу). Машкур таких не одобряет 
+сторонних сервисов и контента, и вы соглашаетесь с тем, что ни при каких обстоятельствах Машкур не будет 
+несет ответственность за любые продукты или услуги таких сторонних поставщиков.</p> 
+<p _msttexthash="1114733347" _msthash="16">Приобретая товары или услуги, предоставляемые Торговым партнером, вы соглашаетесь и 
+понимать, что вы делаете это в соответствии с условиями соответствующего Партнера по продавцу 
+и условиях и на свой страх и риск. Вы соглашаетесь с тем, что «Машкур» не несет ответственности за: 
+(i) любое действие или бездействие Торгового партнера и/или (ii) любой ущерб или убытки, которые 
+возникает в связи с заказом, покупкой и/или предоставлением Продавца 
+Товар или услуга партнера. </p> 
+<p _msttexthash="305395831" _msthash="17">Вы также понимаете, что для того, чтобы Торговый партнер мог предоставить вам соответствующие 
+товаров или услуг, Машкур может быть обязан передавать личную информацию в 
+способом, описанным в Уведомлении о конфиденциальности ПАО «Машкур». </p> 
+<p _msttexthash="81103542" _msthash="18">Для ознакомления с дополнительными условиями в отношении Продукта Merchant Checkout, доступного через 
+Машкур Пэй смотрите ниже. </p> 
+<p _msttexthash="2420148432" _msthash="19">Кроме того, Apple Inc., Google, Inc. и/или их соответствующие международные дочерние компании 
+и аффилированные лица будут сторонними бенефициарами по настоящему договору, если вы получите доступ 
+платформа «Машкур» с использованием приложений, разработанных для Apple iOS или Android 
+мобильных устройств, соответственно. Эти сторонние бенефициары не являются сторонами 
+настоящего договора и не несут ответственности за предоставление или поддержку Машкоор 
+Платформа любым способом. Ваш доступ к Платформе «Машкур» с помощью этих сервисов 
+или на приложения распространяются условия, изложенные в соответствующих документах стороннего бенефициара 
+Условия предоставления услуг.</p> 
+<p> 
+<strong _msttexthash="6480643" _msthash="20">Владение платформой «Машкур».</strong> 
+</p> 
+<p _msttexthash="1505446059" _msthash="21">Платформа «Машкур» и все права на нее являются и остаются собственностью «Машкур» 
+или собственность лицензиаров Машкура. Ни настоящее Соглашение, ни использование вами 
+Платформа «Машкур» передает или предоставляет вам любые права: (i) в отношении или в связи с «Машкуром» 
+Платформа, за исключением ограниченной лицензии, предоставленной выше; или (ii) для использования или ссылки 
+любым способом фирменные наименования, логотипы, наименования продуктов и услуг, товарные знаки компании «Машкур» 
+знаки обслуживания или лицензиары Машкура.</p> 
+<p> 
+<strong _msttexthash="4282616" _msthash="22">Предоставление Услуг.</strong> 
+</p> 
+<p _msttexthash="166384868" _msthash="23">Вы признаете, что часть Услуг может быть предоставлена в соответствии с 
+различные варианты запроса, в том числе запрос на перевозку брендов, логистика 
+бренды запроса и бренд CareemPay.</p> 
+<p _msttexthash="560873352" _msthash="24">Вы также признаете, что Услуги могут быть доступны под такими брендами 
+или запрашивать опционы от или в связи с: (i) определенными Аффилированными лицами; или (ii) независимыми 
+сторонние подрядчики, в том числе водители или держатели транспортных сетевых компаний 
+аналогичных разрешений, разрешений или лицензий на перевозку.</p> 
+<p _msttexthash="49009870" _msthash="25">На усмотрение «Машкура» выбирают, какие бренды или варианты запроса будут доступны 
+для вас.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="8318739" _msthash="26">Использование платформы «Машкур»</strong> 
+</p> 
+<p> 
+<strong _msttexthash="7153588" _msthash="27">Учетные записи пользователей.</strong> 
+</p> 
+<p _msttexthash="3944292235" _msthash="28">Для того, чтобы использовать большинство аспектов Платформы «Машкур», необходимо зарегистрироваться и 
+поддерживать активную личную учетную запись Пользователя («Учетная запись»). Вам должно быть не менее 18 лет 
+возраста для получения Аккаунта. Для регистрации учетной записи необходимо подать заявку в Машкур 
+определенную личную информацию, такую как ваше имя, номер мобильного телефона. 
+пол и возраст. Вы соглашаетесь поддерживать точность, полноту и актуальность информации 
+Ваша неспособность поддерживать точность, полноту и актуальность Учетной записи 
+информация может привести к тому, что Вы не сможете получить доступ к Платформе «Машкур» и использовать ее, 
+включая вашу возможность запросить доступ к вашей личной информации или сделать выбор 
+в соответствии с маркетинговыми предпочтениями или вне их, либо расторжение Машкоором настоящего Соглашения с 
+ты.</p> 
+<p _msttexthash="672959872" _msthash="29">Вы соглашаетесь сохранять безопасность и тайну имени пользователя и пароля вашей Учетной записи 
+в любое время. Вы соглашаетесь и понимаете, что несете ответственность за всю деятельность 
+которые происходят под вашей Учетной записью, даже в результате потери, повреждения или кражи 
+устройство, с помощью которого осуществляется доступ к Платформе «Машкур».</p> 
+<p _msttexthash="51726246" _msthash="30">Если иное не разрешено Машкоором в письменной форме, вы можете владеть только одним Аккаунтом.</p> 
+<p> 
+<strong _msttexthash="10158707" _msthash="31">Требования и поведение пользователя.</strong> 
+</p> 
+<p _msttexthash="8982526397" _msthash="32">Платформа «Машкур» недоступна для использования лицами, не достигшими 18 лет и 
+может использоваться только физическими лицами, которые могут заключать юридически обязывающие контракты в соответствии с применимыми 
+закон. Вы не имеете права разрешать третьим лицам использовать вашу Учетную запись, а также не можете разрешать 
+лица в возрасте до 18 лет для получения транспортных услуг от капитанов, за исключением случаев; 
+Их сопровождает вы или другой взрослый. Вы несете исключительную ответственность за 
+Постоянно надевайте шлемы во время езды на изделии микромобильности. Микромобильность 
+Товар может быть зарезервирован Вами для несовершеннолетних при условии, что они старше 15 лет 
+и имеют право использовать продукт по назначению в соответствии с действующим законодательством 
+в вашей юрисдикции. Вы несете ответственность за то, чтобы несовершеннолетний носил шлем 
+и что они постоянно выполняют проверку безопасности изделия для микромобильности 
+перед использованием. Вы должны обучить несовершеннолетнего законам, которые применяются к нему в его 
+использование продукта и должен постоянно контролировать его использование. Вы являетесь единственным и 
+Исключительная ответственность за активность несовершеннолетних, которых вы бронируете 
+для и использования ими продуктов микромобильности.</p> 
+<p _msttexthash="14893734271" _msthash="33">Вы не имеете права переуступать или иным образом передавать свою Учетную запись любому другому физическому или юридическому лицу. 
+Вы соглашаетесь соблюдать все применимые законы при использовании Платформы «Машкур», и 
+Вы можете использовать Платформу «Машкур» только в законных целях. Вы не должны, так как 
+избегая сомнений, использовать Платформу «Машкур» для транспортировки, содействия или закупки 
+перевозка запрещенных или запрещенных веществ или предметов. Вы не будете, в своем использовании 
+платформы «Машкур», причинять неудобства, неудобства, неудобства или материальный ущерб, 
+будь то капитану, партнеру ресторана, другому стороннему поставщику или любому другому 
+партия. В некоторых случаях для доступа вас могут попросить предоставить документ, удостоверяющий личность 
+или использовать Платформу «Машкур», и вы соглашаетесь с тем, что вам может быть отказано в доступе к Платформе или в ее использовании 
+Платформы «Машкур», если Вы отказываетесь предоставить документ, удостоверяющий личность. Несоблюдение требований 
+С условиями настоящего раздела или раздела 5 может привести к тому, что мы возьмем на себя определенные 
+действия против вас, включая, помимо прочего: (i) немедленные, временные или 
+навсегда лишить вас права на использование Платформы «Машкур» (ii) судебный иск 
+против вас, включая судебные разбирательства о возмещении всех расходов на (в том числе, 
+но не ограничиваясь разумными административными и юридическими расходами), возникшими в результате 
+нарушение (iii) раскрытие такой информации правоохранительным органам, как мы 
+чувствует себя необходимым и/или (iv) немедленное, временное или постоянное удаление любого 
+публикация или материалы, загруженные вами в наш Сервис.</p> 
+<p> 
+<strong _msttexthash="40202266" _msthash="34">Акции, пакеты, кредиты, пополнение мобильного телефона и реферальные программы.</strong> 
+</p> 
+<p> 
+<strong _msttexthash="1394900" _msthash="35">Промокоды</strong> 
+</p> 
+<p _msttexthash="2374475909" _msthash="36">«Машкур» по своему усмотрению может делать акции доступными для любого Пользователя или потенциального 
+Пользователь. Эти акции, если они не будут предоставлены вам, не будут иметь никакого отношения к 
+Ваше Соглашение или отношения с Машкуром. Во многих случаях будут проводиться рекламные акции 
+доступны вам с помощью буквенно-цифровых кодов («Промокоды»). «Машкур» оставляет за собой право 
+Удержание или вычет кредитов или преимуществ, полученных в рамках Акции в Событии 
+что Машкур определяет или считает, что погашение акции или получения 
+кредита или выгоды были ошибочными, мошенническими, незаконными или с нарушением 
+применимые условия акции или настоящее Соглашение.</p> 
+<p _msttexthash="6626971962" _msthash="37">Вы соглашаетесь с тем, что Промокоды: (i) должны использоваться для целевой аудитории и цели, 
+и законным образом; (ii) не может быть дублировано, продано или передано в каком-либо виде 
+или доведены до всеобщего сведения (независимо от того, опубликованы ли они в общедоступной форме) 
+или иным образом), если это прямо не разрешено Машкоором; (iii) может быть отключен Машкоором 
+в любое время по любой причине без ответственности перед Машкоором; (iv) может быть использован только в соответствии с 
+на конкретные условия, которые Машкур устанавливает для такого Промокода; (v) не являются 
+действителен за наличные деньги; (vi) может истечь до вашего использования, и (vii) Машкур может установить 
+Дополнительные условия, относящиеся к конкретным акциям. «Машкур» оставляет за собой право 
+удерживать или вычитать кредиты или другие функции или преимущества, полученные в результате использования 
+Промокодов Вами или любым другим пользователем в случае, если Машкур определит или 
+считает, что использование или погашение Промокода было ошибочным, мошенническим, 
+незаконно или в нарушение применимых условий Промокода или настоящего Соглашения.</p> 
+<p _msttexthash="3860628928" _msthash="38">В рамках вашей учетной записи Пользователя Машкур может предоставить вам или разрешить вам создать 
+«Код Машкура», уникальный буквенно-цифровой код, который вы можете раздать друзьям и семье. 
+и другие лица (каждое из которых именуется «Приглашенным пользователем») стать новыми Пользователями («Приглашенные пользователи») 
+или Капитаны («Рекомендованные капитаны»). Коды Машкоор могут распространяться только в рекламных целях 
+и должны быть разданы бесплатно. Вы не имеете права продавать, обменивать или обменивать 
+ваш Машкоорский код. Вам запрещено рекламировать Коды Машкур, в том числе, но 
+не ограничиваясь Google, Facebook, Twitter, Bing и Craigslist или любым другим 
+Цифровая платформа или веб-сайт, принадлежащий или контролируемый вами или любым другим лицом. Машкоор 
+оставляет за собой право деактивировать или аннулировать любой код Машкоора в любое время в Машкооре 
+Усмотрению.</p> 
+<p> 
+<strong _msttexthash="801411" _msthash="39">Пакеты</strong> 
+</p> 
+<p _msttexthash="675205960" _msthash="40">Вы можете иметь право на приобретение пакетов Mashkoor Credit (определение приведено ниже) («Mashkoor» 
+Пакеты») или вы можете получать рекламные предложения («Рекламные акции») или рекламные предложения услуг («Услуги» 
+Акции»), которые Вы можете использовать для оплаты определенных услуг, предоставляемых 
+Машкур или сборы, взимаемые Машкуром в связи с Услугами.</p> 
+<p _msttexthash="1424818148" _msthash="41">Пакеты «Машкур», кредиты «Машкур», «Туристические акции» и «Акции на обслуживание» 
+действительны для использования на Платформе «Машкур», и не подлежат передаче или обмену на 
+денежные средства и могут быть использованы только для оплаты определенных Услуг, о которых вы были уведомлены. Машкурские пучки, 
+Акции на поездки и Акции на обслуживание не могут быть объединены, и если стоимость вашего 
+Поездка превышает применимую сумму кредита или скидки, мы взимаем с вас плату 
+метод в файле для непогашенной стоимости поездки.</p> 
+<p _msttexthash="591287086" _msthash="42">Дополнительные ограничения на пакеты «Машкур», кредиты «Машкур», акции на поездки и 
+Рекламные акции могут применяться в соответствии с уведомлением в соответствующей рекламной акции или 
+Особые условия. Машкур может отменить или изменить условия, относящиеся к любым Пакетам Машкур, 
+Mashkoor Credits, Trip Promotions или Service Promotions в любое время по своему усмотрению</p> 
+<p _msttexthash="741237081" _msthash="43">Время от времени Машкур может предлагать Вам поощрения за привлечение новых Пользователей на Машкур 
+(«Реферальная программа»). Эти стимулы могут прийти в виде «Машкура» 
+Кредиты, Акции на Поездки и/или Акции на услуги, и Машкур может устанавливать или изменять 
+Виды поощрений, размеры, сроки, ограничения и квалификационные требования 
+для любых поощрений по своему усмотрению.</p> 
+<p> 
+<strong _msttexthash="8079084" _msthash="44">Пополнение мобильного телефона</strong> 
+</p> 
+<p _msttexthash="999966825" _msthash="45">Возможность доступа к услугам пополнения мобильного телефона предоставляется вам через 
+Платформа «Машкур» и может быть изменена и доступна. «Машкур» предоставляет 
+право на покупку эфирного времени (в соответствии с настоящими Условиями) в качестве агента соответствующего местного оператора 
+мобильного оператора. Вы соглашаетесь с этим и нижеизложенным в качестве условия покупки 
+ваучеры на эфирное время через платформу «Машкур».</p> 
+<p _msttexthash="1393335359" _msthash="46">Вам нужно будет ввести номер мобильного телефона, на который будет зачислено любое пополнение 
+в соответствующее место (места) на платформе «Машкур». Вы несете ответственность за обеспечение 
+что номер мобильного телефона был введен правильно. От вас также потребуется 
+Выберите сумму пополнения, которая будет зачислена на номер мобильного телефона. Машкур не должен 
+нести какую-либо ответственность перед вами в отношении пополнения счета в целом, 
+Введен номер мобильного телефона и сумма пополнения не зачислена.</p> 
+<p _msttexthash="831915669" _msthash="47">Стоимость пополнения мобильного счета будет меняться в зависимости от указанных номиналов 
+на платформе Машкоор. Общая стоимость, количество пополненных и соответствующий мобильный 
+будет показан на платформе «Машкур». Все операции по пополнению являются окончательными 
+и не может быть изменена или удалена после того, как вы ввели соответствующую информацию о пополнении 
+на платформе Машкоор.</p> 
+<p> 
+<strong _msttexthash="4304222" _msthash="48">Программа лояльности.</strong> 
+</p> 
+<p _msttexthash="1422881330" _msthash="49">Став Пользователем, Вы становитесь участником Программы лояльности «Машкур» (далее – «Программа лояльности) 
+») на тех рынках, где доступна Программа лояльности. Пользователи будут накапливать баллы 
+посредством использования Платформы «Машкур» для доступа к Услугам, предоставляемым третьим лицом 
+поставщики услуг и могут иметь доступ к ряду услуг, способов поддержки 
+их местное сообщество, а также льготы («Вознаграждения») в зависимости от статуса данного уровня 
+(и актуальная доступность на любом конкретном рынке).</p> 
+<p _msttexthash="1953773406" _msthash="50">Пользователи могут получать или поддерживать статус в зависимости от использования платформы «Машкур» 
+в любом календарном месяце. Как только Пользователь достигнет уровня, он останется в силе 
+в течение 2 месяцев подряд. В отношении истечения срока действия баллов, заработанных в соответствии с 
+к Программе лояльности, каждый календарный год состоит из 2 поощрительных периодов: с января 
+С 1 по 30 июня и с 1 июля по 31 декабря (каждый из них именуется «Период вознаграждения») и 
+любые баллы, заработанные в течение одного Периода Вознаграждения, будут автоматически аннулированы в конце 
+следующий Период вознаграждения.</p> 
+<p _msttexthash="2408548181" _msthash="51">Вознаграждения предлагаются по собственному усмотрению Машкоора и могут меняться время от времени 
+до времени. Вознаграждения и участвующие партнеры могут отличаться от рынка к рынку и 
+может быть добавлен или удален по собственному усмотрению Машкура. Вы можете использовать баллы 
+в обмен на Вознаграждения или Пожертвования (в зависимости от обстоятельств) в любое время, как указано на 
+Приложение. При использовании баллов Машкур рассчитывает эквивалентную или согласованную сумму 
+(если применимо) с участвующим партнером и аннулировать свою ответственность перед вами 
+для того же. Используя Вознаграждения, вы подтверждаете, что согласны с условиями 
+Программа лояльности.</p> 
+<p _msttexthash="136476418" _msthash="52">Mashkoor has the right to add, change, limit, modify or cancel Loyalty Program rules, 
+regulations, rules for earning and redeeming Rewards points, rewards, reward levels, 
+redemption levels, processes, benefits, tier statuses, and Loyalty Program partners 
+without notice, even though such changes may affect the member’s tier status, the 
+value of points already accumulated, the ability to use accumulated points, or 
+the ability to obtain certain rewards.</p> 
+<p></p> 
+<p _msttexthash="293987811" _msthash="53">Mashkoor may, among other things: (1) increase or decrease the number of points received 
+for a given action or amount spent or the number of points required for a reward; 
+(2) withdraw, limit, modify, or cancel any reward; (3) add blackout dates, limit 
+availability for any reward, or otherwise restrict the continued availability of 
+rewards; (4) change program benefits served by Rewards or its partners, conditions 
+of participation, rules for earning, redeeming, retaining, or forfeiting points, 
+or rules governing the use of rewards; (5) change or cancel rewards; and (6) change 
+the rules governing the tier statuses, including but not limited to: rules to reach 
+a tier status, duration and expiry rules of the tier status, benefits granted by 
+reaching a given tier status.</p> 
+<p _msttexthash="38687402" _msthash="54">Mashkoor makes no warranties or representations, either expressed or implied, and 
+expressly disclaim all liability (including consequential damages) with respect 
+to type, timeliness, cost, quality or fitness of goods or services provided through 
+the Loyalty Program.</p> 
+<p _msttexthash="27962974" _msthash="55">If any participating Rewards partner improperly denies a User an accrual or benefit, 
+the liability of Mashkoor shall be limited to the equivalent value, in Rewards points, 
+of that accrual or benefit as determined solely by Mashkoor.</p> 
+<p _msttexthash="90744563" _msthash="56">The Loyalty Program has no predetermined termination date and may continue until 
+such time as Mashkoor decides to terminate the Loyalty Program, at any time, with 
+or without notice. If the Loyalty Program is terminated, all unredeemed points 
+or tier status benefits shall be forfeited without any obligation or liability, 
+no award claims or tier status benefits shall be honoured after the conclusion 
+of any notice period.</p> 
+<p _msttexthash="332970521" _msthash="57">Mashkoor reserves the right to cancel a User’s access to the Loyalty Program and 
+revoke any and all unredeemed Mashkoor Rewards points collected by any Member who 
+appears to be using the Loyalty Program in a manner inconsistent with the terms 
+or intent of the Loyalty Program or any portion thereof. For reasons that include, 
+but are not limited to: 1) violation of these terms and conditions; 2) misrepresentation 
+of any information or any misuse of this Loyalty Program; 3) violation of any national, 
+state or local law or regulation in connection with the use of this Loyalty Program; 
+4) commission of fraud or abuse involving any portion of this Loyalty Program ; 
+or 5) action, in any other way, to the detriment of the Loyalty Program or any 
+of its stakeholders; all as may be determined by Mashkoor in its sole discretion.</p> 
+<p _msttexthash="121067024" _msthash="58">Notwithstanding the foregoing, Loyalty Program violations, fraud or abuse in relation 
+to rewards points and credit, tier status or reward usage is subject to appropriate 
+administrative and/or legal action by appropriate governmental authorities and/or 
+by Mashkoor including, without limitation, the forfeiture of all point transfers, 
+rewards, tier status or award issued pursuant to point redemptions and any accrued 
+points in your account, as well as cancellation of the account.</p> 
+<p _msttexthash="32208696" _msthash="59">The earning and redeeming of Rewards points are subject to all applicable local 
+laws and regulations and are offered in good faith, however they may not be available 
+or are subject to change if prohibited or restricted by applicable law or regulation.</p> 
+<p _msttexthash="132416739" _msthash="60">Separate terms and conditions may apply to your reservation, purchase of goods 
+and services, or rewards that you select. Please read these separate terms and 
+conditions carefully. You agree to abide by the terms and conditions of purchase 
+imposed by any supplier with whom you elect to deal. You understand that any violation 
+of any such supplier's rules and restrictions may result in your being denied access 
+to the applicable product or services, in your forfeiting any monies paid for such 
+product or service.</p> 
+<p> 
+<strong _msttexthash="276068" _msthash="61">Communications.</strong> 
+</p> 
+<p _msttexthash="513610435" _msthash="62">By becoming a User, you agree to receive communications from us, including via 
+e-mail, text message, calls, and push notifications. You agree that texts, calls 
+or pre-recorded messages may be generated by automatic telephone dialling systems 
+(where allowed by and in compliance with local law). Communications from Mashkoor, 
+its affiliated companies and/or Captains, may include but are not limited to: operational 
+communications concerning your User account or use of the Mashkoor Platform or Services, 
+updates concerning new and existing features on the Mashkoor Platform, communications 
+concerning promotions run by us or our third- party partners, and news concerning 
+Mashkoor and industry developments. Standard text messaging charges applied by your 
+cell phone carrier will apply to text messages we send. If you no longer wish to 
+receive promotional or marketing-related communications by text message, please 
+contact <a class="link" href="mailto:legal@mashkoor.net">legal@mashkoor.net</a> and/or 
+review the Privacy Policy for further information.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="381108" _msthash="63">Charges and Payments</strong> 
+</p> 
+<p _msttexthash="6287372" _msthash="64">4 (A) Personal Transportation Services in Egypt, Saudi Arabia, Kuwait, Iraq, Pakistan 
+&amp; United Arab Emirates</p> 
+<p _msttexthash="37170393" _msthash="65">This section 4(A) is only applicable to personal transportation services booked 
+through the Mashkoor Platform in Egypt, Saudi Arabia, Qatar, Jordan and the United 
+Arab Emirates. For other Services booked through the Mashkoor Platform, please refer 
+to section 4(b) below.</p> 
+<p _msttexthash="23464493" _msthash="66">As a User, you agree to pay any amounts charged by Captains for providing Services 
+to you (“Charges”).</p> 
+<p _msttexthash="494561158" _msthash="67">After you have received Services from a Captain, and if you are making payment 
+through the Mashkoor Platform rather than in cash, Mashkoor will accept payment of 
+the applicable Charges on behalf of the Captain as such Captain’s limited payment 
+collection agent. Payment of the Charges in the above manner shall in all cases 
+be considered the same as payment made directly by you to the Captain. Charges 
+will be inclusive of applicable taxes where required by law, including any applicable 
+VAT and/or sales tax. Charges paid by you are final and non-refundable, unless 
+otherwise determined by Mashkoor or the relevant Captain. You retain the right to 
+request lower Charges from a Captain for Services received by you from such Captain 
+at the time you receive such Services (but not after the Service is underway or 
+completed), this will be subject to acceptance by such a Captain. Mashkoor will respond 
+accordingly to any request from a Captain to modify the Charges for a particular 
+Service.</p> 
+<p _msttexthash="166919064" _msthash="68">All Charges are due immediately and payment will be facilitated by Mashkoor using 
+the preferred payment method designated in your Account, after which you may be 
+sent a payment receipt on behalf of a Captain by email (which is not equivalent 
+to a tax invoice). If your primary Account payment method is determined to be expired, 
+invalid or otherwise not able to be charged, you agree that Mashkoor may, as the 
+Captain’s limited payment collection agent, use a secondary payment method in your 
+Account, if available.</p> 
+<p _msttexthash="87820746" _msthash="69">You acknowledge and agree that Charges may be varied or revised at any time without 
+your consent and that in certain geographical areas Charges may increase substantially 
+during times of high demand. Mashkoor will use reasonable efforts to inform you of 
+Charges that may apply, provided that you will be responsible for Charges incurred 
+under your Account regardless of your awareness of such Charges, as applicable.</p> 
+<p _msttexthash="23618959" _msthash="70">4 (B) For all Services in Algeria, Bahrain, Iraq, Kuwait, Lebanon, Morocco &amp; 
+Pakistan and all Services excluding ride hailing services in Egypt, Saudi Arabia, 
+Qatar, Jordan, Kuwait, Pakistan, Iraq &amp; United Arab Emirates</p> 
+<p _msttexthash="131601548" _msthash="71">This section 4(B) is applicable to all Services booked through the Mashkoor Platform 
+in Algeria, Bahrain, Iraq, Jordan, Kuwait, Lebanon, Morocco, Pakistan &amp; Qatar 
+and is applicable for Services booked through the Mashkoor Platform excluding personal 
+transportation services provided by Captains through the Mashkoor Platform in Egypt 
+Saudi Arabia, Qatar, Jordan, Kuwait, Pakistan, Iraq &amp; United Arab Emirates. 
+Please refer to section 4(A) above for Personal Transportation Services for the 
+mentioned countries.</p> 
+<p _msttexthash="83734872" _msthash="72">As a User, you agree to pay any amounts charged by Mashkoor (the “Mashkoor Fee”) (if 
+applicable in your jurisdiction) and amounts charged by Captains or other independent 
+third party provider for providing Services to you (“Charges”).</p> 
+<p _msttexthash="779700181" _msthash="73">After you have received Services from a Captain, a Merchant Partner or other independent 
+third party provider, Mashkoor: (i) may facilitate your payment of the applicable 
+Charges on behalf of the Captain or the Merchant Partner as such Captain or Merchant 
+Partner’s limited payment collection agent and (ii) may collect any applicable 
+Mashkoor Fee directly from you or, in the case of a cash payment, from the relevant 
+Captain or Merchant Partner. Payment of the Charges and Mashkoor Fee in the above 
+manner shall in all cases be considered the same as payment made directly by you 
+to the Captain, Merchant Partner or other independent third party provider or to 
+Mashkoor, as applicable. Charges and Mashkoor Fees will be inclusive of applicable 
+taxes where required by law, including any VAT or sales tax. Charges and Mashkoor 
+Fees paid by you are final and non-refundable, unless otherwise determined by Mashkoor 
+or the relevant Captain. You retain the right to request lower Charges from a Captain 
+for Services received by you from such Captain at the time you receive such Services 
+(but not after the Service is underway or completed). Mashkoor will respond accordingly 
+to any request from a Captain to modify the Charges for a particular Service..</p> 
+<p _msttexthash="222648192" _msthash="74">All Charges and Mashkoor Fees are due immediately and payment will be facilitated 
+by Mashkoor using the preferred payment method designated in your Account, after 
+which Mashkoor, Captain or a Merchant Partner, as applicable, will send you a receipt 
+by email (which is not equivalent to a tax invoice). If your primary Account payment 
+method is determined to be expired, invalid or otherwise not able to be charged, 
+you agree that Mashkoor may, on its own behalf, and as the Captain or the Merchant 
+Partner’s limited payment collection agent, use a secondary payment method in your 
+Account, if available.</p> 
+<p _msttexthash="59670429" _msthash="75">With respect to micro-mobility products being electric and non-electric bike/scooter 
+sharing, the applicable Mashkoor Fee will be charged according to your membership 
+plan and, once payment has been made, you will be able to independently collect 
+such micro-mobility products from their respective stand and/or parking location 
+for use. </p> 
+<p _msttexthash="61152104" _msthash="76">With respect to micro-mobility products, being electric and non-electric bike/scooter, 
+in addition to a Mashkoor Fee being charged according to your membership plan, applicable 
+excess will result in overtime charges for such micro-mobility product, all overtime 
+charges as mentioned in the Mashkoor Application will be charged your Account.</p> 
+<p _msttexthash="240879951" _msthash="77">As between you and Mashkoor, Mashkoor reserves the right to establish, remove and/or 
+revise Mashkoor Fees at any time in Mashkoor’s sole discretion. Charges may also be 
+varied or revised at any time without your consent. Further, you acknowledge and 
+agree that Charges and Mashkoor Fees applicable in certain geographical areas may 
+increase substantially during times of high demand. Mashkoor will use reasonable 
+efforts to inform you of Charges and Mashkoor Fees that may apply, provided that 
+you will be responsible for Charges and Mashkoor Fees incurred under your Account 
+regardless of your awareness of such Charges or Mashkoor Fees, as applicable, or 
+the amounts thereof.</p> 
+ 
+<p> 
+<strong _msttexthash="450775" _msthash="78">Repair or Cleaning Fees.</strong> 
+</p> 
+<p _msttexthash="351588016" _msthash="79">You shall be responsible for the cost of for damage to, or necessary cleaning of, 
+Captain vehicles and property resulting from use of the Mashkoor Platform under your 
+Account in excess of normal “wear and tear” damages and necessary cleaning (“Repair 
+or Cleaning”). In the event that a Captain reports the need for Repair or Cleaning, 
+and such Repair or Cleaning request is verified by Mashkoor in Mashkoor’s reasonable 
+discretion, Mashkoor reserves the right to facilitate payment for the reasonable 
+cost of such Repair or Cleaning on behalf of the Captain using any of your payment 
+methods. Such amounts will be transferred by Mashkoor to the applicable Captain and 
+are non-refundable.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="452387" _msthash="80">Restricted Activities</strong> 
+</p> 
+<p _msttexthash="5894528107" _msthash="81">With respect to your use of the Mashkoor Platform and your participation in the Services, 
+you agree that you will not: (i) impersonate any person or entity (ii) stalk, threaten, 
+or otherwise harass any person (including other Users making simultaneous use of 
+the Service), or carry any weapons (iii) ride micro-mobility product without wearing 
+helmet (iv) violate any law, statute, rule, permit, ordinance or regulation (iv) 
+interfere with or disrupt the Services or the Mashkoor Platform or the servers or 
+networks connected to the Mashkoor Platform (v) post information or interact on the 
+Mashkoor Platform or with respect to Services in a manner which is false, inaccurate, 
+misleading (directly or by omission or failure to update information), defamatory, 
+libelous, abusive, obscene, profane, offensive, sexually oriented, threatening, 
+harassing, or illegal (vi) use narcotics or alcohol (vii) use the Mashkoor Platform 
+in any way that infringes any third party’s rights, including but not limited to: 
+intellectual property rights, copyright, patent, trademark, trade secret or other 
+proprietary rights or rights of publicity or privacy (viii) post, email or otherwise 
+transmit any malicious code, files or programs designed to interrupt, damage, destroy 
+or limit the functionality of any computer software or hardware or telecommunications 
+equipment or surreptitiously intercept or expropriate any system, data or personal 
+information (ix) forge headers or otherwise manipulate identifiers in order to 
+disguise the origin of any information transmitted through the Mashkoor Platform 
+(x) “frame” or “mirror” any part of the Mashkoor Platform, without our prior written 
+authorization or use meta tags or code or other devices containing any reference 
+to us in order to direct any person to any other web site for any purpose (xi) 
+modify, adapt, translate, reverse engineer, decipher, decompile or otherwise disassemble 
+any portion of the Mashkoor Platform or any software used on or for the Mashkoor Platform 
+(xii) rent, lease, lend, sell, redistribute, license or sublicense the Mashkoor Platform 
+or access to any portion of the Mashkoor Platform (xiii) use any robot, spider, site 
+search/retrieval application, or other manual or automatic device or process to 
+retrieve, index, scrape, “data mine”, or in any way reproduce or circumvent the 
+navigational structure or presentation of the Mashkoor Platform or its contents (xiv) 
+link directly or indirectly to any other web sites (xv) transfer or sell your User 
+account, password and/or identification to any other party (xvi) discriminate against 
+or harass anyone on the basis of race, national origin, religion, gender, gender 
+identity, physical or mental disability, medical condition, marital status, age 
+or sexual orientation (xvii) cause any third party to engage in the restricted 
+activities above. In the event that you undertake in any of the above while participating 
+in Services, a Captain shall be permitted to refuse to provide you Services or, 
+if such Services have commenced, a Captain shall be permitted to refuse to continue 
+to provide you Services.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="1612039" _msthash="82">Disclaimers; Limitation of Liability; Indemnity</strong> 
+</p> 
+<p> 
+<strong _msttexthash="120237" _msthash="83">DISCLAIMER.</strong> 
+</p> 
+<p _msttexthash="360259367" _msthash="84">THE MASHKOOR PLATFORM AND SERVICES ARE PROVIDED “AS IS” AND “AS AVAILABLE.” MASHKOOR 
+DISCLAIMS ALL REPRESENTATIONS AND WARRANTIES, EXPRESS, IMPLIED OR STATUTORY, NOT 
+EXPRESSLY SET OUT IN THIS AGREEMENT, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN ADDITION, MASHKOOR MAKES 
+NO REPRESENTATION, WARRANTY, OR GUARANTEE REGARDING THE RELIABILITY, TIMELINESS, 
+QUALITY, SUITABILITY OR AVAILABILITY OF THE MASHKOOR PLATFORM, SERVICES OR ANY OTHER 
+SERVICES REQUESTED THROUGH THE USE OF THE MASHKOOR PLATFORM, OR THAT THE MASHKOOR PLATFORM 
+WILL BE UNINTERRUPTED OR ERROR-FREE. MASHKOOR AND ITS AFFILIATES DO NOT GUARANTEE 
+THE QUALITY, SUITABILITY, SAFETY OR ABILITY OF CAPTAINS. YOU AGREE THAT THE ENTIRE 
+RISK ARISING OUT OF YOUR USE OF THE MASHKOOR PLATFORM AND SERVICES, AND ANY SERVICE 
+REQUESTED IN CONNECTION THEREWITH, REMAINS SOLELY WITH YOU, TO THE MAXIMUM EXTENT 
+PERMITTED UNDER APPLICABLE LAW.</p> 
+<p _msttexthash="51930580" _msthash="85">Mashkoor and its Affiliates are not responsible for the conduct, whether online or 
+offline, of any User, Captain Restaurant Partner, mobile operator , or any other 
+third party. You are encouraged to use a reasonable degree of sensibility and caution 
+when interacting with other Users, Captains or any other third party.</p> 
+<p _msttexthash="185115710" _msthash="86">We are not required to procure insurance for, nor are we responsible for private 
+belongings, such as the damage or loss of private belongings, including but not 
+limited to damage or loss caused by: (i) theft or snatching; (ii) because the belongings 
+are left a vehicle or left unattended; or (iii) Merchant Partners (or their authorised 
+personnel) when providing a service or a product which you have requested through 
+the Mashkoor Platform. You are advised not to keep your personal belongings unattended, 
+including when you request a Merchant Partner to provide services in your household 
+or other premises. .</p> 
+<p _msttexthash="37321817" _msthash="87">By using the Mashkoor Platform and participating in the Services, you agree to accept 
+such risks and agree that Mashkoor is not responsible for the acts or omissions of 
+Users, Captains, Restaurant Partners, Merchant Partners, mobile operators, or any 
+other third party.</p> 
+<p _msttexthash="98280676" _msthash="88">You acknowledge that Mashkoor may have its own insurance coverage from which you 
+may benefit. In the event thereof, you agree to provide proper notification of 
+an insurance claim and accept the benefit of any insurance service provided at 
+your own risk and you hereby acknowledge that Mashkoor is not acting as a broker 
+in connection therewith, nor does it provide any guarantees, warranties or any 
+other assurances in connection therewith.</p> 
+<p _msttexthash="39767741" _msthash="89">Mashkoor and its Affiliates expressly disclaim any liability arising from the unauthorized 
+use of your User account. Should you suspect that any unauthorized party may be 
+using your User account or you suspect any other breach of security, you agree 
+to notify us immediately.</p> 
+<p _msttexthash="253505369" _msthash="90">Location data provided by the Mashkoor Platform is for basic location purposes only 
+and is not intended to be relied upon in situations where precise location information 
+is needed or where erroneous, inaccurate or incomplete location data may lead to 
+death, personal injury, property or environmental damage. Neither Mashkoor, nor its 
+Affiliates nor any of its content providers, guarantees the availability, accuracy, 
+completeness, reliability, or timeliness of location data tracked or displayed 
+by the Mashkoor Platform. Any of your information, including geolocational data, 
+you upload, provide, or post on the Mashkoor Platform may be accessible to Mashkoor, 
+selected partners and relevant Captains.</p> 
+<p> 
+<strong _msttexthash="368121" _msthash="91">LIMITATION OF LIABILITY.</strong> 
+</p> 
+<p _msttexthash="14781700375" _msthash="92">МАШКУР, ЕГО АФФИЛИРОВАННЫЕ ЛИЦА И ПАРТНЕРЫ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ЗА КОСВЕННЫЕ, СЛУЧАЙНЫЕ, 
+СПЕЦИАЛЬНЫЕ, ШТРАФНЫЕ, ШТРАФНЫЕ ИЛИ КОСВЕННЫЕ УБЫТКИ, ВКЛЮЧАЯ УПУЩЕННУЮ ВЫГОДУ, 
+ПОТЕРЯ ДАННЫХ, ТЕЛЕСНЫЕ ПОВРЕЖДЕНИЯ ИЛИ УЩЕРБ ИМУЩЕСТВУ, СВЯЗАННЫЕ С ИЛИ 
+В ПРОТИВНОМ СЛУЧАЕ В РЕЗУЛЬТАТЕ ЛЮБОГО ИСПОЛЬЗОВАНИЯ ПЛАТФОРМЫ ИЛИ УСЛУГ МАШКООР, ДАЖЕ ЕСЛИ МАШКУР 
+БЫЛ ПРЕДУПРЕЖДЕН О ВОЗМОЖНОСТИ ТАКИХ УБЫТКОВ. МАШКУР И ЕГО ФИЛИАЛЫ 
+И ЕГО ПАРТНЕРЫ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ЗА ВОЗНИКШИЙ УЩЕРБ, ОБЯЗАТЕЛЬСТВА ИЛИ УБЫТКИ 
+ИЗ: (i) ВАШЕГО ИСПОЛЬЗОВАНИЯ ИЛИ ДОВЕРИЯ К ПЛАТФОРМЕ МАШКООР ИЛИ СЕРВИСАМ ИЛИ ВАШЕГО 
+НЕВОЗМОЖНОСТЬ ПОЛУЧИТЬ ДОСТУП К ПЛАТФОРМЕ «МАШКУР» ИЛИ СЕРВИСАМ ИЛИ ИСПОЛЬЗОВАТЬ ИХ; ИЛИ (ii) ЛЮБАЯ ТРАНЗАКЦИЯ 
+ИЛИ ОТНОШЕНИЯ МЕЖДУ ВАМИ И ЛЮБЫМ КАПИТАНОМ ИЛИ ДРУГИМ СТОРОННИМ ПОСТАВЩИКОМ, ДАЖЕ 
+ЕСЛИ МАШКУР, ЕГО АФФИЛИРОВАННЫЕ ЛИЦА ИЛИ ПАРТНЕРЫ БЫЛИ ПРЕДУПРЕЖДЕНЫ О ТАКОЙ ВОЗМОЖНОСТИ 
+ТАКИХ УБЫТКОВ. МАШКУР, ЕГО АФФИЛИРОВАННЫЕ ЛИЦА И ПАРТНЕРЫ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ 
+ЗА ЗАДЕРЖКУ ИЛИ НЕВЫПОЛНЕНИЕ ОБЯЗАТЕЛЬСТВ ПО ПРИЧИНАМ, ВЫХОДЯЩИМ ЗА РАМКИ НАШИХ РАЗУМНЫХ 
+КОНТРОЛЬ. ВЫ ПРИЗНАЕТЕ, ЧТО КАПИТАНЫ, ПРЕДОСТАВЛЯЮЩИЕ УСЛУГИ ПО ПЕРЕВОЗКЕ, ЗАПРАШИВАЮТ 
+ПО НЕКОТОРЫМ ЗАПРОСАМ БРЕНДЫ МОГУТ ПРЕДЛАГАТЬ РАЙДШЕРИНГ ИЛИ ОДНОРАНГОВЫЙ ТРАНСПОРТ 
+УСЛУГИ И НЕ МОГУТ БЫТЬ ПРОФЕССИОНАЛЬНО ЛИЦЕНЗИРОВАНЫ ИЛИ РАЗРЕШЕНЫ. НИ ПРИ КАКИХ ОБСТОЯТЕЛЬСТВАХ 
+ОБЩАЯ ОТВЕТСТВЕННОСТЬ МАШКУРА И/ИЛИ АФФИЛИАТА И/ИЛИ ПАРТНЕРА ПЕРЕД ВАМИ В СВЯЗИ С ЭТИМ 
+С ПОМОЩЬЮ ПЛАТФОРМЫ «МАШКУР», СЕРВИСОВ, ЛЮБОГО ВЕБ-САЙТА ИЛИ ПРИЛОЖЕНИЯ, СВЯЗАННОГО С НИМИ, 
+ЛЮБЫЕ МАТЕРИАЛЫ, РАЗМЕЩЕННЫЕ НА ВЫШЕИЗЛОЖЕННОМ, ИЛИ ДЕЙСТВИЯ ИЛИ БЕЗДЕЙСТВИЕ ПАРТНЕРОВ РЕСТОРАНА 
+ИЛИ ДРУГИМ ПАРТНЕРАМ ЗА ВСЕ УБЫТКИ, УБЫТКИ И ОСНОВАНИЯ ДЛЯ ИСКА ПРЕВЫШАЮТ ДВЕ ТЫСЯЧИ 
+ДОЛЛАРЫ США ИЛИ ЭКВИВАЛЕНТНАЯ СУММА В ДРУГОЙ ВАЛЮТЕ.</p> 
+<p _msttexthash="1453247432" _msthash="93">ПЛАТФОРМА МАШКУР МОЖЕТ БЫТЬ ИСПОЛЬЗОВАНА ВАМИ ДЛЯ ЗАПРОСА И ПЛАНИРОВАНИЯ УСЛУГ С 
+КАПИТАНЫ, НО ВЫ СОГЛАСНЫ С ТЕМ, ЧТО МАШКУР, ЕГО ФИЛИАЛЫ, ПАРТНЕРЫ РЕСТОРАНА И ДРУГИЕ 
+ПАРТНЕРЫ НЕ НЕСУТ ПЕРЕД ВАМИ НИКАКОЙ ОТВЕТСТВЕННОСТИ В СВЯЗИ С ПРЕДОСТАВЛЕНИЕМ ЛЮБЫХ УСЛУГ 
+ВАМ КАПИТАНАМИ, НЕ УКАЗАННЫМИ В НАСТОЯЩЕМ СОГЛАШЕНИИ. ОГРАНИЧЕНИЯ 
+И ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ В ДАННОМ РАЗДЕЛЕ 6 НЕ ПРЕТЕНДУЮТ НА ОГРАНИЧЕНИЕ ОТВЕТСТВЕННОСТИ ИЛИ ИЗМЕНЕНИЕ ВАШЕГО 
+ПРАВА ПОТРЕБИТЕЛЯ, КОТОРЫЕ НЕ МОГУТ БЫТЬ ИСКЛЮЧЕНЫ В СООТВЕТСТВИИ С ДЕЙСТВУЮЩИМ ЗАКОНОДАТЕЛЬСТВОМ.</p> 
+ 
+<p> 
+<strong _msttexthash="1871545" _msthash="94">Компенсация.</strong> 
+</p> 
+<p _msttexthash="1954985786" _msthash="95">Вы соглашаетесь возместить убытки и привлечь к ответственности Машкур, его Аффилированных лиц, Партнеров Ресторана, Продавца 
+Партнеры и другие партнеры, а также их должностные лица, директора, сотрудники и агенты 
+не ограждается от любых претензий, требований, убытков, обязательств и расходов (в том числе 
+гонорары адвокатов), возникающие в результате или в связи с: (i) использованием Вами Машкоора 
+Платформа и Услуги или услуги или товары, полученные в результате использования вами 
+Платформа «Машкур»; (ii) нарушением вами настоящего Соглашения или (iii) вашим нарушением 
+прав любой третьей стороны, включая Капитанов.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="31236764" _msthash="96">Общие правила проведения соревнований, конкурсов и розыгрышей призов</strong> 
+</p> 
+<p _msttexthash="824943938" _msthash="97">Если не указано иное, «Машкур» будет проводить все соревнования, конкурсы и 
+розыгрыши призов (каждый из которых именуется «Конкурс»), как описано в этом разделе, и путем подачи заявки или 
+Участвуя в Конкурсе, каждый претендент или участник («Участник») соглашается 
+к настоящим Правилам, независимо от того, применяются ли к ним какие-либо отдельные дополнительные специальные условия 
+Конкуренция.</p> 
+<p _msttexthash="444828709" _msthash="98">При подаче заявки на участие в Конкурсе Участник может иметь право на участие в Конкурсе 
+приз, указанный в соответствующих рекламных материалах («Приз»). Машкоор 
+может отклонить заявку по своему усмотрению, при условии, что такой отказ не будет 
+противоречие действующему законодательству.</p> 
+<p _msttexthash="942738368" _msthash="99">Приз не подлежит передаче, обмену и денежной альтернативе. 
+В случае невозможности получения Приза Машкоор оставляет за собой право предложить 
+альтернативный приз равной или большей стоимости, если обстоятельства не зависящие от Машкура 
+делает это необходимым. В той мере, в какой это разрешено законодательством, Победитель Конкурса 
+будет нести ответственность за любые и все налоги, понесенные в связи с получением 
+Приз.</p> 
+<p _msttexthash="2371294835" _msthash="100">Участие в Конкурсе не означает автоматически, что Участник имеет 
+выиграл Премию. Победившая заявка («Победитель Конкурса») будет выбрана случайным образом 
+розыгрыш (выполняется компьютерным процессом или под контролем независимой третьей стороны) 
+или группой лиц, рассматривающих заявки. Разумные усилия помогут 
+необходимо связаться с Победителем Конкурса, но если Победитель Конкурса не может быть 
+связался или не ответил на сообщение Машкура в указанный срок, 
+Машкур оставляет за собой право предложить приз следующему правомочному Участнику. Машкоор 
+не несет ответственности, если Приз по причинам не дойдет до Победителя Конкурса 
+вне разумного контроля Машкура.</p> 
+<p _msttexthash="3011878610" _msthash="101">Без ущерба для «Отказа от ответственности; Ограничение ответственности; Возмещение ущерба», 
+ни Машкоор, ни Аффилиаты или Партнеры, участвующие в Конкурсе, не принимают 
+ответственность или ответственность за любые ошибки, упущения, прерывания, удаление, 
+несанкционированный доступ к конкурсным заявкам, а также утерянные или задержанные заявки, если 
+или не возникающие в результате работы сервера, вируса, ошибок или других внешних причин 
+Машкур, контроль Аффилиата и/или Партнера. НИ ПРИ КАКИХ ОБСТОЯТЕЛЬСТВАХ МАШКООРСКАЯ 
+И/ИЛИ ОБЩАЯ ОТВЕТСТВЕННОСТЬ АФФИЛИАТА И/ИЛИ ПАРТНЕРА ПЕРЕД ЛЮБЫМ УЧАСТНИКОМ ЗА ВСЕ 
+УБЫТКИ, УБЫТКИ И ОСНОВАНИЯ ДЛЯ ИСКА В СВЯЗИ С ЛЮБЫМ СОРЕВНОВАНИЕМ ИЛИ ЛЮБЫМ 
+МАТЕРИАЛЫ, ОПУБЛИКОВАННЫЕ В СВЯЗИ С КОНКУРСОМ, ПРЕВЫШАЮТ ДЕНЕЖНУЮ СТОИМОСТЬ 
+ПРИЗ.</p> 
+<p _msttexthash="1640587468" _msthash="102">Машкур оставляет за собой право отменить или изменить Конкурс и любые связанные с ним 
+Правила и условия. О любых изменениях Участники будут уведомлены в кратчайшие разумные сроки 
+практический. Если эти условия не являются или неясно предусматривают решение для любого 
+вопрос, который может возникнуть, то Машкур имеет исключительное право по своему усмотрению принять окончательное решение 
+по любому подобному вопросу. Решения Машкура по любому аспекту Конкурса являются окончательными 
+и обязывает, и никакая переписка по этому поводу не будет заключаться.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="3264144" _msthash="103">Разрешение споров</strong> 
+</p> 
+<p> 
+<strong _msttexthash="1185665" _msthash="104">Арбитраж.</strong> 
+</p> 
+<p _msttexthash="17807229687" _msthash="105">Вы соглашаетесь с тем, что любые споры, претензии или разногласия, возникающие в результате или в связи с 
+настоящее Соглашение или нарушение, прекращение, принудительное исполнение, толкование или действительность 
+или использование Платформы или Сервисов «Машкур» (совместно именуемые «Споры») 
+будет урегулирован путем обязательного арбитража между вами и любым соответствующим Партнером в 
+или между Вами и ФЗ «Машкур Нетворкс» при отсутствии другого Аффилированного лица 
+зарегистрировано в вашей юрисдикции, за исключением того, что каждая сторона сохраняет за собой право 
+добиваться судебного запрета или иного средства правовой защиты по праву справедливости в суде компетентной юрисдикции 
+для предотвращения фактического или потенциального нарушения, незаконного присвоения или нарушения 
+авторских прав, товарных знаков, коммерческой тайны, патентов или других интеллектуальных прав одной из сторон 
+права собственности. Вы признаете и соглашаетесь с тем, что вы и Машкур отказываетесь от своих прав 
+право на суд присяжных или на участие в качестве истца или группы в любом предполагаемом 
+групповой иск или представительское разбирательство. Кроме того, если и вы, и соответствующие 
+В противном случае Партнер соглашается в письменной форме, арбитр не может объединять более 
+притязаний одного лица и не может иным образом председательствовать над какой-либо формой любого класса или 
+представительское производство. Если этот конкретный пункт будет признан не имеющим законной силы, то 
+Весь раздел «Разрешение споров» будет считаться недействительным. За исключением случаев, когда 
+в предыдущем предложении, этот раздел «Разрешение споров» останется в силе 
+любое прекращение действия настоящего Соглашения. Данный раздел «Разрешение споров» относится к: 
+все Споры (как определено ниже) между Вами и Машкоором и/или любым из его Аффилированных лиц.</p> 
+<p> 
+<strong _msttexthash="7152015" _msthash="106">Арбитражный процесс и правила.</strong> 
+</p> 
+<p _msttexthash="23540272951" _msthash="107">Любой спор, конфликт, претензия или разногласие, возникающие в связи с этим 
+с Платформой «Машкур» или настоящим Соглашением или в связи с ними, в том числе связанные с 
+в отношении его действительности, его толкования или его исполнимости (любой «Спор») должны быть 
+впервые в обязательном порядке вынесен на процедуру медиации в Международную палату 
+Правил коммерческого посредничества («Правила посредничества ICC»). Если такой Спор не был 
+урегулирование в течение шестидесяти (60) дней после подачи запроса о посредничестве 
+в соответствии с такими Правилами посредничества ICC такой Спор может быть передан на рассмотрение и должен быть исключительным 
+и окончательно разрешен арбитражем в соответствии с Международным арбитражным регламентом 
+Торговая палата («Арбитражный регламент ICC»). Чрезвычайный арбитр Регламента ICC 
+Положения исключены. Спор должен быть разрешен 1 (одним) арбитром для 
+быть назначенным в соответствии с Регламентом ICC. Место как медиации, так и 
+арбитраж должен проводиться в городе, в котором соответствующее Аффилированное лицо, с которым вы сотрудничаете 
+Спор имеет свой юридический адрес. Язык медиации и/или 
+арбитраж должен проводиться на английском языке, если вы не говорите по-английски, и в этом случае 
+посредничество и/или арбитраж должны проводиться как на английском, так и на вашем родном языке 
+Язык. Наличие и содержание посреднических и арбитражных разбирательств, 
+включая документы и записки, представленные сторонами, корреспонденцию от и 
+в Международную торговую палату, корреспонденцию от медиатора, и 
+корреспонденция, распоряжения и решения, вынесенные единоличным арбитром, должны оставаться строго 
+конфиденциально и не подлежит разглашению третьим лицам без явного согласия 
+письменное согласие другой стороны за исключением случаев, когда: (i) раскрытие информации третьей стороне 
+является разумно необходимым в контексте проведения посредничества или арбитража 
+судопроизводство; и (ii) третья сторона безоговорочно соглашается в письменной форме взять на себя обязательства 
+в соответствии с обязательством по соблюдению конфиденциальности, предусмотренным настоящим Соглашением.</p> 
+</li> 
+<li> 
+<p> 
+<strong _msttexthash="2956603" _msthash="108">Другие положения</strong> 
+</p> 
+<p> 
+<strong _msttexthash="1622543" _msthash="109">Выбор права.</strong> 
+</p> 
+<p _msttexthash="674576292" _msthash="110">Настоящее Соглашение регулируется и толкуется в соответствии с законодательством 
+юрисдикция, в которой зарегистрировано соответствующее Аффилированное лицо, без предоставления юридической силы 
+к любым принципам коллизионного права, за исключением случаев, когда иное может быть предусмотрено в дополнительном 
+Условия, применимые к вашему региону.</p> 
+ 
+<p> 
+<strong _msttexthash="10156666" _msthash="111">Претензии о нарушении авторских прав.</strong> 
+</p> 
+<p _msttexthash="38306216" _msthash="112">Претензии о нарушении авторских прав следует направлять в «Машкоор» по <a class="link" href="mailto:legal@mashkoor.net" _istranslated="1">адресу legal@mashkoor.net</a>.</p> 
+ 
+<p> 
+<strong _msttexthash="1397643" _msthash="113">Извещение.</strong> 
+</p> 
+<p _msttexthash="652066675" _msthash="114">Машкур может направить уведомление посредством общего уведомления на Платформе Машкур, электронного 
+по почте на ваш адрес электронной почты, указанный в вашей Учетной записи, или в письменном виде по адресу 
+ваш адрес, указанный в вашей Учетной записи. Вы можете уведомить об этом «Машкур» в письменном виде 
+связь на электронный адрес Машкура по адресу <a class="link" href="mailto:legal@mashkoor.net" _istranslated="1">legal@mashkoor.net</a>.</p> 
+ 
+<p> 
+<strong _msttexthash="637052" _msthash="115">Общее.</strong> 
+</p> 
+<p _msttexthash="2368155205" _msthash="116">Вы не имеете права переуступать или передавать свои права по настоящему Соглашению полностью или в 
+часть без предварительного письменного согласия Машкура. Вы даете одобрение Машкуру 
+для того, чтобы он мог переуступать или передавать свои права и обязанности по настоящему Соглашению в 
+полностью или частично, в том числе: (i) дочерней или аффилированной компании; (ii) приобретателем 
+акций, бизнеса или активов Машкура; или (iii) правопреемник в результате слияния. Без стыка 
+между Вами, Машкоором существуют предпринимательские, партнерские, трудовые или агентские отношения 
+или любого Капитана в результате договора между Вами и Машкуром или использования 
+Платформа Машкоор.</p> 
+<p _msttexthash="5434835458" _msthash="117">Если какое-либо положение настоящего Соглашения будет признано незаконным, недействительным или не имеющим законной силы, 
+полностью или частично, в соответствии с каким-либо законом, такое положение или его часть обязываются: 
+не является частью настоящего Соглашения, но законность, действительность 
+и это не влияет на применимость других положений настоящего Соглашения. 
+В этом случае стороны заменяют незаконный, недействительный или не имеющий законной силы 
+положение или его часть с положением или его частью, которое является законным, действительным 
+и подлежащим исполнению, и который имеет, в максимально возможной степени, аналогичный эффект 
+в качестве незаконного, недействительного или неисполнимого положения или его части, учитывая содержание 
+и цель настоящего Соглашения. Настоящее Соглашение представляет собой полное соглашение 
+и понимание сторонами в отношении его предмета и заменяет 
+и заменяет собой все предыдущие или одновременные соглашения или обязательства в отношении 
+такой тематики.</p> 
+</li> 
+</ol> 
+</div> 
+</div>
