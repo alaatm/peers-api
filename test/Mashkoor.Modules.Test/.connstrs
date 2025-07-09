@@ -1,0 +1,3 @@
+startup:Server=.\V22;Database=MashkoorStartupTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;
+context:Server=.\V22;Database=MashkoorContextTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;
+integration:Server=.\V22;Database=MashkoorIntegrationTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;
