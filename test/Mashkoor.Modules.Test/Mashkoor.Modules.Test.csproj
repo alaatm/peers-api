@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(DotNetExtVer)" />
@@ -21,6 +21,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mashkoor.Modules\Mashkoor.Modules.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="testhost.staticwebassets.endpoints.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

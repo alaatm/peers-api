@@ -1,0 +1,3 @@
+{
+  "why": "Because the static web assets are required for the WebApplicationExtensionsTests tests to run successfully when using SPA proxy"
+}
