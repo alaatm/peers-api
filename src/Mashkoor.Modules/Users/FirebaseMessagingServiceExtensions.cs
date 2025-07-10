@@ -7,7 +7,7 @@ namespace Mashkoor.Modules.Users;
 
 public static class FirebaseMessagingServiceExtensions
 {
-    public const string UsersTopic = "users";
+    public const string CustomersTopic = "customers";
 
     /// <summary>
     /// Subscribes the user to the appropriate topic.
@@ -27,7 +27,7 @@ public static class FirebaseMessagingServiceExtensions
             return null;
         }
 
-        return await firebase.SubscribeToTopicAsync(pnsHandle, $"{UsersTopic}-{user.PreferredLanguage}");
+        return await firebase.SubscribeToTopicAsync(pnsHandle, $"{CustomersTopic}-{user.PreferredLanguage}");
     }
 
     /// <summary>
@@ -48,6 +48,6 @@ public static class FirebaseMessagingServiceExtensions
             return null;
         }
 
-        return await firebase.UnsubscribeFromTopicAsync(pnsHandle, $"{UsersTopic}-{user.PreferredLanguage}");
+        return await firebase.UnsubscribeFromTopicAsync(pnsHandle, $"{CustomersTopic}-{user.PreferredLanguage}");
     }
 }

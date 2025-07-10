@@ -47,6 +47,32 @@ public static class EntityBuilder
             return user;
         });
 
+    public static Faker<AppUser> TestPwUser(
+        DateTime? date = null,
+        string email = null,
+        string firstName = null,
+        string lastName = null,
+        bool? isBanned = null,
+        bool addToken = true) => new Faker<AppUser>()
+        .CustomInstantiator(p =>
+        {
+            date ??= DateTime.UtcNow;
+
+            var user = AppUser.CreatePasswordAccount(
+                date.Value,
+                email ?? p.Internet.Email(),
+                firstName ?? p.Name.FirstName(),
+                lastName ?? p.Name.LastName(),
+                Lang.EnLangCode);
+
+            user.Status = (isBanned ?? false) ? UserStatus.Banned : user.Status;
+            if (addToken)
+            {
+                user.GetOrCreateRefreshToken(date.Value);
+            }
+            return user;
+        });
+
     public static Faker<Customer> TestCustomer(
         DateTime? date = null,
         string phoneNumber = null,
@@ -60,7 +86,7 @@ public static class EntityBuilder
             return customer;
         });
 
-    public static Faker<Device> TestDevice(AppUser user, DateTime? date) => new Faker<Device>()
+    public static Faker<Device> TestDevice(AppUser user, DateTime? date = null) => new Faker<Device>()
         .CustomInstantiator(p =>
         {
             var deviceCmd = TestRegisterDevice.Generate();

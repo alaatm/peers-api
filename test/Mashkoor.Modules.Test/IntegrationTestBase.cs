@@ -232,7 +232,7 @@ public abstract partial class IntegrationTestBase
         Roles.PowerAdmin,
     ];
     private static readonly string _allRolesString = string.Join('_', _allRoles);
-    public async Task<AppUser> InsertManagerAsync(params string[] roles)
+    public async Task<AppUser> InsertManagerAsync(string email = null, string password = null, params string[] roles)
     {
         if (roles.Length == 0)
         {
@@ -252,13 +252,13 @@ public abstract partial class IntegrationTestBase
 
         return await ExecuteScopeAsync(async sp =>
         {
-            var email = new Bogus.DataSets.Internet().Email();
+            email ??= new Bogus.DataSets.Internet().Email();
             var names = new Bogus.DataSets.Name();
 
             var user = AppUser.CreatePasswordAccount(sp.GetRequiredService<TimeProvider>().UtcNow(), email, names.FirstName(), names.LastName(), Lang.EnLangCode);
             user.PhoneNumber = TestPhoneNumber()[4..];
             var um = sp.GetRequiredService<IdentityUserManager<AppUser, MashkoorContext>>();
-            await um.CreateUserAsync(true, user, "P@ssword", roles, []);
+            await um.CreateUserAsync(true, user, password ?? "P@ssword", roles, []);
 
             _managers[rolesString] = user;
             return user;

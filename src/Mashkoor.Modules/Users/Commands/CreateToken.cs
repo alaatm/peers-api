@@ -92,7 +92,7 @@ public static class CreateToken
                 GrantType.Mfa => _l["Invalid verification code."],
                 GrantType.Password => _l["Username or password incorrect."],
                 GrantType.RefreshToken => _l["Unable to refresh session."],
-                _ => throw new ArgumentException("Invalid command.", nameof(cmd)),
+                _ => throw new UnreachableException(),
             };
 
             if (await _context.Users
@@ -115,7 +115,7 @@ public static class CreateToken
                 GrantType.Mfa => _totpProvider.Validate(cmd.Password, user, TotpPurpose.SignInPurpose),
                 GrantType.Password => await _userManager.CheckPasswordAsync(user, cmd.Password),
                 GrantType.RefreshToken => user.TryRefreshToken(_timeProvider.UtcNow(), cmd.Password, out refreshToken),
-                _ => throw new ArgumentException("Invalid command.", nameof(cmd)),
+                _ => throw new UnreachableException(),
             };
 
             // TODO: fix this temp hack

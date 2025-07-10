@@ -17,8 +17,7 @@ public sealed record LocalizedField(string Language, string Value)
             }
         }
 
-        ThrowInvalidOperationException(Language);
-        return new TranslatedField(new Language(), "");
+        throw new InvalidOperationException($"No language found for '{Language}'.");
     }
 
     public static LocalizedField[] CreateList([NotNull] params (string lang, string value)[] args)
@@ -31,10 +30,6 @@ public sealed record LocalizedField(string Language, string Value)
 
         return retVal;
     }
-
-    [DoesNotReturn]
-    private static void ThrowInvalidOperationException(string lang)
-        => throw new InvalidOperationException($"No language found for '{lang}'.");
 }
 
 public static class LocalizedFieldExtensions

@@ -394,7 +394,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         if (preferredLanguage is not null &&
             preferredLanguage.Length != 2)
         {
-            throw new ArgumentException("Preferred language must be a two-letter ISO code.", nameof(preferredLanguage));
+            throw new ArgumentOutOfRangeException(nameof(preferredLanguage), "Preferred language must be a two-letter ISO code.");
         }
 
         InitiateEmailUpdate(email);

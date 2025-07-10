@@ -77,7 +77,7 @@ public static class Initialize
                 _ => new Response.RegisterDeviceResponse(500, null),
             };
 
-            var (updateLink, latestVersion) = GetUpdateLink(cmd.RegisterDeviceCmd);
+            var (updateLink, latestVersion) = await GetUpdateLinkAsync(cmd.RegisterDeviceCmd);
 
             return Result.Ok(new Response(
                 ListSupportedLanguages.Response.FromSysLanguages(),
@@ -86,13 +86,13 @@ public static class Initialize
                 latestVersion));
         }
 
-        private (string?, string?) GetUpdateLink(RegisterDevice.Command cmd)
+        private async Task<(string?, string?)> GetUpdateLinkAsync(RegisterDevice.Command cmd)
         {
             string? updateLink = null;
             var platform = cmd.Platform;
             var package = cmd.App;
             var version = cmd.AppVersion;
-            var clientApp = _context.ClientApps.First();
+            var clientApp = await _context.ClientApps.FirstOrDefaultAsync();
 
             if (clientApp is not null && TryParse(version, out var current) && current < clientApp.LatestVersion.Version)
             {

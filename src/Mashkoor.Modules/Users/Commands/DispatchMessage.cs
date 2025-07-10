@@ -1,5 +1,6 @@
 using Mashkoor.Core.Communication;
 using Mashkoor.Core.Communication.Push;
+using Mashkoor.Core.Cqrs.Pipeline;
 using Mashkoor.Core.Localization;
 
 namespace Mashkoor.Modules.Users.Commands;
@@ -17,7 +18,16 @@ public static class DispatchMessage
     public sealed record Command(
         string? DeviceToken,
         Dictionary<string, string> Title,
-        Dictionary<string, string> Body) : ICommand;
+        Dictionary<string, string> Body) : ICommand, IValidatable;
+
+    public sealed class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleFor(p => p.Title).NotNull().NotEmpty();
+            RuleFor(p => p.Body).NotNull().NotEmpty();
+        }
+    }
 
     public sealed class Handler : ICommandHandler<Command>
     {
@@ -73,7 +83,7 @@ public static class DispatchMessage
                     var title = cmd.Title[lang].Trim();
                     var body = cmd.Body[lang].Trim();
 
-                    msgBuilder.Topic($"{FirebaseMessagingServiceExtensions.UsersTopic}-{lang}", title, body);
+                    msgBuilder.Topic($"{FirebaseMessagingServiceExtensions.CustomersTopic}-{lang}", title, body);
                 }
             }
 
