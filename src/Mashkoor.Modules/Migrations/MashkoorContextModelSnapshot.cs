@@ -32,6 +32,17 @@ namespace Mashkoor.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<string>("PinCodeHash")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("pin_code_hash");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("secret");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(128)

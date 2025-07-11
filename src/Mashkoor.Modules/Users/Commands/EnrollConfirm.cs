@@ -1,6 +1,7 @@
 using Humanizer;
 using Mashkoor.Core.Cqrs.Pipeline;
 using Mashkoor.Core.Data.Identity;
+using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Core.Security.Jwt;
 using Mashkoor.Modules.Customers.Domain;
 using Mashkoor.Modules.Users.Commands.Responses;
@@ -52,6 +53,7 @@ public static class EnrollConfirm
         private readonly IdentityUserManager<AppUser, MashkoorContext> _userManager;
         private readonly TimeProvider _timeProvider;
         private readonly IJwtProvider _jwtProvider;
+        private readonly IHmacHash _hmacHash;
         private readonly IMemoryCache _cache;
         private readonly IIdentityInfo _identity;
         private readonly IStrLoc _l;
@@ -61,6 +63,7 @@ public static class EnrollConfirm
             IdentityUserManager<AppUser, MashkoorContext> userManager,
             TimeProvider timeProvider,
             IJwtProvider jwtProvider,
+            IHmacHash hmacHash,
             IMemoryCache cache,
             IIdentityInfo identity,
             IStrLoc l)
@@ -69,6 +72,7 @@ public static class EnrollConfirm
             _userManager = userManager;
             _timeProvider = timeProvider;
             _jwtProvider = jwtProvider;
+            _hmacHash = hmacHash;
             _cache = cache;
             _identity = identity;
             _l = l;
@@ -93,7 +97,7 @@ public static class EnrollConfirm
 
             var userRoles = new string[] { Roles.Customer };
             var user = AppUser.CreateTwoFactorAccount(_timeProvider.UtcNow(), cmd.Username, cmd.FirstName, cmd.LastName, cmd.PreferredLanguage);
-            var customer = Customer.Create(user);
+            var customer = Customer.Create(user, _hmacHash.GenerateKey());
 
             // CreateUserAsync will append additional claims (userId and username) and returns all claims.
             // Make sure to use the returned claims for building the JWT token.

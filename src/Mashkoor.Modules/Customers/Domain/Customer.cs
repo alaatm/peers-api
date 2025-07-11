@@ -14,6 +14,10 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// </summary>
     public string Username { get; set; } = default!;
     /// <summary>
+    /// The signature secret for the customer account, used for hashing tip request signature.
+    /// </summary>
+    public string Secret { get; set; } = default!;
+    /// <summary>
     /// The linked database user.
     /// </summary>
     public AppUser User { get; set; } = default!;
@@ -23,7 +27,7 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// </summary>
     /// <param name="user">The database user.</param>
     /// <returns></returns>
-    public static Customer Create([NotNull] AppUser user)
+    public static Customer Create([NotNull] AppUser user, string secret)
     {
         Debug.Assert(user.UserName is not null);
 
@@ -31,6 +35,7 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
         {
             User = user,
             Username = user.UserName,
+            Secret = secret,
         };
 
         customer.User.DisplayName = customer.User.Firstname;

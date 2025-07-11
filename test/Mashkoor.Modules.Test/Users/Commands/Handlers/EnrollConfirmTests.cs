@@ -71,9 +71,16 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
     {
         // Arrange
         var cmd = TestEnrollConfirm().Generate();
+        var userSecret = Guid.NewGuid().ToString("N");
 
-        ProducerMoq.Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>())).Callback(() =>
-            Services.GetRequiredService<IMemoryCache>().Set(cmd.Username, DefaultOtp, TimeSpan.FromDays(1)));
+        ProducerMoq
+            .Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>()))
+            .Callback(() =>
+                Services.GetRequiredService<IMemoryCache>().Set(cmd.Username, DefaultOtp, TimeSpan.FromDays(1)));
+
+        HmacHashMoq
+            .Setup(p => p.GenerateKey())
+            .Returns(userSecret);
 
         await SendAsync(TestEnroll().Generate() with { Username = cmd.Username });
 
@@ -86,11 +93,17 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
         Assert.Equal(cmd.FirstName, response.Name);
         Assert.Equal(cmd.Username, response.Username);
         Assert.NotEmpty(response.Token);
-        var user = (await FindAsync<Customer>(p => p.Username == cmd.Username, "User.RefreshTokens")).User;
+
+        var customer = await FindAsync<Customer>(p => p.Username == cmd.Username, "User.RefreshTokens");
+        var user = customer.User;
         Assert.Equal(user.Firstname, response.Name);
+        Assert.Equal(userSecret, customer.Secret);
         Assert.Equal(cmd.PreferredLanguage, user.PreferredLanguage);
         Assert.Equal(user.RefreshTokens.Single().Token, response.RefreshToken);
         Assert.Equal(JwtDuration, Math.Round((response.TokenExpiry - DateTime.UtcNow).TotalMinutes));
+
+        ProducerMoq.VerifyAll();
+        HmacHashMoq.VerifyAll();
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
@@ -101,6 +114,10 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
 
         ProducerMoq.Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>())).Callback(() =>
             Services.GetRequiredService<IMemoryCache>().Set(cmd.Username, DefaultOtp, TimeSpan.FromDays(1)));
+
+        HmacHashMoq
+            .Setup(p => p.GenerateKey())
+            .Returns(Guid.NewGuid().ToString("N"));
 
         await SendAsync(TestEnroll().Generate() with { Username = cmd.Username });
 

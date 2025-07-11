@@ -4,6 +4,7 @@ using Bogus;
 using Bogus.DataSets;
 using Mashkoor.Core.Http;
 using Mashkoor.Core.Localization;
+using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Modules.Customers.Domain;
 using Mashkoor.Modules.Users.Commands;
 using Mashkoor.Modules.Users.Domain;
@@ -78,11 +79,12 @@ public static class EntityBuilder
         string phoneNumber = null,
         string firstName = null,
         string lastName = null,
+        string secret = null,
         bool? isBanned = null) => new Faker<Customer>()
         .CustomInstantiator(p =>
         {
             var user = Test2FUser(date ?? DateTime.UtcNow, phoneNumber, firstName, lastName, isBanned).Generate();
-            var customer = Customer.Create(user);
+            var customer = Customer.Create(user, secret ?? new HmacHash().GenerateKey());
             return customer;
         });
 

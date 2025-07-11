@@ -25,7 +25,7 @@ public class CreateTokenTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Invalid verification code.", problem.Detail);
     }
@@ -40,7 +40,7 @@ public class CreateTokenTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Username or password incorrect.", problem.Detail);
     }
@@ -55,7 +55,7 @@ public class CreateTokenTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Unable to refresh session.", problem.Detail);
     }
@@ -89,7 +89,7 @@ public class CreateTokenMfaTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Invalid verification code.", problem.Detail);
     }
@@ -112,7 +112,7 @@ public class CreateTokenMfaTests : IntegrationTestBase
         var result = await SendAsync(cmd with { Password = otp });
 
         // Assert
-        var objResult = Assert.IsType<Ok<JwtResponse>>(result);
+        var objResult = AssertX.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
         var user = (await FindAsync<Customer>(p => p.Username == cmd.Username, "User.RefreshTokens")).User;
         Assert.Equal(user.Firstname, response.Name);
@@ -145,7 +145,7 @@ public class CreateTokenPasswordTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Username or password incorrect.", problem.Detail);
     }
@@ -161,7 +161,7 @@ public class CreateTokenPasswordTests : IntegrationTestBase
         var result = await SendAsync(cmd with { Username = manager.UserName, Password = "P@ssword" });
 
         // Assert
-        var objResult = Assert.IsType<Ok<JwtResponse>>(result);
+        var objResult = AssertX.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
         var user = await FindAsync<AppUser>(p => p.UserName == manager.UserName, "RefreshTokens");
         Assert.Equal(user.Firstname, response.Name);
@@ -194,7 +194,7 @@ public class CreateTokenRefreshTokenTests : IntegrationTestBase
         var result = await SendAsync(cmd);
 
         // Assert
-        var unauthResult = Assert.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<UnauthorizedHttpResult2<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("Unable to refresh session.", problem.Detail);
     }
@@ -210,7 +210,7 @@ public class CreateTokenRefreshTokenTests : IntegrationTestBase
         var result = await SendAsync(cmd with { Password = user.RefreshTokens.Single().Token });
 
         // Assert
-        var objResult = Assert.IsType<Ok<JwtResponse>>(result);
+        var objResult = AssertX.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
         Assert.Equal(cmd.Username, response.Username);
         Assert.NotEmpty(response.Token);

@@ -223,7 +223,9 @@ namespace Mashkoor.Modules.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false),
-                    username = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false)
+                    username = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    secret = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    pin_code_hash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {

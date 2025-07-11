@@ -17,7 +17,7 @@ public class ResetPasswordConfirmTests : IntegrationTestBase
         var result = await SendAsync(TestResetPasswordConfirm);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequest<ProblemDetails>>(result);
+        var badRequest = AssertX.IsType<BadRequest<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(badRequest.Value);
         Assert.Equal("User does not exist.", problem.Detail);
     }
@@ -32,7 +32,7 @@ public class ResetPasswordConfirmTests : IntegrationTestBase
         var result = await SendAsync(TestResetPasswordConfirm with { Username = manager.UserName });
 
         // Assert
-        var badRequest = Assert.IsType<BadRequest<ProblemDetails>>(result);
+        var badRequest = AssertX.IsType<BadRequest<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(badRequest.Value);
         Assert.Equal("Password reset failed", problem.Detail);
         var errors = Assert.IsType<string[]>(problem.Extensions["errors"]);
@@ -55,7 +55,7 @@ public class ResetPasswordConfirmTests : IntegrationTestBase
         var result2 = await SendAsync(cmd);
 
         // Assert
-        Assert.IsType<NoContent>(result2);
+        AssertX.IsType<NoContent>(result2);
         await ExecuteScopeAsync(async sp =>
         {
             var um = sp.GetRequiredService<UserManager<AppUser>>();

@@ -7,6 +7,7 @@ using Mashkoor.Core.Communication.Sms;
 using Mashkoor.Core.Data;
 using Mashkoor.Core.Localization;
 using Mashkoor.Core.RateLimiting;
+using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Core.Security.Jwt;
 using Mashkoor.Core.Security.Totp;
 using Mashkoor.Modules.BackgroundJobs;
@@ -99,6 +100,8 @@ public static class ServiceCollectionExtensions
             .AddEmail(config)
             .AddIdentityInfo()
             .AddJwt(config)
+            .AddHmacHash()
+            //.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>()
             // Technically not used, as AuthorizationBehaviour is used instead but this is still required by other services.
             .AddAuthorization()
             .AddRateLimiting(config)

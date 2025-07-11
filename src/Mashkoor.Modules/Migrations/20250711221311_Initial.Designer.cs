@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mashkoor.Modules.Migrations
 {
     [DbContext(typeof(MashkoorContext))]
-    [Migration("20250709144643_Initial")]
+    [Migration("20250711221311_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -34,6 +34,17 @@ namespace Mashkoor.Modules.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    b.Property<string>("PinCodeHash")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("pin_code_hash");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("secret");
 
                     b.Property<string>("Username")
                         .IsRequired()

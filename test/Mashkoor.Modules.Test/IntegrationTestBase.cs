@@ -19,6 +19,7 @@ using Mashkoor.Core.Domain.Rules;
 using Mashkoor.Core.Http;
 using Mashkoor.Core.Identity;
 using Mashkoor.Core.Localization;
+using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Modules.Customers.Domain;
 using Mashkoor.Modules.Kernel.Pipelines;
 using Mashkoor.Modules.Users.Commands;
@@ -105,6 +106,7 @@ public abstract partial class IntegrationTestBase
     protected IServiceProvider Services { get; }
     protected FakeTimeProvider TimeProviderMoq { get; }
     protected Mock<IIdentityInfo> IdentityMoq { get; }
+    protected Mock<IHmacHash> HmacHashMoq { get; }
     protected Mock<IProducer> ProducerMoq { get; }
     protected Mock<LinkGenerator> LinkGeneratorMoq { get; }
     protected Mock<IHttpContextAccessor> HttpContextAccessorMoq { get; }
@@ -144,6 +146,7 @@ public abstract partial class IntegrationTestBase
             TimeProviderMoq = new FakeTimeProvider();
         }
         IdentityMoq = new Mock<IIdentityInfo>();
+        HmacHashMoq = new Mock<IHmacHash>();
         ProducerMoq = new Mock<IProducer>();
         LinkGeneratorMoq = new Mock<LinkGenerator>(MockBehavior.Strict) { CallBase = true };
         HttpContextAccessorMoq = new Mock<IHttpContextAccessor>(MockBehavior.Loose);
@@ -158,6 +161,7 @@ public abstract partial class IntegrationTestBase
             .AddSingleton(_configuration)
             .AddMashkoor(_configuration, cfg => cfg.UseSqlServer(_configuration.GetConnectionString("Default"))/*.EnableSensitiveDataLogging(true)*/)
             .Replace(new ServiceDescriptor(typeof(IIdentityInfo), IdentityMoq.Object))
+            .Replace(new ServiceDescriptor(typeof(IHmacHash), HmacHashMoq.Object))
             .Replace(new ServiceDescriptor(typeof(ISmsService), _smsMoq.Object))
             .Replace(new ServiceDescriptor(typeof(IPushNotificationService), _pushMoq.Object))
             .Replace(new ServiceDescriptor(typeof(IEmailService), _emailMoq.Object))
@@ -274,6 +278,10 @@ public abstract partial class IntegrationTestBase
 
         ProducerMoq.Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>())).Callback(() =>
             Services.GetRequiredService<IMemoryCache>().Set(username, DefaultOtp, TimeSpan.FromDays(1)));
+
+        HmacHashMoq
+            .Setup(p => p.GenerateKey())
+            .Returns(new HmacHash().GenerateKey());
 
         AssertX.IsType<Accepted<OtpResponse>>(await SendAsync(TestEnroll().Generate() with { Username = username }));
         AssertX.IsType<Ok<JwtResponse>>(await SendAsync(TestEnrollConfirm().Generate() with { Username = username, Otp = DefaultOtp }));

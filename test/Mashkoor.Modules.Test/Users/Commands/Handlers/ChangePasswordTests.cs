@@ -23,7 +23,7 @@ public class ChangePasswordTests : IntegrationTestBase
         var result = await SendAsync(TestChangePassword.Generate(), customer);
 
         // Assert
-        var unauthResult = Assert.IsType<ForbiddenHttpResult<ProblemDetails>>(result);
+        var unauthResult = AssertX.IsType<ForbiddenHttpResult<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(unauthResult.Value);
         Assert.Equal("You are not authorized to perform this operation.", problem.Detail);
     }
@@ -38,7 +38,7 @@ public class ChangePasswordTests : IntegrationTestBase
         var result = await SendAsync(TestChangePassword.Generate() with { CurrentPassword = "00000000" }, manager);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequest<ProblemDetails>>(result);
+        var badRequest = AssertX.IsType<BadRequest<ProblemDetails>>(result);
         var problem = Assert.IsType<ProblemDetails>(badRequest.Value);
         Assert.Equal("Password change failed", problem.Detail);
         Assert.Equal("Incorrect password.", Assert.Single(problem.Extensions["errors"] as string[]));
@@ -56,7 +56,7 @@ public class ChangePasswordTests : IntegrationTestBase
         var result = await SendAsync(cmd, manager);
 
         // Assert
-        Assert.IsType<NoContent>(result);
+        AssertX.IsType<NoContent>(result);
         await ExecuteScopeAsync(async sp =>
         {
             var um = sp.GetRequiredService<UserManager<AppUser>>();
