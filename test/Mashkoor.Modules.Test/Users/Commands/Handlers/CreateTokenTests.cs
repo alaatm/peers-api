@@ -7,6 +7,8 @@ using Mashkoor.Modules.Customers.Domain;
 using Mashkoor.Modules.Users.Commands;
 using Mashkoor.Modules.Users.Commands.Responses;
 using Mashkoor.Modules.Users.Domain;
+using Microsoft.Extensions.DependencyInjection;
+using Mashkoor.Core.Security.Totp;
 
 namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 
@@ -82,7 +84,6 @@ public class CreateTokenMfaTests : IntegrationTestBase
         // Arrange
         var cmd = TestCreateToken(CreateToken.GrantType.Mfa).Generate();
         await EnrollCustomer(cmd.Username);
-        Assert.IsType<Accepted<OtpResponse>>(await SendAsync(TestSignIn().Generate() with { PhoneNumber = cmd.Username }));
 
         // Act
         var result = await SendAsync(cmd);
@@ -97,12 +98,15 @@ public class CreateTokenMfaTests : IntegrationTestBase
     public async Task Issues_jwt_and_returns_token()
     {
         // Arrange
-        var cmd = TestCreateToken(CreateToken.GrantType.Mfa).Generate();
-        await EnrollCustomer(cmd.Username);
-
         string otp = null;
-        OnSms = (_, otp_) => otp = otp_.Split(':')[1].Trim();
-        Assert.IsType<Accepted<OtpResponse>>(await SendAsync(TestSignIn().Generate() with { PhoneNumber = cmd.Username }));
+        var cmd = TestCreateToken(CreateToken.GrantType.Mfa).Generate();
+        var customer = await EnrollCustomer(cmd.Username);
+
+        ExecuteScope(sp =>
+        {
+            var totpTokenProvider = sp.GetRequiredService<ITotpTokenProvider>();
+            totpTokenProvider.TryGenerate(customer.User, TotpPurpose.SignInPurpose, out otp);
+        });
 
         // Act
         var result = await SendAsync(cmd with { Password = otp });

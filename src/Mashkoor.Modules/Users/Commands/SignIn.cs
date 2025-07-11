@@ -1,10 +1,8 @@
 using Humanizer;
-using Mashkoor.Core.Communication.Sms;
+using Mashkoor.Core.Background;
 using Mashkoor.Core.Cqrs.Pipeline;
-using Mashkoor.Core.Localization;
-using Mashkoor.Core.Security.Totp;
-using Mashkoor.Modules.Users.Commands.Responses;
 using Mashkoor.Modules.Users.Domain;
+using Mashkoor.Modules.Users.Events;
 
 namespace Mashkoor.Modules.Users.Commands;
 
@@ -17,7 +15,7 @@ public static class SignIn
     /// <param name="Platform">The platform (iOS or Android)</param>
     public sealed record Command(
         string PhoneNumber,
-        string? Platform) : LocalizedCommand, IValidatable;
+        string Platform) : LocalizedCommand, IValidatable;
 
     public sealed class Validator : AbstractValidator<Command>
     {
@@ -30,21 +28,21 @@ public static class SignIn
     public sealed class Handler : ICommandHandler<Command>
     {
         private readonly MashkoorContext _context;
-        private readonly ISmsService _sms;
-        private readonly ITotpTokenProvider _totpProvider;
+        private readonly IProducer _producer;
+        private readonly IIdentityInfo _identity;
         private readonly ILogger<Handler> _log;
         private readonly IStrLoc _l;
 
         public Handler(
             MashkoorContext context,
-            ISmsService sms,
-            ITotpTokenProvider totpProvider,
+            IProducer producer,
+            IIdentityInfo identity,
             ILogger<Handler> log,
             IStrLoc l)
         {
             _context = context;
-            _sms = sms;
-            _totpProvider = totpProvider;
+            _producer = producer;
+            _identity = identity;
             _log = log;
             _l = l;
         }
@@ -54,35 +52,24 @@ public static class SignIn
             if (await _context
                 .Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.UserName == cmd.PhoneNumber, ctk) is not AppUser user)
+                .FirstOrDefaultAsync(p => p.UserName == cmd.PhoneNumber, ctk) is not AppUser user || user.IsDeleted)
             {
                 _log.NoAccountLogin(cmd.PhoneNumber);
-                // Return accepted even if user does not exist. We'll just not send any SMS.
-                // This is to prevent user checking if account exist or not.
-                return Result.Accepted(value: new OtpResponse(cmd.PhoneNumber));
+                return Result.BadRequest(_l["Account does not exist."]);
             }
 
-            if (user.Status is not UserStatus.Banned)
+            if (user.Status is UserStatus.Banned)
             {
-                if (_totpProvider.TryGenerate(user, TotpPurpose.SignInPurpose, out var otp))
-                {
-                    var body = cmd.Lang switch
-                    {
-                        Lang.ArLangCode => $"رمز تحقق مشكور الخاص بك هو: {otp}",
-                        _ => $"Your Mashkoor verification code is: {otp}"
-                    };
-                    await _sms.SendAsync(cmd.PhoneNumber, body);
-                    return Result.Accepted(value: new OtpResponse(cmd.PhoneNumber));
-                }
-                else
-                {
-                    // A token was already generated and is still valid at the time
-                    // of this request so don't send another SMS but return accepted result.
-                    return Result.Accepted(value: new OtpResponse(cmd.PhoneNumber));
-                }
+                return Result.Forbidden(_l["Access is forbidden."]);
             }
 
-            return Result.Forbidden(_l["Access is forbidden."]);
+            await _producer.PublishAsync(new SignInRequested(
+                _identity,
+                cmd.Platform,
+                cmd.PhoneNumber,
+                cmd.Lang), ctk);
+
+            return Result.Accepted();
         }
     }
 }

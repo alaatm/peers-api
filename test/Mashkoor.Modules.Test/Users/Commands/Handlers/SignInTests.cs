@@ -1,7 +1,8 @@
-using System.Globalization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Mashkoor.Core.Http;
-using Mashkoor.Modules.Users.Commands.Responses;
+using Mashkoor.Modules.Users.Commands;
+using Mashkoor.Modules.Users.Events;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 
@@ -9,43 +10,54 @@ namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 public class SignInTests : IntegrationTestBase
 {
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Returns_Accepted_but_wont_send_sms_when_user_doesnt_exist()
+    public async Task Returns_BadRequest_when_user_doesnt_exist()
     {
         // Arrange
         var cmd = TestSignIn().Generate();
-        var smsCallCount = 0;
-        OnSms = (_, _) => smsCallCount++;
 
         // Act
         var result = await SendAsync(cmd);
 
         // Assert
-        var accepted = Assert.IsType<Accepted<OtpResponse>>(result);
-        var response = accepted.Value;
-        Assert.Equal(cmd.PhoneNumber, response.Username);
-        Assert.Equal(0, smsCallCount);
+        var badRequest = AssertX.IsType<BadRequest<ProblemDetails>>(result);
+        var problem = badRequest.Value;
+        Assert.Equal("Account does not exist.", problem.Detail);
+
+        ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
+            p.Platform == cmd.Platform &&
+            p.Username == cmd.PhoneNumber &&
+            p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // Can't test this as non-mfa users use email as username and this won't go through sign-in validator which required phone number username.
-    //[SkippableFact(typeof(PlatformNotSupportedException))]
-    //public async Task Returns_Accepted_but_wont_send_sms_when_non_mfa_user()
-    //{
-    //    // Arrange
-    //    var cmd = TestSignIn(MfaUserType.Customer).Generate();
-    //    await EnrollDispatcher(cmd.PhoneNumber);
-    //    string otp = null;
-    //    OnSms = (_, otp_) => otp = otp_;
+    [SkippableFact(typeof(PlatformNotSupportedException))]
+    public async Task Returns_BadRequest_when_user_is_deleted()
+    {
+        // Arrange
+        var cmd = TestSignIn().Generate();
+        var customer = await EnrollCustomer(cmd.PhoneNumber);
+        AssertX.IsType<NoContent>(await SendAsync(new DeleteAccount.Command(), customer));
 
-    //    // Act
-    //    var result = await SendAsync(cmd);
+        // Restore post-fixed username so that we can pass phone number validation for this test
+        ExecuteDbContext(db =>
+        {
+            customer = db.Customers.Include(p => p.User).First(p => p.Id == customer.Id);
+            customer.Username = customer.User.UserName = customer.User.NormalizedUserName = customer.User.PhoneNumber = customer.User.OriginalDeletedUsername;
+            db.SaveChanges();
+        });
 
-    //    // Assert
-    //    var accepted = Assert.IsType<AcceptedResult>(result);
-    //    var response = Assert.IsType<OtpResponse>(accepted.Value);
-    //    Assert.Equal(cmd.PhoneNumber, response.Username);
-    //    Assert.Equal("", response.Otp);
-    //    Assert.Null(otp);
-    //}
+        // Act
+        var result = await SendAsync(cmd);
+
+        // Assert
+        var badRequest = AssertX.IsType<BadRequest<ProblemDetails>>(result);
+        var problem = badRequest.Value;
+        Assert.Equal("Account does not exist.", problem.Detail);
+
+        ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
+            p.Platform == cmd.Platform &&
+            p.Username == cmd.PhoneNumber &&
+            p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
     public async Task Returns_Forbidden_when_user_is_banned()
@@ -62,65 +74,20 @@ public class SignInTests : IntegrationTestBase
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Sends_otp_sms_when_customer_exist()
+    public async Task Publishes_SignInRequested_event_when_customer_exist_and_returns_accepted()
     {
         // Arrange
         var cmd = TestSignIn().Generate();
         await EnrollCustomer(cmd.PhoneNumber);
-        var otp = "NULL";
-        var smsCallCount = 0;
-        OnSms = (_, otp_) => { otp = otp_; smsCallCount++; };
 
         // Act
         var result = await SendAsync(cmd);
 
         // Assert
-        var accepted = Assert.IsType<Accepted<OtpResponse>>(result);
-        var response = accepted.Value;
-        Assert.Equal(cmd.PhoneNumber, response.Username);
-        Assert.NotEqual("NULL", otp);
-        Assert.Equal(1, smsCallCount);
-    }
-
-    [SkippableTheory(typeof(PlatformNotSupportedException))]
-    [InlineData("ar-SA", "رمز تحقق مشكور الخاص بك هو")]
-    [InlineData("en-US", "Your Mashkoor verification code is")]
-    [InlineData("ru-RU", "Ваш проверочный код Mashkoor")]
-    public async Task Sends_localized_otp_sms(string lang, string expected)
-    {
-        // Arrange
-        var cmd = TestSignIn().Generate();
-        await EnrollCustomer(cmd.PhoneNumber);
-        var otp = "NULL";
-        OnSms = (_, otp_) => otp = otp_;
-
-        // Act
-        var defaultCulture = Thread.CurrentThread.CurrentCulture;
-        Thread.CurrentThread.CurrentCulture = new CultureInfo(lang);
-        var result = await SendAsync(cmd);
-        Thread.CurrentThread.CurrentCulture = defaultCulture;
-
-        // Assert
-        Assert.StartsWith(expected, otp);
-    }
-
-    [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Returns_Accepted_but_wont_send_sms_when_a_valid_code_still_exist()
-    {
-        // Arrange
-        var cmd = TestSignIn().Generate();
-        await EnrollCustomer(cmd.PhoneNumber);
-        var smsCallCount = 0;
-        OnSms = (_, _) => smsCallCount++;
-
-        // Act
-        await SendAsync(cmd);
-        var result = await SendAsync(cmd);
-
-        // Assert
-        var accepted = Assert.IsType<Accepted<OtpResponse>>(result);
-        var response = accepted.Value;
-        Assert.Equal(cmd.PhoneNumber, response.Username);
-        Assert.Equal(1, smsCallCount);
+        Assert.IsType<Accepted>(result);
+        ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
+            p.Platform == cmd.Platform &&
+            p.Username == cmd.PhoneNumber &&
+            p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

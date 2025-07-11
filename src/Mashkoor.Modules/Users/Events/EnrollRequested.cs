@@ -1,6 +1,6 @@
 namespace Mashkoor.Modules.Users.Events;
 
-public sealed class EnrollRequested : TraceableNotification
+public class EnrollRequested : TraceableNotification
 {
     public string Username { get; }
     public string LangCode { get; }
