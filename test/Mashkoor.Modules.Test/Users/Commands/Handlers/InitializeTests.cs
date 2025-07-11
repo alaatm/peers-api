@@ -1,8 +1,10 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using Mashkoor.Modules.Users.Commands;
-using Mashkoor.Modules.Users.Domain;
-using Mashkoor.Modules.Users.Events;
+using Mashkoor.Core.Commands;
+using Mashkoor.Core.Http;
 using Mashkoor.Modules.System.Domain;
+using Mashkoor.Modules.Users.Commands;
+using Mashkoor.Modules.Users.Events;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 
@@ -28,6 +30,7 @@ public class InitializeTests : IntegrationTestBase
         var okResult = AssertX.IsType<Ok<Initialize.Response>>(result);
         var response = okResult.Value;
         Assert.NotEmpty(response.SupportedLanguages);
+        Assert.NotNull(response.DeviceResponse);
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
@@ -47,82 +50,28 @@ public class InitializeTests : IntegrationTestBase
             p.UserId == customer.Id), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Handles_initial_device_registration()
+    [Theory]
+    [MemberData(nameof(FromRegisterDeviceResponseResult_returns_expected_response_TestData))]
+    public void FromRegisterDeviceResponseResult_returns_expected_response(IResult result, int expectedStatus, string expectedTrackingId)
     {
-        // Arrange
-        InsertTestClientAppInfo();
-        var registerDeviceCmd = TestRegisterDevice.Generate();
-        var customer = await EnrollCustomer(registerDevice: false);
-
-        // Act
-        var result = await SendAsync(new Initialize.Command(registerDeviceCmd), customer);
+        // Arrange & act
+        var response = Initialize.FromRegisterDeviceResponseResult(result);
 
         // Assert
-        var okResult = AssertX.IsType<Ok<Initialize.Response>>(result);
-        var response = okResult.Value;
-        Assert.Equal(201, response.DeviceResponse.Status);
-        Assert.Null(response.DeviceResponse.TrackingId);
-
-        var user = await FindAsync<AppUser>(customer.Id, "DeviceList");
-        var device = Assert.Single(user.DeviceList);
-        Assert.Equal(registerDeviceCmd.Id, device.DeviceId);
+        Assert.Equal(expectedStatus, response.Status);
+        Assert.Equal(expectedTrackingId, response.TrackingId);
     }
 
-    [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Handles_same_device_registration()
-    {
-        // Arrange
-        InsertTestClientAppInfo();
-        var customer = await EnrollCustomer();
-        var registerDeviceCmd = TestRegisterDevice.Generate() with { Id = customer.User.DeviceList.First().DeviceId, AppVersion = "99", PnsHandle = "9999" };
-
-        // Act
-        var result = await SendAsync(new Initialize.Command(registerDeviceCmd), customer);
-
-        // Assert
-        var okResult = AssertX.IsType<Ok<Initialize.Response>>(result);
-        var response = okResult.Value;
-        Assert.Equal(204, response.DeviceResponse.Status);
-        Assert.Null(response.DeviceResponse.TrackingId);
-
-        var user = await FindAsync<AppUser>(customer.Id, "DeviceList");
-        var device = Assert.Single(user.DeviceList);
-        Assert.Equal(registerDeviceCmd.Id, device.DeviceId);
-        Assert.Equal("99", device.AppVersion);
-        Assert.Equal("9999", device.PnsHandle);
-    }
-
-    [SkippableTheory(typeof(PlatformNotSupportedException))]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Handles_device_ownership_switch(bool newUserAlreadyHasDevice)
-    {
-        // Arrange
-        InsertTestClientAppInfo();
-        var customer1 = await EnrollCustomer();
-        var customer2 = await EnrollCustomer(registerDevice: newUserAlreadyHasDevice);
-        var registerDeviceCmd = TestRegisterDevice.Generate() with { Id = customer1.User.DeviceList.First().DeviceId };
-
-        // Act
-        var result = await SendAsync(new Initialize.Command(registerDeviceCmd), customer2);
-
-        // Assert
-        var okResult = AssertX.IsType<Ok<Initialize.Response>>(result);
-        var response = okResult.Value;
-        Assert.Equal(202, response.DeviceResponse.Status);
-        Assert.NotNull(response.DeviceResponse.TrackingId);
-
-        var user2 = await FindAsync<AppUser>(customer2.Id, "DeviceList");
-        if (newUserAlreadyHasDevice)
+    public static TheoryData<IResult, int, string> FromRegisterDeviceResponseResult_returns_expected_response_TestData => new()
         {
-            Assert.NotEqual(registerDeviceCmd.Id, Assert.Single(user2.DeviceList).DeviceId);
-        }
-        else
-        {
-            Assert.Empty(user2.DeviceList);
-        }
-    }
+            { Result.Created<IdObj>(), 201, null },
+            { Result.NoContent(), 204, null },
+            { Result.Accepted(null, new RegisterDevice.Response("tracking-id")), 202, "tracking-id" },
+            { Result.BadRequest(), 400, null },
+            { Result.Unauthorized(), 401, null },
+            { new NullStatusCodeResult(), 400, null },
+            { null, 500, null },
+        };
 
     [SkippableTheory(typeof(PlatformNotSupportedException))]
     [InlineData("Android")]
@@ -262,5 +211,12 @@ public class InitializeTests : IntegrationTestBase
         });
 
         return clientApp;
+    }
+
+    private class NullStatusCodeResult : IResult, IStatusCodeHttpResult
+    {
+        int? IStatusCodeHttpResult.StatusCode => null;
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 }

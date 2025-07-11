@@ -67,15 +67,10 @@ public static class Initialize
         {
             await _producer.PublishAsync(new AppOpened(_timeProvider.UtcNow(), _identity, _identity.Id), ctk);
 
-            var deviceResponse = await new RegisterDevice.Handler(_context, _timeProvider, _cache, _firebase, _identity, _l, _log)
-                .Handle(cmd.RegisterDeviceCmd, ctk) switch
-            {
-                Created<IdObj> created => new Response.RegisterDeviceResponse(201, null),
-                NoContent => new Response.RegisterDeviceResponse(204, null),
-                Accepted<RegisterDevice.Response> accepted => new Response.RegisterDeviceResponse(202, accepted.Value!.TrackingId),
-                IStatusCodeHttpResult sc => new Response.RegisterDeviceResponse(sc.StatusCode ?? 400, null),
-                _ => new Response.RegisterDeviceResponse(500, null),
-            };
+            var deviceResponse = FromRegisterDeviceResponseResult(
+                await new RegisterDevice
+                    .Handler(_context, _timeProvider, _cache, _firebase, _identity, _l, _log)
+                    .Handle(cmd.RegisterDeviceCmd, ctk));
 
             var (updateLink, latestVersion) = await GetUpdateLinkAsync(cmd.RegisterDeviceCmd);
 
@@ -122,4 +117,13 @@ public static class Initialize
             return false;
         }
     }
+
+    internal static Response.RegisterDeviceResponse FromRegisterDeviceResponseResult(IResult result) => result switch
+    {
+        Created<IdObj> created => new Response.RegisterDeviceResponse(201, null),
+        NoContent => new Response.RegisterDeviceResponse(204, null),
+        Accepted<RegisterDevice.Response> accepted => new Response.RegisterDeviceResponse(202, accepted.Value!.TrackingId),
+        IStatusCodeHttpResult sc => new Response.RegisterDeviceResponse(sc.StatusCode ?? 400, null),
+        _ => new Response.RegisterDeviceResponse(500, null),
+    };
 }

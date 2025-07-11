@@ -28,6 +28,19 @@ public class LocalizedEntityExtensionsTests
         Assert.Equal(expected, localizedName);
     }
 
+    [Fact]
+    public void LocalizedName_returns_NA_when_no_translation_exist()
+    {
+        // Arrange
+        var entity = new TestEntity() { Translations = [] };
+
+        // Act
+        var localizedName = entity.LocalizedName();
+
+        // Assert
+        Assert.Equal("N/A", localizedName);
+    }
+
     [Theory]
     [InlineData("en", "en_name")]
     [InlineData("ar", "ar_name")]
@@ -45,6 +58,19 @@ public class LocalizedEntityExtensionsTests
 
         // Assert
         Assert.Equal(expected, localizedName);
+    }
+
+    [Fact]
+    public void NameForLang_returns_NA_when_no_translation_exist()
+    {
+        // Arrange
+        var entity = new TestEntity() { Translations = [] };
+
+        // Act
+        var localizedName = entity.NameForLang("en");
+
+        // Assert
+        Assert.Equal("N/A", localizedName);
     }
 
     [Fact]

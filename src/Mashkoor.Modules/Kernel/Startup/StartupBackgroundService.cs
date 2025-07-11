@@ -10,6 +10,8 @@ namespace Mashkoor.Modules.Kernel.Startup;
 
 public sealed class StartupBackgroundService : BackgroundService
 {
+    public const string AdminUsername = "alaa@mashkoor.net";
+
     private static readonly string _assetsPath = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "_assets");
 
     private static readonly string _termsEn = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.en.txt"));
@@ -100,7 +102,7 @@ public sealed class StartupBackgroundService : BackgroundService
         string[] superRoles = [.. allRoles, Roles.MaintenanceAdmin, Roles.PowerAdmin];
 
         var now = _timeProvider.UtcNow();
-        await AddAdmin(now, userManager, "alaa@mashkoor.net", "506494560", "Alaa", "Masoud", superRoles);
+        await AddAdmin(now, userManager, AdminUsername, "506494560", "Alaa", "Masoud", superRoles);
 
         static async Task AddAdmin(
             DateTime date,
