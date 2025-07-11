@@ -354,7 +354,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         CheckRule(new CanChangeUserStatusRule(this, newStatus));
 
         (StatusChangeHistory ??= [])
-            .Add(new UserStatusChange(
+            .Add(UserStatusChange.Create(
                 date,
                 changedBy,
                 Status,

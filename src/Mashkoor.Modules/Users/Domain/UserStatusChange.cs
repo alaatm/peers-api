@@ -26,17 +26,15 @@ public sealed class UserStatusChange : Entity
     /// </summary>
     public string ChangeReason { get; set; } = default!;
 
-    private UserStatusChange() { }
-
     /// <summary>
-    /// Initializes a new instance of the class.
+    /// Creates a new instance of the class.
     /// </summary>
     /// <param name="date">When the change occurred.</param>
     /// <param name="changedBy">The staff who is performing the change.</param>
     /// <param name="oldStatus">The old status.</param>
     /// <param name="newStatus">The new status.</param>
     /// <param name="changeReason">The change reason.</param>
-    public UserStatusChange(
+    internal static UserStatusChange Create(
         DateTime date,
         AppUser changedBy,
         UserStatus oldStatus,
@@ -46,10 +44,13 @@ public sealed class UserStatusChange : Entity
         ArgumentNullException.ThrowIfNull(changedBy);
         ArgumentException.ThrowIfNullOrWhiteSpace(nameof(changeReason));
 
-        ChangedOn = date;
-        ChangedBy = changedBy;
-        OldStatus = oldStatus;
-        NewStatus = newStatus;
-        ChangeReason = changeReason;
+        return new UserStatusChange
+        {
+            ChangedOn = date,
+            ChangedBy = changedBy,
+            OldStatus = oldStatus,
+            NewStatus = newStatus,
+            ChangeReason = changeReason
+        };
     }
 }
