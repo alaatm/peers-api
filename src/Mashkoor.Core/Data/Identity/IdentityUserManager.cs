@@ -176,11 +176,6 @@ public sealed class IdentityUserManager<TUser, TContext> : UserManager<TUser>
 
     private async Task AddUserClaimsAsync(TUser user, Claim[] claims)
     {
-        if (claims.Length == 0)
-        {
-            return;
-        }
-
         var userClaims = new IdentityUserClaim<int>[claims.Length];
         for (var i = 0; i < claims.Length; i++)
         {

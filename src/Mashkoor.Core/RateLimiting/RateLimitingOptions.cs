@@ -1,6 +1,6 @@
 using System.Threading.RateLimiting;
 
-namespace Mashkoor.Modules.Kernel.RateLimiting;
+namespace Mashkoor.Core.RateLimiting;
 
 public class RateLimitingOptions
 {

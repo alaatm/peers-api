@@ -1,6 +1,6 @@
-using Mashkoor.Modules.Kernel.RateLimiting;
+using Mashkoor.Core.RateLimiting;
 
-namespace Mashkoor.Modules.Test.Kernel.RateLimiting;
+namespace Mashkoor.Core.Test.RateLimiting;
 
 public class RateLimitingOptionsTests
 {

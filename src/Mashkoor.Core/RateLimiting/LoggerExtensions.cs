@@ -1,4 +1,6 @@
-namespace Mashkoor.Modules.Kernel.RateLimiting;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Mashkoor.Core.RateLimiting;
 
 [ExcludeFromCodeCoverage]
 internal static partial class LoggerExtensions

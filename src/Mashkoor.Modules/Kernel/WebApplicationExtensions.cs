@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Diagnostics;
-using System.Text;
-using Mashkoor.Core.Localization;
-using Mashkoor.Modules.Users.Endpoints;
-using Mashkoor.Core.Middlewares.RobotsTxt;
-using Mashkoor.Core.Domain.Rules;
 using System.Diagnostics;
+using System.Text;
+using Mashkoor.Core.Domain.Rules;
+using Mashkoor.Core.Localization;
+using Mashkoor.Core.Middlewares.RobotsTxt;
+using Mashkoor.Core.RateLimiting;
+using Mashkoor.Modules.Users.Endpoints;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Mashkoor.Modules.Kernel;
 
@@ -65,7 +66,7 @@ public static class WebApplicationExtensions
 
         protectedGroup
             .MapAccountEndpoints()
-            .RequireRateLimiting("PerUserRateLimit")
+            .RequireRateLimiting(GenericRateLimiter.PerUserRateLimitPolicyName)
             .WithTags("Protected");
 
         publicGroup

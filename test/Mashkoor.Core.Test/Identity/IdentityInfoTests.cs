@@ -67,6 +67,7 @@ public class IdentityInfoTests
         Assert.Null(ii.Ip);
         Assert.True(ii.IsAuthenticated);
         Assert.Equal(userId, ii.Id);
+        Assert.Equal(userId, ii.Id); // Ensure Id is cached
         Assert.Equal(username, ii.Username);
         Assert.True(ii.IsInRole(roles[0]));
         Assert.False(ii.IsInRole("???"));

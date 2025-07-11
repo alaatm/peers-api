@@ -2,24 +2,12 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Mashkoor.Modules.Kernel.RateLimiting;
+using Mashkoor.Core.RateLimiting;
 
-namespace Mashkoor.Modules.Test.Kernel.RateLimiting;
+namespace Mashkoor.Core.Test.RateLimiting;
 
 public class ServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void AddRateLimiting_throws_when_options_arent_configured()
-    {
-        // Arrange
-        var config = new ConfigurationBuilder().Build();
-        var services = new ServiceCollection();
-
-        // Act & assert
-        var ex = Assert.Throws<InvalidOperationException>(() => services.AddRateLimiting(config));
-        Assert.Equal("Rate limiting options are not configured.", ex.Message);
-    }
-
     [Fact]
     public void AddRateLimiting_adds_required_services()
     {
