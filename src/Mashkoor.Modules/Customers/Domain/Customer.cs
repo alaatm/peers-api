@@ -18,6 +18,10 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// </summary>
     public string Secret { get; set; } = default!;
     /// <summary>
+    /// The PIN code hash for the customer account.
+    /// </summary>
+    public string? PinCodeHash { get; set; }
+    /// <summary>
     /// The linked database user.
     /// </summary>
     public AppUser User { get; set; } = default!;

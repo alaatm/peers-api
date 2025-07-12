@@ -272,6 +272,7 @@ public abstract partial class IntegrationTestBase
     public async Task<Customer> EnrollCustomer(
         string username = null,
         bool isBanned = false,
+        bool isSuspended = false,
         bool registerDevice = true)
     {
         username ??= TestPhoneNumber();
@@ -297,6 +298,11 @@ public abstract partial class IntegrationTestBase
             await Ban(customer.Id);
         }
 
+        if (isSuspended)
+        {
+            await Suspend(customer.Id);
+        }
+
         customer = await FindAsync<Customer>(p => p.Username == username, "User", "User.RefreshTokens", "User.DeviceList");
         return customer;
     }
@@ -305,6 +311,12 @@ public abstract partial class IntegrationTestBase
     {
         var manager = await InsertManagerAsync();
         await SendAsync(new ChangeStatus.Command(id, UserStatus.Banned, "test"), manager);
+    }
+
+    private async Task Suspend(int id)
+    {
+        var manager = await InsertManagerAsync();
+        await SendAsync(new ChangeStatus.Command(id, UserStatus.Suspended, "test"), manager);
     }
 
     public Task InsertAsync<TEntity>(params TEntity[] entities) where TEntity : class
