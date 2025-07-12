@@ -32,7 +32,7 @@ public class ApiAppFactory : WebApplicationFactory<Program>
             // Remove StartupBackgroundService startup task
             services.Remove(backgroundDescriptors.SingleOrDefault(d => d.ImplementationType == typeof(StartupBackgroundService)));
 
-            var dbContextDescriptors = services.Where(d => d.ServiceType.ToString().Contains("ShiftleeContext")).ToArray();
+            var dbContextDescriptors = services.Where(d => d.ServiceType.ToString().Contains("MashkoorContext")).ToArray();
             foreach (var descriptor in dbContextDescriptors)
             {
                 services.Remove(descriptor);

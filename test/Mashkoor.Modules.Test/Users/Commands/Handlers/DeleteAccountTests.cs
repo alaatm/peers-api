@@ -8,7 +8,7 @@ namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 public class DeleteAccountTests : IntegrationTestBase
 {
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Requires_customer_or_partner_role()
+    public async Task Requires_customer_role()
         => await AssertCommandAccess(new DeleteAccount.Command(), [Roles.Customer]);
 
     [SkippableFact(typeof(PlatformNotSupportedException))]

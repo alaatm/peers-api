@@ -10,7 +10,7 @@ namespace Mashkoor.Modules.Test.Users.Queries.Handlers;
 public class GetProfileTests : IntegrationTestBase
 {
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Requires_customer_or_driver_or_partner_or_customersManager_role()
+    public async Task Requires_customer_usersManager_role()
         => await AssertCommandAccess(new GetProfile.Query(1), [Roles.Customer, Roles.UsersManager]);
 
     [SkippableFact(typeof(PlatformNotSupportedException))]

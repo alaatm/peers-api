@@ -15,6 +15,16 @@ public static class EndpointRouteBuilderExtensions
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<PagedQueryResponse<ListSupportedLanguages.Response>>(StatusCodes.Status200OK);
 
+        g.MapGet("/info", (IMediator mediator)
+            => mediator.Send(new GetSystemInfo.Query()))
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<GetSystemInfo.Response>(StatusCodes.Status200OK);
+
+        g.MapGet("/client-app", (IMediator mediator)
+            => mediator.Send(new GetClientApp.Query()))
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<GetClientApp.Response>(StatusCodes.Status200OK);
+
         return ep;
     }
 }

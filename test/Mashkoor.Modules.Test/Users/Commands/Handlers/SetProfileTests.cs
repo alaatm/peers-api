@@ -9,7 +9,7 @@ namespace Mashkoor.Modules.Test.Users.Commands.Handlers;
 public class SetProfileTests : IntegrationTestBase
 {
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Requires_customer_or_partner_role()
+    public async Task Requires_customer_role()
         => await AssertCommandAccess(TestQuery(), [Roles.Customer]);
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
