@@ -1,0 +1,35 @@
+{
+  "selectValue": "Select value",
+  "filter": "Filter",
+  "clear": "Clear",
+  "addFilter": "Add filter",
+  "remove": "Remove",
+  "startsWith": "Starts with",
+  "contains": "Contains",
+  "endsWith": "Ends with",
+  "lessThan": "Less than",
+  "lessThanOrEq": "Less than or equal",
+  "eq": "Equals",
+  "greaterThanOrEq": "Greater than or equal",
+  "greaterThan": "Greater than",
+  "notEq": "Not equal",
+  "and": "and",
+  "or": "or",
+  "value": "value",
+  "true": "True",
+  "false": "False",
+  "loading": "Loading...",
+  "multiLangFormItem": {
+    "placeholder": "Please enter {{field}} for {{lang}}"
+  },
+  "datePickers": {
+    "date": "Date",
+    "asOfDateIndex": "As of date # {{index}}",
+    "addDate": "Add Date",
+    "periodKind": "Period Kind",
+    "customNumDays": "Custom num. of days",
+    "numPeriods": "Number of Periods",
+    "apply": "Apply",
+    "reset": "Reset"
+  }
+}

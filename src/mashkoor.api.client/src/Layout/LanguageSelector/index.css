@@ -1,0 +1,20 @@
+.language-selector {
+  color: #ffffff73;
+}
+
+.language-selector span:not(.active) {
+  cursor: pointer;
+}
+
+.language-selector span:not(.active):hover {
+  color: #fff;
+}
+
+.language-selector .active {
+  color: #fff;
+}
+
+.language-selector .ant-divider {
+  border-color: #fff;
+  margin: 0;
+}

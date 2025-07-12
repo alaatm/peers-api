@@ -1,0 +1,60 @@
+{
+  "UserStatus": {
+    "Active": "Active",
+    "Suspended": "Suspended",
+    "Banned": "Banned"
+  },
+  "ClientTaskRequestTaskType": {
+    "Ping": "Ping",
+    "SignOff": "Sign Off"
+  },
+  "ClientTaskAcknowledgeStatus": {
+    "Waiting": "Waiting...",
+    "Ok": "Ok",
+    "NoResponse": "No Response"
+  },
+  "FirebaseErrorCode": {
+    "InvalidArgument": "Invalid Argument",
+    "FailedPrecondition": "Failed Precondition",
+    "OutOfRange": "Out Of Range",
+    "Unauthenticated": "Unauthenticated",
+    "PermissionDenied": "Permission Denied",
+    "NotFound": "Not Found",
+    "Conflict": "Conflict",
+    "Aborted": "Aborted",
+    "AlreadyExists": "Already Exists",
+    "ResourceExhausted": "Resource Exhausted",
+    "Cancelled": "Cancelled",
+    "DataLoss": "Data Loss",
+    "Unknown": "Unknown",
+    "Internal": "Internal",
+    "Unavailable": "Unavailable",
+    "DeadlineExceeded": "Deadline Exceeded"
+  },
+  "FirebaseMessagingErrorCode": {
+    "ThirdPartyAuthError": "Third Party Auth Error",
+    "InvalidArgument": "Invalid Argument",
+    "Internal": "Internal",
+    "QuotaExceeded": "Quota Exceeded",
+    "SenderIdMismatch": "Sender ID Mismatch",
+    "Unavailable": "Unavailable",
+    "Unregistered": "Unregistered"
+  },
+  "DayOfWeek": {
+    "Sunday": "Sunday",
+    "Monday": "Monday",
+    "Tuesday": "Tuesday",
+    "Wednesday": "Wednesday",
+    "Thursday": "Thursday",
+    "Friday": "Friday",
+    "Saturday": "Saturday"
+  },
+  "PeriodKind": {
+    "Year": "Year",
+    "Quarter": "Quarter",
+    "Month": "Month",
+    "Week": "Week",
+    "Day": "Day",
+    "Custom": "Custom"
+  }
+}

@@ -42,15 +42,17 @@ export default defineConfig({
     plugins: [plugin()],
     resolve: {
         alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+            'api': fileURLToPath(new URL('./src/api', import.meta.url)),
+            'components': fileURLToPath(new URL('./src/components', import.meta.url)),
         }
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/api/v1': {
                 target,
                 secure: false
-            }
+            },
         },
         port: parseInt(env.DEV_SERVER_PORT || '60707'),
         https: {

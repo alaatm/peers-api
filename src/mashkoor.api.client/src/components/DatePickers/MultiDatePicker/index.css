@@ -1,0 +1,8 @@
+div.multi-date-picker .row {
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+div.multi-date-picker .input {
+    width: 60%;
+}

@@ -1,0 +1,80 @@
+{
+  "success": "نجاح",
+  "login": {
+    "title": "تسجيل دخول الموظف",
+    "username": {
+      "required": "يرجى إدخال عنوان بريدك الإلكتروني",
+      "invalid": "يرجى إدخال عنوان بريد إلكتروني صالح",
+      "placeholder": "name@domain.com"
+    },
+    "password": {
+      "required": "يرجى إدخال كلمة المرور",
+      "placeholder": "كلمة المرور الخاصة بك"
+    },
+    "rememberMe": "تذكرني",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "login": "تسجيل الدخول",
+    "invalidLogin": "بيانات اعتماد تسجيل الدخول غير صالحة"
+  },
+  "changePassword": {
+    "title": "تغيير كلمة المرور",
+    "success": "تم تغيير كلمة المرور",
+    "successDescr": "تم تغيير كلمة المرور بنجاح. سيتم تسجيل خروجك الآن. يرجى استخدام كلمة المرور الجديدة لتسجيل الدخول مرة أخرى."
+  },
+  "fields": {
+    "currentPassword": {
+      "label": "كلمة المرور الحالية",
+      "placeholder": "كلمة المرور الحالية"
+    },
+    "newPassword": {
+      "label": "كلمة المرور الجديدة",
+      "placeholder": "كلمة المرور الجديدة"
+    },
+    "newPasswordConfirm": {
+      "label": "تأكيد كلمة المرور",
+      "invalid": "كلمة المرور الجديدة/تأكيد كلمة المرور لا تتطابق!",
+      "placeholder": "تأكيد كلمة المرور"
+    },
+    "enabled": {
+      "label": "مُفعّل"
+    },
+    "email": {
+      "label": "البريد الإلكتروني",
+      "required": "يرجى إدخال البريد الإلكتروني",
+      "invalid": "يرجى إدخال بريد إلكتروني صالح",
+      "placeholder": "name@domain.com"
+    },
+    "name": {
+      "label": "الاسم",
+      "required": "يرجى إدخال الاسم",
+      "placeholder": "يرجى إدخال الاسم"
+    },
+    "description": {
+      "label": "الوصف",
+      "required": "يرجى إدخال الوصف",
+      "placeholder": ""
+    },
+    "firstName": {
+      "label": "الاسم الأول",
+      "required": "يرجى إدخال الاسم الأول",
+      "placeholder": "أحمد"
+    },
+    "lastName": {
+      "label": "اسم العائلة",
+      "required": "يرجى إدخال اسم العائلة",
+      "placeholder": "محمد"
+    },
+    "preferredLanguage": {
+      "label": "اللغة المفضلة",
+      "required": "يرجى اختيار اللغة المفضلة"
+    },
+    "actions": "الإجراءات",
+    "save": "حفظ",
+    "submit": "إرسال",
+    "clear": "مسح",
+    "next": "التالي",
+    "enable": "تفعيل",
+    "disable": "تعطيل",
+    "toggle": "تبديل"
+  }
+}

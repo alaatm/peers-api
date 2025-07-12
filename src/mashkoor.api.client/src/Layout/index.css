@@ -1,0 +1,54 @@
+.main-layout .main-layout-header {
+  height: 48px;
+  padding: 10px 26px;
+  display: flex;
+  align-items: center;
+}
+
+.main-layout .main-layout-header .logo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.main-layout .main-layout-header .logo img {
+  height: 28px;
+}
+
+.main-layout .main-layout-header .logo span {
+  font-size: 18px;
+  color: #fff;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.inner-layout {
+  display: flex;
+  align-items: stretch;
+}
+
+
+/* Sider Scrollbar */
+
+/* For Firefox */
+.main-layout .ant-layout-sider {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+/* For Chrome, Edge, and Safari */
+.main-layout .ant-layout-sider::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-layout .ant-layout-sider::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-layout .ant-layout-sider::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+/* Sider Scrollbar */

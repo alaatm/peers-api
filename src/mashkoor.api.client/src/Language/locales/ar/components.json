@@ -1,0 +1,35 @@
+{
+  "selectValue": "اختر قيمة",
+  "filter": "تصفية",
+  "clear": "مسح",
+  "addFilter": "إضافة تصفية",
+  "remove": "إزالة",
+  "startsWith": "يبدأ بـ",
+  "contains": "يحتوي",
+  "endsWith": "ينتهي بـ",
+  "lessThan": "أقل من",
+  "lessThanOrEq": "أقل من أو يساوي",
+  "eq": "يساوي",
+  "greaterThanOrEq": "أكبر من أو يساوي",
+  "greaterThan": "أكبر من",
+  "notEq": "لا يساوي",
+  "and": "و",
+  "or": "أو",
+  "value": "القيمة",
+  "true": "نعم",
+  "false": "لا",
+  "loading": "جار التحميل...",
+  "multiLangFormItem": {
+    "placeholder": "يرجى إدخال {{field}} لـ {{lang}}"
+  },
+  "datePickers": {
+    "date": "التاريخ",
+    "asOfDateIndex": "اعتبارًا من تاريخ # {{index}}",
+    "addDate": "إضافة تاريخ",
+    "periodKind": "نوع الفترة",
+    "customNumDays": "عدد الأيام المخصص",
+    "numPeriods": "عدد الفترات",
+    "apply": "تطبيق",
+    "reset": "إعادة تعيين"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "UserStatus": {
+    "Active": "نشط",
+    "Suspended": "معلق",
+    "Banned": "محظور"
+  },
+  "ClientTaskRequestTaskType": {
+    "Ping": "إرسال نبضة",
+    "SignOff": "تسجيل الخروج"
+  },
+  "ClientTaskAcknowledgeStatus": {
+    "Waiting": "انتظار...",
+    "Ok": "تم الرد",
+    "NoResponse": "لا يوجد رد"
+  },
+  "FirebaseErrorCode": {
+    "InvalidArgument": "خطأ في المعاملات",
+    "FailedPrecondition": "فشل الشرط المسبق",
+    "OutOfRange": "خارج النطاق",
+    "Unauthenticated": "غير مصادق عليه",
+    "PermissionDenied": "إذن مرفوض",
+    "NotFound": "غير موجود",
+    "Conflict": "تعارض",
+    "Aborted": "ملغى",
+    "AlreadyExists": "موجود مسبقًا",
+    "ResourceExhausted": "المورد مستنفد",
+    "Cancelled": "ملغى",
+    "DataLoss": "فقدان البيانات",
+    "Unknown": "غير معروف",
+    "Internal": "داخلي",
+    "Unavailable": "غير متاح",
+    "DeadlineExceeded": "انتهت المهلة"
+  },
+  "FirebaseMessagingErrorCode": {
+    "ThirdPartyAuthError": "خطأ في مصادقة الطرف الثالث",
+    "InvalidArgument": "خطأ في المعاملات",
+    "Internal": "داخلي",
+    "QuotaExceeded": "تجاوز الحصة",
+    "SenderIdMismatch": "تعارض معرف المرسل",
+    "Unavailable": "غير متاح",
+    "Unregistered": "غير مسجل"
+  },
+  "DayOfWeek": {
+    "Sunday": "الأحد",
+    "Monday": "الإثنين",
+    "Tuesday": "الثلاثاء",
+    "Wednesday": "الأربعاء",
+    "Thursday": "الخميس",
+    "Friday": "الجمعة",
+    "Saturday": "السبت"
+  },
+  "PeriodKind": {
+    "Year": "سنة",
+    "Quarter": "ربع",
+    "Month": "شهر",
+    "Week": "أسبوع",
+    "Day": "يوم",
+    "Custom": "مخصص"
+  }
+}

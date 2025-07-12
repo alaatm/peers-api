@@ -1,0 +1,51 @@
+.filter-container {
+  min-width: 250px;
+  max-width: 250px;
+  padding: 15px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+}
+
+.filter-container label {
+  display: block;
+}
+
+.filter-container .logical-dropdown {
+  width: 70px;
+}
+
+.filter-container .actions {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.filter-container .actions button {
+  flex: 1;
+}
+
+.flexrow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.filter-container .add {
+  width: 100%;
+}
+
+.filter-container .filter .ant-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.ant-table-pagination {
+  background: #fafafa;
+  margin: 0 !important;
+  padding: 16px 0;
+  border-left: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}

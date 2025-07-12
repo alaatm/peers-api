@@ -1,0 +1,10 @@
+.device-errors .code-formatted {
+  font-family: "Courier New", Consolas, "Lucida Console", Monaco, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  padding: 10px;
+  margin-bottom: 10px;
+}

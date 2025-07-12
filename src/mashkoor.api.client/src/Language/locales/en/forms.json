@@ -1,0 +1,80 @@
+{
+  "success": "Success",
+  "login": {
+    "title": "Staff Login",
+    "username": {
+      "required": "Please enter your email address",
+      "invalid": "Please enter a valid email address",
+      "placeholder": "name@domain.com"
+    },
+    "password": {
+      "required": "Please enter your password",
+      "placeholder": "Your password"
+    },
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "login": "Login",
+    "invalidLogin": "Invalid login credentials"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "success": "Password Changed",
+    "successDescr": "Your password has been changed successfully. You will now be logged out. Please use your new password to log in again."
+  },
+  "fields": {
+    "currentPassword": {
+      "label": "Current password",
+      "placeholder": "Current password"
+    },
+    "newPassword": {
+      "label": "New password",
+      "placeholder": "New password"
+    },
+    "newPasswordConfirm": {
+      "label": "Confirm password",
+      "invalid": "The new password/password confirm do not match!",
+      "placeholder": "Confirm password"
+    },
+    "enabled": {
+      "label": "Enabled"
+    },
+    "email": {
+      "label": "Email address",
+      "required": "Please enter email address",
+      "invalid": "Please enter a valid email address",
+      "placeholder": "name@domain.com"
+    },
+    "name": {
+      "label": "Name",
+      "required": "Please enter name",
+      "placeholder": "Please enter name"
+    },
+    "description": {
+      "label": "Description",
+      "required": "Please enter description",
+      "placeholder": ""
+    },
+    "firstName": {
+      "label": "First name",
+      "required": "Please enter first name",
+      "placeholder": "John"
+    },
+    "lastName": {
+      "label": "Last name",
+      "required": "Please enter last name",
+      "placeholder": "Doe"
+    },
+    "preferredLanguage": {
+      "label": "Preferred language",
+      "required": "Please select preferred language"
+    },
+    "actions": "Actions",
+    "save": "Save",
+    "submit": "Submit",
+    "clear": "Clear",
+    "next": "Next",
+    "enable": "Enable",
+    "disable": "Disable",
+    "toggle": "Toggle"
+  }
+}
