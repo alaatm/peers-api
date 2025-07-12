@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(DotNetVer)" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mashkoor.Api\Mashkoor.Api.csproj" />
   </ItemGroup>
+
 </Project>
