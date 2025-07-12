@@ -101,11 +101,12 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         DateTime date,
         string phoneNumber,
         string firstname,
-        string? lastname,
+        string lastname,
         string preferredLanguage)
     {
         ArgumentNullException.ThrowIfNull(phoneNumber);
         ArgumentException.ThrowIfNullOrWhiteSpace(firstname);
+        ArgumentException.ThrowIfNullOrWhiteSpace(lastname);
         ArgumentException.ThrowIfNullOrWhiteSpace(preferredLanguage);
         if (!RegexStatic.PhoneNumberRegex().IsMatch(phoneNumber))
         {
@@ -118,7 +119,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
             RegisteredOn = date,
             UserName = phoneNumber,
             Firstname = firstname.Trim(),
-            Lastname = lastname?.Trim(),
+            Lastname = lastname.Trim(),
             PreferredLanguage = preferredLanguage.Trim(),
             PhoneNumber = phoneNumber,
             PhoneNumberConfirmed = true,

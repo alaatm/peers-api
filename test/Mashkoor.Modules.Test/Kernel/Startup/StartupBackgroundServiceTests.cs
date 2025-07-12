@@ -4,6 +4,7 @@ using System.Text;
 using Mashkoor.Core.Data;
 using Mashkoor.Core.Domain.Rules;
 using Mashkoor.Modules.Kernel.Startup;
+using Mashkoor.Modules.Test.SharedClasses;
 using Mashkoor.Modules.Users.Domain;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
@@ -50,6 +51,7 @@ public class StartupBackgroundServiceTests
             TimeProvider.System,
             serviceProvider,
             hostMoq.Object,
+            MockBuilder.GetLocalizerFactoryMoq().Object,
             Mock.Of<ILogger<StartupBackgroundService>>());
 
         // Act

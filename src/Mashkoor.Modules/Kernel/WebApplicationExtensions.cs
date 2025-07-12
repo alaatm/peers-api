@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Text;
-using Mashkoor.Core.Domain.Rules;
 using Mashkoor.Core.Localization;
 using Mashkoor.Core.Middlewares.RobotsTxt;
 using Mashkoor.Core.RateLimiting;
@@ -79,8 +77,5 @@ public static class WebApplicationExtensions
         app.MapPost("/api/v1/test", (InvalidOperationException _) => Results.Ok()).ExcludeFromDescription();
         // This is to prevent 404 from AlwaysOn pings
         app.MapGet("/", () => Results.Ok()).ExcludeFromDescription();
-
-        BusinessRule.StringLocalizerFactory ??= app.Services.GetRequiredService<IStringLocalizerFactory>();
-        Debug.Assert(BusinessRule.StringLocalizerFactory is not null);
     }
 }

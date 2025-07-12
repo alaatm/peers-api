@@ -30,12 +30,14 @@ public sealed class StartupBackgroundService : BackgroundService
         TimeProvider timeProvider,
         IServiceProvider serviceProvider,
         IWebHostEnvironment env,
+        IStringLocalizerFactory stringLocalizerFactory,
         ILogger<StartupBackgroundService> log)
     {
         _timeProvider = timeProvider;
         _serviceProvider = serviceProvider;
         _env = env;
         _log = log;
+        BusinessRule.StringLocalizerFactory = stringLocalizerFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,7 +51,6 @@ public sealed class StartupBackgroundService : BackgroundService
             var userManager = scope.ServiceProvider.GetRequiredService<IdentityUserManager<AppUser, MashkoorContext>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<IdentityRoleManager<AppUser, MashkoorContext>>();
 
-            BusinessRule.StringLocalizerFactory ??= scope.ServiceProvider.GetRequiredService<IStringLocalizerFactory>();
             await SeedDefaultsAsync(context, userManager, roleManager);
         }
         catch (Exception ex)
