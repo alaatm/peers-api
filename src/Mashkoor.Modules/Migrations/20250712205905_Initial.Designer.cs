@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mashkoor.Modules.Migrations
 {
     [DbContext(typeof(MashkoorContext))]
-    [Migration("20250711221311_Initial")]
+    [Migration("20250712205905_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -280,11 +280,6 @@ namespace Mashkoor.Modules.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("firstname");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")

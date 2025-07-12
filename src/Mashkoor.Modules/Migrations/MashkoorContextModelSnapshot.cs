@@ -278,11 +278,6 @@ namespace Mashkoor.Modules.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("firstname");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("image_url");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");

@@ -28,12 +28,6 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// <value></value>
     public string? Lastname { get; set; }
     /// <summary>
-    /// The user's image url.
-    /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
-    public string? ImageUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
-    /// <summary>
     /// The preferred communication language for this user.
     /// </summary>
     /// <remarks>

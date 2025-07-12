@@ -37,7 +37,6 @@ namespace Mashkoor.Modules.Migrations
                     display_name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     firstname = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     lastname = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    image_url = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     preferred_language = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     status = table.Column<int>(type: "int", nullable: false),
                     updated_email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
