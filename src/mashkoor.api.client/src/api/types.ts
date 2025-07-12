@@ -154,21 +154,12 @@ export type ServerInfo = {
 
 export type DatabaseInfo = {
     version: string | null;
-    serviceLevelObjective: string | null;
-    dtuLimit: number | null;
-    cpuLimit: number | null;
-    minCores: number | null;
-    maxDop: number | null;
-    maxSessions: number | null;
-    maxDbMemory: number | null;
-    maxDbMaxSizeInMb: number | null;
-    checkpointRateIO: number | null;
-    checkpointRateMbps: number | null;
-    primaryGroupMaxWorkers: number | null;
-    primaryMaxLogRate: number | null;
-    primaryGroupMaxIO: number | null;
-    primaryGroupMaxCpu: number | null;
-    volumeTypeManagedXstoreIOPS: number | null;
+    dbSize: string | null;
+    unallocated: string | null;
+    reserved: string | null;
+    data: string | null;
+    indexSize: string | null;
+    unused: string | null;
 }
 
 export type SysInfo = {

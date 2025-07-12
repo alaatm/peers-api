@@ -53,22 +53,13 @@ const SystemInfo = () => {
                 column={1}
                 styles={{ label: { width: '25%' } }}
                 bordered={true}>
-                <Descriptions.Item label="version">{data.database.version}</Descriptions.Item>
-                <Descriptions.Item label="serviceLevelObjective">{data.database.serviceLevelObjective}</Descriptions.Item>
-                <Descriptions.Item label="dtuLimit">{data.database.dtuLimit}</Descriptions.Item>
-                <Descriptions.Item label="cpuLimit">{data.database.cpuLimit}</Descriptions.Item>
-                <Descriptions.Item label="minCores">{data.database.minCores}</Descriptions.Item>
-                <Descriptions.Item label="maxDop">{data.database.maxDop}</Descriptions.Item>
-                <Descriptions.Item label="maxSessions">{data.database.maxSessions}</Descriptions.Item>
-                <Descriptions.Item label="maxDbMemory">{data.database.maxDbMemory}</Descriptions.Item>
-                <Descriptions.Item label="maxDbMaxSizeInMb">{data.database.maxDbMaxSizeInMb}</Descriptions.Item>
-                <Descriptions.Item label="checkpointRateIO">{data.database.checkpointRateIO}</Descriptions.Item>
-                <Descriptions.Item label="checkpointRateMbps">{data.database.checkpointRateMbps}</Descriptions.Item>
-                <Descriptions.Item label="primaryGroupMaxWorkers">{data.database.primaryGroupMaxWorkers}</Descriptions.Item>
-                <Descriptions.Item label="primaryMaxLogRate">{data.database.primaryMaxLogRate}</Descriptions.Item>
-                <Descriptions.Item label="primaryGroupMaxIO">{data.database.primaryGroupMaxIO}</Descriptions.Item>
-                <Descriptions.Item label="primaryGroupMaxCpu">{data.database.primaryGroupMaxCpu}</Descriptions.Item>
-                <Descriptions.Item label="volumeTypeManagedXstoreIOPS">{data.database.volumeTypeManagedXstoreIOPS}</Descriptions.Item>
+                <Descriptions.Item label={t('version')}>{data.database.version}</Descriptions.Item>
+                <Descriptions.Item label={t('dbSize')}>{data.database.dbSize}</Descriptions.Item>
+                <Descriptions.Item label={t('dbUnallocatedSize')}>{data.database.unallocated}</Descriptions.Item>
+                <Descriptions.Item label={t('dbReservedSize')}>{data.database.reserved}</Descriptions.Item>
+                <Descriptions.Item label={t('dbDataSize')}>{data.database.data}</Descriptions.Item>
+                <Descriptions.Item label={t('dbIndexSize')}>{data.database.indexSize}</Descriptions.Item>
+                <Descriptions.Item label={t('dbUnusedSize')}>{data.database.unused}</Descriptions.Item>
             </Descriptions>
         </>) || null}
     </Card>;

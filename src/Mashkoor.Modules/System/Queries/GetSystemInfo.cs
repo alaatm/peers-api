@@ -1,3 +1,4 @@
+using System.Data;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 
@@ -23,27 +24,18 @@ public static class GetSystemInfo
 
         public sealed record DatabaseInfo(
             string? Version,
-            string? ServiceLevelObjective,
-            int? DtuLimit,
-            int? CpuLimit,
-            int? MinCores,
-            int? MaxDop,
-            int? MaxSessions,
-            int? MaxDbMemory,
-            long? MaxDbMaxSizeInMb,
-            int? CheckpointRateIO,
-            int? CheckpointRateMbps,
-            int? PrimaryGroupMaxWorkers,
-            long? PrimaryMaxLogRate,
-            int? PrimaryGroupMaxIO,
-            double? PrimaryGroupMaxCpu,
-            int? VolumeTypeManagedXstoreIOPS);
+            string? DbSize,
+            string? Unallocated,
+            string? Reserved,
+            string? Data,
+            string? IndexSize,
+            string? Unused);
     }
 
     public sealed class Handler : ICommandHandler<Query>
     {
         private const string VerQuery = "select @@version";
-        private const string SpecsQuery = "select slo_name,dtu_limit,cpu_limit,min_cores,max_dop,max_sessions,max_db_memory,max_db_max_size_in_mb,checkpoint_rate_io,checkpoint_rate_mbps,primary_group_max_workers,primary_max_log_rate,primary_group_max_io,primary_group_max_cpu,volume_type_managed_xstore_iops from sys.dm_user_db_resource_governance";
+        private const string SizeQuery = "sp_spaceused";
 
         private readonly IConfiguration _config;
 
@@ -70,42 +62,47 @@ public static class GetSystemInfo
                 try
                 {
                     await conn.OpenAsync(ctk);
+                    string? dbServerVersion = null;
+                    string? dbSize = null;
+                    string? unallocated = null;
+                    string? reserved = null;
+                    string? data = null;
+                    string? indexSize = null;
+                    string? unused = null;
+
                     sqlCmd.CommandText = VerQuery;
-                    var dbServerVersion = (await sqlCmd.ExecuteScalarAsync(ctk) as string)!;
+                    dbServerVersion = await sqlCmd.ExecuteScalarAsync(ctk) as string;
 
-                    try
-                    {
-                        sqlCmd.CommandText = SpecsQuery;
-                        using var reader = await sqlCmd.ExecuteReaderAsync(ctk);
-                        await reader.ReadAsync(ctk);
+                    sqlCmd.CommandText = SizeQuery;
+                    sqlCmd.CommandType = CommandType.StoredProcedure;
+                    using var reader = await sqlCmd.ExecuteReaderAsync(ctk);
 
-                        return new Response.DatabaseInfo(
-                            dbServerVersion,
-                            reader.GetString(0),
-                            reader.GetInt32(1),
-                            reader.GetInt32(2),
-                            reader.GetInt16(3),
-                            reader.GetInt16(4),
-                            reader.GetInt32(5),
-                            reader.GetInt32(6),
-                            reader.GetInt64(7),
-                            reader.GetInt32(8),
-                            reader.GetInt32(9),
-                            reader.GetInt32(10),
-                            reader.GetInt64(11),
-                            reader.GetInt32(12),
-                            reader.GetDouble(13),
-                            reader.GetInt32(14));
-                    }
-                    catch
+                    if (await reader.ReadAsync(ctk))
                     {
-                        // This throws on non-Azure SQL DBs
-                        return new Response.DatabaseInfo(dbServerVersion, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                        dbSize = reader.GetString(1);
+                        unallocated = reader.GetString(2);
                     }
+
+                    if (await reader.NextResultAsync(ctk) && await reader.ReadAsync(ctk))
+                    {
+                        reserved = reader.GetString(0);
+                        data = reader.GetString(1);
+                        indexSize = reader.GetString(2);
+                        unused = reader.GetString(3);
+                    }
+
+                    return new Response.DatabaseInfo(
+                        dbServerVersion,
+                        dbSize,
+                        unallocated,
+                        reserved,
+                        data,
+                        indexSize,
+                        unused);
                 }
                 catch
                 {
-                    return new Response.DatabaseInfo(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                    return new Response.DatabaseInfo(null, null, null, null, null, null, null);
                 }
                 finally
                 {
