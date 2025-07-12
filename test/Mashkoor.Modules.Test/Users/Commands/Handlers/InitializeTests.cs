@@ -50,29 +50,6 @@ public class InitializeTests : IntegrationTestBase
             p.UserId == customer.Id), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
-    [MemberData(nameof(FromRegisterDeviceResponseResult_returns_expected_response_TestData))]
-    public void FromRegisterDeviceResponseResult_returns_expected_response(IResult result, int expectedStatus, string expectedTrackingId)
-    {
-        // Arrange & act
-        var response = Initialize.FromRegisterDeviceResponseResult(result);
-
-        // Assert
-        Assert.Equal(expectedStatus, response.Status);
-        Assert.Equal(expectedTrackingId, response.TrackingId);
-    }
-
-    public static TheoryData<IResult, int, string> FromRegisterDeviceResponseResult_returns_expected_response_TestData => new()
-        {
-            { Result.Created<IdObj>(), 201, null },
-            { Result.NoContent(), 204, null },
-            { Result.Accepted(null, new RegisterDevice.Response("tracking-id")), 202, "tracking-id" },
-            { Result.BadRequest(), 400, null },
-            { Result.Unauthorized(), 401, null },
-            { new NullStatusCodeResult(), 400, null },
-            { null, 500, null },
-        };
-
     [SkippableTheory(typeof(PlatformNotSupportedException))]
     [InlineData("Android")]
     [InlineData("iOS")]
@@ -212,6 +189,33 @@ public class InitializeTests : IntegrationTestBase
 
         return clientApp;
     }
+}
+
+public class NonIntegrationInitializeTests
+{
+
+    [Theory]
+    [MemberData(nameof(FromRegisterDeviceResponseResult_returns_expected_response_TestData))]
+    public void FromRegisterDeviceResponseResult_returns_expected_response(IResult result, int expectedStatus, string expectedTrackingId)
+    {
+        // Arrange & act
+        var response = Initialize.FromRegisterDeviceResponseResult(result);
+
+        // Assert
+        Assert.Equal(expectedStatus, response.Status);
+        Assert.Equal(expectedTrackingId, response.TrackingId);
+    }
+
+    public static TheoryData<IResult, int, string> FromRegisterDeviceResponseResult_returns_expected_response_TestData => new()
+        {
+            { Result.Created<IdObj>(), 201, null },
+            { Result.NoContent(), 204, null },
+            { Result.Accepted(null, new RegisterDevice.Response("tracking-id")), 202, "tracking-id" },
+            { Result.BadRequest(), 400, null },
+            { Result.Unauthorized(), 401, null },
+            { new NullStatusCodeResult(), 400, null },
+            { null, 500, null },
+        };
 
     private class NullStatusCodeResult : IResult, IStatusCodeHttpResult
     {

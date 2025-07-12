@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: build-linux
+
+on:
+  push:
+    paths-ignore:
+      - "design-docs/**"
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "design-docs/**"
+      - "**.md"
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_config: [Debug, Release]
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        ports:
+          - 1433/tcp
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: g0d4mm!tSQLServer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup .net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0
+
+      - name: run build script
+        run: |
+          ./build.sh --target Test \
+                     --configuration ${{ matrix.build_config }}
+        env:
+          ConnStr: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStrStartup: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorStartupTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStrIntegration: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorIntegrationTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;

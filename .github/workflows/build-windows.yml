@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: build-windows
+
+on:
+  push:
+    paths-ignore:
+      - "design-docs/**"
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "design-docs/**"
+      - "**.md"
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build_config: [Debug, Release]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup .net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0
+
+      - name: run build script
+        run: |
+          ./build.ps1 --target Test `
+                      --configuration ${{ matrix.build_config }}
+        env:
+          ConnStrIntegration: Server=dummy;Database=MashkoorIntegrationTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;

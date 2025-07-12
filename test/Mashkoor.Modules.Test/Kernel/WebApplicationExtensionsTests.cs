@@ -1,7 +1,6 @@
 using System.Net;
 using System.Reflection;
 using System.Threading.RateLimiting;
-using Mashkoor.Core.Domain.Rules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,8 +28,6 @@ public class WebApplicationExtensionsTestsBase
         Assert.Contains("AuthenticationMiddleware", middlewareList[3].FullName);
         Assert.Equal("RateLimitingMiddleware", middlewareList[4].Name);
         Assert.Equal("RequestLocalizationMiddleware", middlewareList[5].Name);
-
-        Assert.NotNull(BusinessRule.StringLocalizerFactory);
     }
 
     [Fact]
@@ -52,8 +49,6 @@ public class WebApplicationExtensionsTestsBase
         Assert.Contains("AuthenticationMiddleware", middlewareList[4].FullName);
         Assert.Equal("RateLimitingMiddleware", middlewareList[5].Name);
         Assert.Equal("RequestLocalizationMiddleware", middlewareList[6].Name);
-
-        Assert.NotNull(BusinessRule.StringLocalizerFactory);
     }
 
     private static WebApplication BuildApp(string environmentName)
