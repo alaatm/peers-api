@@ -134,50 +134,19 @@ public static class EndpointRouteBuilderExtensions
             .MapGroup("/devices")
             .WithTags("Devices");
 
-        gAccounts.MapPost("/enroll", async (HttpContext context, IMediator mediator, Register cmd)
-            => cmd.Enroll switch
-            {
-                null => cmd.EnrollConfirm switch
-                {
-                    null => Results.BadRequest("Malformed input."),
-                    _ => await mediator.Send(cmd.EnrollConfirm),
-                },
-                _ => await mediator.Send(cmd.Enroll),
-            })
+        gAccounts.MapPost("/enroll", EnrollCommandSwitcher)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<OtpResponse>(StatusCodes.Status202Accepted)
             .Produces<JwtResponse>(StatusCodes.Status200OK);
 
-        gOAuth.MapPost("/token", async (IMediator mediator, Login cmd)
-            => cmd.SignIn switch
-            {
-                null => cmd.CreateToken switch
-                {
-                    null => Results.BadRequest("Malformed input."),
-                    _ => await mediator.Send(cmd.CreateToken),
-                },
-                _ => await mediator.Send(cmd.SignIn),
-            })
+        gOAuth.MapPost("/token", TokenCommandSwitcher)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces<OtpResponse>(StatusCodes.Status202Accepted)
             .Produces<JwtResponse>(StatusCodes.Status200OK);
 
-        gAccounts.MapPut("/password", async (IMediator mediator, UpdatePassword cmd)
-            => cmd.ChangePassword switch
-            {
-                null => cmd.ResetPassword switch
-                {
-                    null => cmd.ResetPasswordConfirm switch
-                    {
-                        null => Results.BadRequest("Malformed input."),
-                        _ => await mediator.Send(cmd.ResetPasswordConfirm),
-                    },
-                    _ => await mediator.Send(cmd.ResetPassword),
-                },
-                _ => await mediator.Send(cmd.ChangePassword),
-            })
+        gAccounts.MapPut("/password", PasswordCommandSwitcher)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status204NoContent)
@@ -194,6 +163,46 @@ public static class EndpointRouteBuilderExtensions
 
         return ep;
     }
+
+    internal static async Task<IResult> EnrollCommandSwitcher(
+        IMediator mediator,
+        Register cmd) => cmd.Enroll switch
+        {
+            null => cmd.EnrollConfirm switch
+            {
+                null => Result.BadRequest("Malformed input."),
+                _ => await mediator.Send(cmd.EnrollConfirm),
+            },
+            _ => await mediator.Send(cmd.Enroll),
+        };
+
+    internal static async Task<IResult> TokenCommandSwitcher(
+        IMediator mediator,
+        Login cmd) => cmd.SignIn switch
+        {
+            null => cmd.CreateToken switch
+            {
+                null => Result.BadRequest("Malformed input."),
+                _ => await mediator.Send(cmd.CreateToken),
+            },
+            _ => await mediator.Send(cmd.SignIn),
+        };
+
+    internal static async Task<IResult> PasswordCommandSwitcher(
+        IMediator mediator,
+        UpdatePassword cmd) => cmd.ChangePassword switch
+        {
+            null => cmd.ResetPassword switch
+            {
+                null => cmd.ResetPasswordConfirm switch
+                {
+                    null => Result.BadRequest("Malformed input."),
+                    _ => await mediator.Send(cmd.ResetPasswordConfirm),
+                },
+                _ => await mediator.Send(cmd.ResetPassword),
+            },
+            _ => await mediator.Send(cmd.ChangePassword),
+        };
 
     public sealed class Login
     {

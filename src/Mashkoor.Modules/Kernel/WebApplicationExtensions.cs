@@ -2,6 +2,7 @@ using System.Text;
 using Mashkoor.Core.Localization;
 using Mashkoor.Core.Middlewares.RobotsTxt;
 using Mashkoor.Core.RateLimiting;
+using Mashkoor.Modules.I18n.Endpoints;
 using Mashkoor.Modules.System.Endpoints;
 using Mashkoor.Modules.Users.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
@@ -65,6 +66,7 @@ public static class WebApplicationExtensions
 
         protectedGroup
             .MapAccountEndpoints()
+            .MapI18nEndpoints()
             .MapSystemEndpoints()
             .RequireRateLimiting(GenericRateLimiter.PerUserRateLimitPolicyName)
             .WithTags("Protected");
