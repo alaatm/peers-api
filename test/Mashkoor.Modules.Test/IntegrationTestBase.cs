@@ -73,6 +73,8 @@ public abstract partial class IntegrationTestBase
             { "jwt:key", Convert.ToBase64String(new byte[32]) },
             { "jwt:durationInMinutes", $"{JwtDuration}" },
             { "firebase:serviceAccountKey", TestFirebaseServiceAccount },
+            { "totp:useDefaultOtp", "false" },
+            { "totp:duration", "00:03:00" },
             { "sms:sender", "Mashkoor" },
             { "sms:key", "123" },
             { "sms:enabled", "false" },

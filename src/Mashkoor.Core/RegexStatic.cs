@@ -4,6 +4,8 @@ namespace Mashkoor.Core;
 
 public static partial class RegexStatic
 {
+    [GeneratedRegex(@"^\d4$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex OtpRegex();
     [GeneratedRegex(@"^(?<func>startswith|contains|endswith|lt|le|eq|ge|gt|ne)\((?<arg>[^)]+)\)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex FilterRegex();
     [GeneratedRegex("^[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]

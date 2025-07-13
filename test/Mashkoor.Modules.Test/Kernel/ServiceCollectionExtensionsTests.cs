@@ -138,6 +138,8 @@ public class ServiceCollectionExtensionsTests
                 { "jwt:issuer", "https://www.jwt-test.com/iss" },
                 { "jwt:key", Convert.ToBase64String(new byte[32]) },
                 { "jwt:durationInMinutes", "10" },
+                { "totp:useDefaultOtp", "false" },
+                { "totp:duration" , "00:03:00" },
                 { "sms:sender", "Mashkoor" },
                 { "sms:key", "123" },
                 { "sms:enabled", "false" },

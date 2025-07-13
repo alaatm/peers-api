@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Mashkoor.Core.Data;
+using Mashkoor.Core.Security.Totp.Configuration;
 
 namespace Mashkoor.Core.Security.Totp;
 
@@ -10,13 +11,19 @@ namespace Mashkoor.Core.Security.Totp;
 /// </summary>
 public abstract class TotpTokenProviderBase : ITotpTokenProvider
 {
+    private readonly TotpConfig _config;
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TotpTokenProviderBase"/> class.
     /// </summary>
-    /// <param name="timeProvider"></param>
-    protected TotpTokenProviderBase(TimeProvider timeProvider) => _timeProvider = timeProvider;
+    /// <param name="config">The TOTP configuration.</param>
+    /// <param name="timeProvider">The time provider to use for generating TOTP codes.</param>
+    protected TotpTokenProviderBase([NotNull] TotpConfig config, TimeProvider timeProvider)
+    {
+        _config = config;
+        _timeProvider = timeProvider;
+    }
 
     /// <summary>
     /// Attempts to generate new code only if a valid one no longer or does not exist.
@@ -45,11 +52,16 @@ public abstract class TotpTokenProviderBase : ITotpTokenProvider
     /// <returns></returns>
     public string Generate([NotNull] IdentityUserBase user, string purpose)
     {
+        if (_config.UseDefaultOtp)
+        {
+            return _config.DefaultOtp;
+        }
+
         var modifier = GetUserModifier(user, purpose);
-        SetCacheValue(modifier, string.Empty, TimeSpan.FromSeconds(Rfc6238AuthenticationService.TimeStepSeconds - 1));
+        SetCacheValue(modifier, string.Empty, _config.Duration);
 
         return Rfc6238AuthenticationService
-            .GenerateCode(_timeProvider, CreateSecurityToken(user), modifier)
+            .GenerateCode(_timeProvider, _config.Duration, CreateSecurityToken(user), modifier)
             .ToString("D4", CultureInfo.InvariantCulture);
     }
 
@@ -67,9 +79,14 @@ public abstract class TotpTokenProviderBase : ITotpTokenProvider
             return false;
         }
 
+        if (_config.UseDefaultOtp)
+        {
+            return token == _config.DefaultOtp;
+        }
+
         var securityToken = CreateSecurityToken(user);
         var modifier = GetUserModifier(user, purpose);
-        return Rfc6238AuthenticationService.ValidateCode(_timeProvider, securityToken, code, modifier);
+        return Rfc6238AuthenticationService.ValidateCode(_timeProvider, _config.Duration, securityToken, code, modifier);
     }
 
     /// <summary>

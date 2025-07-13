@@ -105,7 +105,7 @@ public static class ServiceCollectionExtensions
             // Technically not used, as AuthorizationBehaviour is used instead but this is still required by other services.
             .AddAuthorization()
             .AddRateLimiting(config)
-            .AddTotpTokenProvider()
+            .AddTotpTokenProvider(config)
             .AddCqrs(cfg => cfg.AddOpenBehavior(typeof(IdentityCheckBehavior<,>)), mergedAssemblies)
             .AddPushNotificationProblemReporter()
             .AddDataServices<MashkoorContext, MashkoorContextScopedFactory, AppUser>(cfg)

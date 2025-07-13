@@ -1,8 +1,8 @@
-using Mashkoor.Modules.Users.Events;
-using Mashkoor.Modules.Users.EventHandlers;
-using Microsoft.Extensions.Caching.Memory;
 using Mashkoor.Core.Communication.Sms;
 using Mashkoor.Modules.Test.Common;
+using Mashkoor.Modules.Users.EventHandlers;
+using Mashkoor.Modules.Users.Events;
+using Microsoft.Extensions.Caching.Memory;
 using static Mashkoor.Modules.Test.SharedClasses.MockBuilder;
 
 namespace Mashkoor.Modules.Test.Users.EventHandlers;
@@ -31,7 +31,29 @@ public class OnEnrollRequestedTests
 
         // Assert
         Assert.NotEmpty(cache.Get<string>(username));
-        smsMoq.Verify(s => s.SendAsync(username, It.IsAny<string>()), Times.Once);
+        smsMoq.Verify(s => s.SendAsync(username, It.Is<string>(p => !p.EndsWith("1234"))), Times.Once);
+    }
+
+    [Fact]
+    public async Task Sends_defaultOtp_sms_to_new_user_when_configured()
+    {
+        // Arrange
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var smsMoq = new Mock<ISmsService>(MockBehavior.Strict);
+        var username = "+1234567890";
+        var notification = new EnrollRequested(
+            IdentityHelper.Get(),
+            username,
+            "en");
+
+        smsMoq.Setup(s => s.SendAsync(username, It.Is<string>(p => p.StartsWith("en:")))).Returns(Task.CompletedTask);
+
+        // Act
+        await CreateHandlerWithDefaultOtp(cache, smsMoq.Object).Handle(notification, CancellationToken.None);
+
+        // Assert
+        Assert.NotEmpty(cache.Get<string>(username));
+        smsMoq.Verify(s => s.SendAsync(username, It.Is<string>(p => p.EndsWith("1234"))), Times.Once);
     }
 
     [Fact]
@@ -56,5 +78,17 @@ public class OnEnrollRequestedTests
 
     private static OnEnrollRequested CreateHandler(
         IMemoryCache cache,
-        ISmsService sms) => new(cache, sms, new SLCultureMoq<res>());
+        ISmsService sms) => new(
+            new() { UseDefaultOtp = false, Duration = TimeSpan.FromMinutes(3) },
+            cache,
+            sms,
+            new SLCultureMoq<res>());
+
+    private static OnEnrollRequested CreateHandlerWithDefaultOtp(
+        IMemoryCache cache,
+        ISmsService sms) => new(
+            new() { UseDefaultOtp = true, DefaultOtp = "1234", Duration = TimeSpan.FromMinutes(3) },
+            cache,
+            sms,
+            new SLCultureMoq<res>());
 }

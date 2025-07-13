@@ -1,5 +1,6 @@
 using Mashkoor.Core.Data;
 using Mashkoor.Core.Security.Totp;
+using Mashkoor.Core.Security.Totp.Configuration;
 using Mashkoor.Core.Test.Common;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Time.Testing;
@@ -8,11 +9,23 @@ namespace Mashkoor.Core.Test.Security.Totp;
 
 public class TotpTokenProviderTests
 {
+    private static readonly TotpConfig _config = new()
+    {
+        UseDefaultOtp = false,
+        Duration = TimeSpan.FromMinutes(3),
+    };
+    private static readonly TotpConfig _defaultOtpConfig = new()
+    {
+        UseDefaultOtp = true,
+        DefaultOtp = "1234",
+        Duration = TimeSpan.FromMinutes(3),
+    };
+
     [Fact]
     public void Generate_generates_code_of_size_4()
     {
         // Arrange
-        var provider = new TotpTokenProvider(TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -30,7 +43,7 @@ public class TotpTokenProviderTests
         var timeProviderMoq = new FakeTimeProvider();
         timeProviderMoq.SetUtcNow(time);
 
-        var provider = new TotpTokenProvider(timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
 
         var sts = Guid.NewGuid().ToString();
         var user1 = new User { Id = 1, SecurityStamp = sts };
@@ -52,7 +65,7 @@ public class TotpTokenProviderTests
         var timeProviderMoq = new FakeTimeProvider();
         timeProviderMoq.SetUtcNow(time);
 
-        var provider = new TotpTokenProvider(timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
 
         var sts = Guid.NewGuid().ToString();
         var user = new User { Id = 1, SecurityStamp = sts };
@@ -75,7 +88,7 @@ public class TotpTokenProviderTests
         var timeProviderMoq = new FakeTimeProvider();
         timeProviderMoq.SetUtcNow(time);
 
-        var provider = new TotpTokenProvider(timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
 
         var user = new User { Id = 1 };
 
@@ -97,11 +110,11 @@ public class TotpTokenProviderTests
         var timeProviderMoq = new FakeTimeProvider();
         timeProviderMoq.SetUtcNow(time);
 
-        var provider = new TotpTokenProvider(timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
         string prevOtp = null;
 
-        for (var i = 0; i < Rfc6238AuthenticationService.TimeStepSeconds; i++)
+        for (var i = 0; i < _config.Duration.TotalSeconds; i++)
         {
             var otp = provider.Generate(user, TotpPurpose.SignInPurpose);
             Assert.True(prevOtp is null || prevOtp == otp);
@@ -117,16 +130,16 @@ public class TotpTokenProviderTests
         var timeProviderMoq = new MutableTimeProvider();
         timeProviderMoq.SetUtcNow(time);
 
-        var provider = new TotpTokenProvider(timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
-        for (var i = 0; i < Rfc6238AuthenticationService.TimeStepSeconds; i++)
+        for (var i = 0; i < _config.Duration.TotalSeconds; i++)
         {
             var otpTime = time.AddSeconds(i);
             timeProviderMoq.SetUtcNow(otpTime);
             var otp = provider.Generate(user, TotpPurpose.SignInPurpose);
 
-            for (var j = -Rfc6238AuthenticationService.TimeStepSeconds; j < Rfc6238AuthenticationService.TimeStepSeconds; j++)
+            for (var j = -_config.Duration.TotalSeconds; j < _config.Duration.TotalSeconds; j++)
             {
                 var checkTime = otpTime.AddSeconds(j);
                 timeProviderMoq.SetUtcNow(checkTime);
@@ -155,7 +168,7 @@ public class TotpTokenProviderTests
     public void TryGenerate_returns_true_when_no_valid_prev_generated_code_exist()
     {
         // Arrange
-        var provider = new TotpTokenProvider(TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -170,7 +183,7 @@ public class TotpTokenProviderTests
     public void TryGenerate_returns_false_when_a_valid_prev_generated_code_exist()
     {
         // Arrange
-        var provider = new TotpTokenProvider(TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -190,12 +203,12 @@ public class TotpTokenProviderTests
 
         var cacheEntryMoq = new Mock<ICacheEntry>() { CallBase = true };
         cacheEntryMoq.SetupSet(x => x.Value = string.Empty).Verifiable();
-        cacheEntryMoq.SetupSet(x => x.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(Rfc6238AuthenticationService.TimeStepSeconds - 1)).Verifiable();
+        cacheEntryMoq.SetupSet(x => x.AbsoluteExpirationRelativeToNow = _config.Duration).Verifiable();
 
         var memCacheMoq = new Mock<IMemoryCache>() { CallBase = true };
         memCacheMoq.Setup(p => p.CreateEntry($"Totp:{purpose}:1")).Returns(cacheEntryMoq.Object).Verifiable();
 
-        var provider = new TotpTokenProvider(TimeProvider.System, memCacheMoq.Object);
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, memCacheMoq.Object);
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -211,7 +224,7 @@ public class TotpTokenProviderTests
     {
         // Arrange
         var purpose = TotpPurpose.SignInPurpose;
-        var provider = new TotpTokenProvider(TimeProvider.System, Mock.Of<IMemoryCache>());
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, Mock.Of<IMemoryCache>());
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -230,7 +243,7 @@ public class TotpTokenProviderTests
         var memCacheMoq = new Mock<IMemoryCache>(MockBehavior.Strict);
         memCacheMoq.Setup(p => p.TryGetValue($"Totp:{purpose}:1", out It.Ref<object>.IsAny)).Returns(false).Verifiable();
 
-        var provider = new TotpTokenProvider(TimeProvider.System, memCacheMoq.Object);
+        var provider = new TotpTokenProvider(_config, TimeProvider.System, memCacheMoq.Object);
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
 
         // Act
@@ -238,6 +251,48 @@ public class TotpTokenProviderTests
 
         // Assert
         memCacheMoq.VerifyAll();
+    }
+
+    [Fact]
+    public void Generate_generates_defaultOtp_when_configured()
+    {
+        // Arrange
+        var provider = new TotpTokenProvider(_defaultOtpConfig, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
+
+        // Act
+        var code = provider.Generate(user, TotpPurpose.SignInPurpose);
+
+        // Assert
+        Assert.Equal("1234", code);
+    }
+
+    [Fact]
+    public void Validate_returns_true_for_defaultOtp_when_configured()
+    {
+        // Arrange
+        var provider = new TotpTokenProvider(_defaultOtpConfig, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
+
+        // Act
+        var isValid = provider.Validate("1234", user, TotpPurpose.SignInPurpose);
+
+        // Assert
+        Assert.True(isValid);
+    }
+
+    [Fact]
+    public void Validate_returns_false_for_invalid_defaultOtp()
+    {
+        // Arrange
+        var provider = new TotpTokenProvider(_defaultOtpConfig, TimeProvider.System, new MemoryCache(new MemoryCacheOptions()));
+        var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
+
+        // Act
+        var isValid = provider.Validate("5678", user, TotpPurpose.SignInPurpose);
+
+        // Assert
+        Assert.False(isValid);
     }
 
     private class User : IdentityUserBase { }

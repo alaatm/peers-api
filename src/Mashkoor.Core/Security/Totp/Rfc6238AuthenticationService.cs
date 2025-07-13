@@ -8,10 +8,6 @@ namespace Mashkoor.Core.Security.Totp;
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
 internal static class Rfc6238AuthenticationService
 {
-    public const int TimeStepSeconds = 90;
-
-    private static readonly DateTime _unixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-    private static readonly TimeSpan _timestep = TimeSpan.FromSeconds(TimeStepSeconds);
     private static readonly Encoding _encoding = new UTF8Encoding(false, true);
 
     private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
@@ -45,30 +41,30 @@ internal static class Rfc6238AuthenticationService
     }
 
     // More info: https://tools.ietf.org/html/rfc6238#section-4
-    private static ulong GetCurrentTimeStepNumber(TimeProvider timeProvider)
+    private static ulong GetCurrentTimeStepNumber(TimeProvider timeProvider, TimeSpan timestep)
     {
-        var delta = timeProvider.UtcNow() - _unixEpoch;
-        return (ulong)(delta.Ticks / _timestep.Ticks);
+        var delta = timeProvider.GetUtcNow() - DateTimeOffset.UnixEpoch;
+        return (ulong)(delta.Ticks / timestep.Ticks);
     }
 
-    public static int GenerateCode(TimeProvider timeProvider, byte[] securityToken, string modifier)
+    public static int GenerateCode(TimeProvider timeProvider, TimeSpan timestep, byte[] securityToken, string modifier)
     {
         Debug.Assert(securityToken is not null);
 
-        var currentTimeStep = GetCurrentTimeStepNumber(timeProvider);
+        var currentTimeStep = GetCurrentTimeStepNumber(timeProvider, timestep);
         using var hashAlgorithm = new HMACSHA1(securityToken);
         return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
     }
 
-    public static bool ValidateCode(TimeProvider timeProvider, byte[] securityToken, int code, string modifier)
+    public static bool ValidateCode(TimeProvider timeProvider, TimeSpan timestep, byte[] securityToken, int code, string modifier)
     {
         Debug.Assert(securityToken is not null);
 
-        // Allow a variance of 90 seconds on left and 0 secs on right.
+        // Allow a variance of 1 second on left and 0 secs on right.
         const int LeftAllowedVariance = -1;
         const int RightAllowedVariance = 0;
 
-        var currentTimeStep = GetCurrentTimeStepNumber(timeProvider);
+        var currentTimeStep = GetCurrentTimeStepNumber(timeProvider, timestep);
         using var hashAlgorithm = new HMACSHA1(securityToken);
         for (var i = LeftAllowedVariance; i <= RightAllowedVariance; i++)
         {
