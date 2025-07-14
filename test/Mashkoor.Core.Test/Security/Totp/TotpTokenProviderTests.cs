@@ -128,7 +128,6 @@ public class TotpTokenProviderTests
     {
         var time = new DateTime(2022, 3, 28, 0, 0, 0, DateTimeKind.Utc);
         var timeProviderMoq = new MutableTimeProvider();
-        timeProviderMoq.SetUtcNow(time);
 
         var provider = new TotpTokenProvider(_config, timeProviderMoq, new MemoryCache(new MemoryCacheOptions()));
         var user = new User { Id = 1, SecurityStamp = Guid.NewGuid().ToString() };
@@ -139,7 +138,7 @@ public class TotpTokenProviderTests
             timeProviderMoq.SetUtcNow(otpTime);
             var otp = provider.Generate(user, TotpPurpose.SignInPurpose);
 
-            for (var j = -_config.Duration.TotalSeconds; j < _config.Duration.TotalSeconds; j++)
+            for (var j = -_config.Duration.TotalSeconds; j <= _config.Duration.TotalSeconds; j++)
             {
                 var checkTime = otpTime.AddSeconds(j);
                 timeProviderMoq.SetUtcNow(checkTime);
@@ -161,6 +160,9 @@ public class TotpTokenProviderTests
                     }
                 }
             }
+
+            timeProviderMoq.SetUtcNow(otpTime.AddSeconds(_config.Duration.TotalSeconds * 2));
+            Assert.False(provider.Validate(otp, user, TotpPurpose.SignInPurpose));
         }
     }
 

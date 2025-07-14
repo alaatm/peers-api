@@ -10,32 +10,35 @@ internal static class Rfc6238AuthenticationService
 {
     private static readonly Encoding _encoding = new UTF8Encoding(false, true);
 
-    private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
+    private static int ComputeTotp(byte[] key, ulong timestepNumber, byte[] modifierBytes)
     {
         // # of 0's = length of pin
         const int Mod = 10000;
 
         // See https://tools.ietf.org/html/rfc4226
         // We can add an optional modifier
-        var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long)timestepNumber));
-        var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifier));
+
+        Span<byte> timestepAsBytes = stackalloc byte[sizeof(long)];
+        BitConverter.TryWriteBytes(timestepAsBytes, IPAddress.HostToNetworkOrder((long)timestepNumber));
+
+        Span<byte> hash = stackalloc byte[HMACSHA1.HashSizeInBytes];
+        HMACSHA1.TryHashData(key, ApplyModifier(timestepAsBytes, modifierBytes), hash, out _);
 
         // Generate DT string
         var offset = hash[^1] & 0xf;
         Debug.Assert(offset + 4 < hash.Length);
         var binaryCode = ((hash[offset] & 0x7f) << 24)
-                         | ((hash[offset + 1] & 0xff) << 16)
-                         | ((hash[offset + 2] & 0xff) << 8)
-                         | (hash[offset + 3] & 0xff);
+                            | ((hash[offset + 1] & 0xff) << 16)
+                            | ((hash[offset + 2] & 0xff) << 8)
+                            | (hash[offset + 3] & 0xff);
 
         return binaryCode % Mod;
     }
 
-    private static byte[] ApplyModifier(byte[] input, string modifier)
+    private static byte[] ApplyModifier(Span<byte> input, byte[] modifierBytes)
     {
-        var modifierBytes = _encoding.GetBytes(modifier);
         var combined = new byte[checked(input.Length + modifierBytes.Length)];
-        Buffer.BlockCopy(input, 0, combined, 0, input.Length);
+        input.CopyTo(combined);
         Buffer.BlockCopy(modifierBytes, 0, combined, input.Length, modifierBytes.Length);
         return combined;
     }
@@ -52,23 +55,23 @@ internal static class Rfc6238AuthenticationService
         Debug.Assert(securityToken is not null);
 
         var currentTimeStep = GetCurrentTimeStepNumber(timeProvider, timestep);
-        using var hashAlgorithm = new HMACSHA1(securityToken);
-        return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
+        return ComputeTotp(securityToken, currentTimeStep, _encoding.GetBytes(modifier));
     }
 
     public static bool ValidateCode(TimeProvider timeProvider, TimeSpan timestep, byte[] securityToken, int code, string modifier)
     {
         Debug.Assert(securityToken is not null);
 
-        // Allow a variance of 1 second on left and 0 secs on right.
+        // Allow a variance of 1 timestep on left and 0 on right.
         const int LeftAllowedVariance = -1;
         const int RightAllowedVariance = 0;
 
         var currentTimeStep = GetCurrentTimeStepNumber(timeProvider, timestep);
-        using var hashAlgorithm = new HMACSHA1(securityToken);
+        var modifierBytes = _encoding.GetBytes(modifier);
+
         for (var i = LeftAllowedVariance; i <= RightAllowedVariance; i++)
         {
-            var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifier);
+            var computedTotp = ComputeTotp(securityToken, (ulong)((long)currentTimeStep + i), modifierBytes);
             if (computedTotp == code)
             {
                 return true;
