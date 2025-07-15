@@ -55,9 +55,26 @@ public class TotpConfigTests
         Assert.True(result.Succeeded);
     }
 
+    [Fact]
+    public void Validation_passes_when_all_settings_are_valid_with_defaultOtp()
+    {
+        // Act
+        var result = _validator.Validate("", GetValidConfigDefaultOtp());
+
+        // Assert
+        Assert.True(result.Succeeded);
+    }
+
     private static TotpConfig GetValidConfig() => new()
     {
         UseDefaultOtp = false,
+        Duration = TimeSpan.FromMinutes(3),
+    };
+
+    private static TotpConfig GetValidConfigDefaultOtp() => new()
+    {
+        UseDefaultOtp = true,
+        DefaultOtp = "0000",
         Duration = TimeSpan.FromMinutes(3),
     };
 }
