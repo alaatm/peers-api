@@ -160,7 +160,7 @@ public static class Result
 public sealed class UnauthorizedHttpResult2<TValue> : IResult/*, IEndpointMetadataProvider*/, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NotFound"/> class with the values.
+    /// Initializes a new instance of the <see cref="UnauthorizedHttpResult2{TValue}"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
     internal UnauthorizedHttpResult2(TValue? value)
@@ -201,7 +201,6 @@ public sealed class UnauthorizedHttpResult2<TValue> : IResult/*, IEndpointMetada
                 Value);
     }
 
-    /// <inheritdoc/>
     //static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     //{
     //    ArgumentNullException.ThrowIfNull(context);
@@ -218,7 +217,7 @@ public sealed class UnauthorizedHttpResult2<TValue> : IResult/*, IEndpointMetada
 public sealed class ForbiddenHttpResult<TValue> : IResult/*, IEndpointMetadataProvider*/, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NotFound"/> class with the values.
+    /// Initializes a new instance of the <see cref="ForbiddenHttpResult{TValue}"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
     internal ForbiddenHttpResult(TValue? value)
@@ -259,7 +258,6 @@ public sealed class ForbiddenHttpResult<TValue> : IResult/*, IEndpointMetadataPr
                 Value);
     }
 
-    /// <inheritdoc/>
     //static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     //{
     //    ArgumentNullException.ThrowIfNull(context);

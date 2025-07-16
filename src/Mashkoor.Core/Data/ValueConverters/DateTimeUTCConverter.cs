@@ -17,7 +17,7 @@ public sealed class DateTimeUTCConverter : ValueConverter<DateTime, DateTime>
 }
 
 /// <summary>
-/// Converts <see cref="DateTime?" /> to <see cref="DateTime?"/> with a UTC kind.
+/// Converts <see cref="Nullable{DateTime}" /> to <see cref="Nullable{DateTime}"/> with a UTC kind.
 /// </summary>
 public sealed class NullableDateTimeUTCConverter : ValueConverter<DateTime?, DateTime?>
 {

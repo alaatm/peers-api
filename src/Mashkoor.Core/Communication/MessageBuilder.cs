@@ -65,8 +65,10 @@ public sealed class MessageBuilder
     ///
     /// </summary>
     /// <param name="recipient">The notification recipient.</param>
+    /// <param name="title"> The notification title.</param>
     /// <param name="body">The notification body.</param>
-    /// <param name="args">The arguments used in localized output.</param>
+    /// <param name="titleArgs"> The arguments used in localized output for the title.</param>
+    /// <param name="bodyArgs"> The arguments used in localized output for the body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
         [NotNull] SimpleUser recipient,
@@ -87,8 +89,10 @@ public sealed class MessageBuilder
     /// </summary>
     /// <param name="recipient">The notification recipient.</param>
     /// <param name="data">The notification data.</param>
+    /// <param name="title"> The notification title.</param>
     /// <param name="body">The notification body.</param>
-    /// <param name="args">The arguments used in localized output.</param>
+    /// <param name="titleArgs"> The arguments used in localized output for the title.</param>
+    /// <param name="bodyArgs"> The arguments used in localized output for the body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
         [NotNull] SimpleUser recipient,
@@ -125,8 +129,10 @@ public sealed class MessageBuilder
     ///
     /// </summary>
     /// <param name="recipients">The notification recipients.</param>
+    /// <param name="title">The notification title.</param>
     /// <param name="body">The notification body.</param>
-    /// <param name="args">The arguments used in localized output.</param>
+    /// <param name="titleArgs">The arguments used in localized output for the title.</param>
+    /// <param name="bodyArgs">The arguments used in localized output for the body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
         [NotNull] IReadOnlyList<SimpleUser> recipients,
@@ -147,8 +153,10 @@ public sealed class MessageBuilder
     /// </summary>
     /// <param name="recipients">The notification recipients.</param>
     /// <param name="data">The notification data.</param>
+    /// <param name="title"> The notification title.</param>
     /// <param name="body">The notification body.</param>
-    /// <param name="args">The arguments used in localized output.</param>
+    /// <param name="titleArgs">The arguments used in localized output for the title.</param>
+    /// <param name="bodyArgs">The arguments used in localized output for the body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
         [NotNull] IReadOnlyList<SimpleUser> recipients,
@@ -174,10 +182,12 @@ public sealed class MessageBuilder
     /// <summary>
     ///
     /// </summary>
-    /// <param name="recipient">The notification recipient.</param>
+    /// <param name="recipients"> The notification recipients.</param>
     /// <param name="data">The notification data.</param>
+    /// <param name="title">The notification title.</param>
     /// <param name="body">The notification body.</param>
-    /// <param name="args">The arguments used in localized output.</param>
+    /// <param name="titleArgs">The arguments used in localized output for the title.</param>
+    /// <param name="bodyArgs">The arguments used in localized output for the body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
         [NotNull] IReadOnlyList<SimpleUser> recipients,
@@ -220,6 +230,7 @@ public sealed class MessageBuilder
     ///
     /// </summary>
     /// <param name="handle">The handle to send to.</param>
+    /// <param name="title">The notification title.</param>
     /// <param name="body">The notification body.</param>
     /// <returns></returns>
     public MessageBuilder Add(
@@ -237,6 +248,7 @@ public sealed class MessageBuilder
     ///
     /// </summary>
     /// <param name="topic">The topic subscribers to send to.</param>
+    /// <param name="title">The notification title.</param>
     /// <param name="body">The notification body.</param>
     /// <returns></returns>
     public MessageBuilder Topic(

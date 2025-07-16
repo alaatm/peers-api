@@ -9,6 +9,7 @@ public static partial class ServiceCollectionExtensions
     /// Adds push notification services.
     /// </summary>
     /// <param name="services">The service collection.</param>
+    /// <param name="config">The configuration.</param>
     /// <returns></returns>
     public static IServiceCollection AddPushNotifications(
         this IServiceCollection services,

@@ -47,7 +47,6 @@ public static class HttpRequestExtensions
     /// <summary>
     /// Binds form data content, including files, to <see cref="FormData{T}"/>.
     /// </summary>
-    /// <typeparam name="T">The model type.</typeparam>
     /// <param name="request">The HTTP request.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>

@@ -6,9 +6,9 @@ namespace Mashkoor.Core.Communication.Sms;
 public interface ISmsService
 {
     /// <summary>
-    /// Asynchronously sends an SMS to a receipient.
+    /// Asynchronously sends an SMS to a recipient.
     /// </summary>
     /// <param name="recipient">The recipient.</param>
-    /// <param name="message">The message body.</param>
+    /// <param name="body">The message body.</param>
     Task SendAsync(string recipient, string body);
 }

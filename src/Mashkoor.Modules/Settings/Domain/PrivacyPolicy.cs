@@ -43,6 +43,7 @@ public sealed class PrivacyPolicy : Entity, ILocalizedEntity<PrivacyPolicy, Priv
     /// </summary>
     /// <param name="title">The title.</param>
     /// <param name="body">The HTML body.</param>
+    /// <param name="effectiveDate">The effective date of the policy.</param>
     public void Update(
         [NotNull] TranslatedField[] title,
         [NotNull] TranslatedField[] body,

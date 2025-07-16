@@ -3,7 +3,7 @@ using Mashkoor.Modules.I18n.Domain;
 namespace Mashkoor.Modules.Settings.Domain;
 
 /// <summary>
-/// Represents value of terms & conditions.
+/// Represents value of terms and conditions.
 /// </summary>
 public sealed class Terms : Entity, ILocalizedEntity<Terms, TermsTranslation>
 {

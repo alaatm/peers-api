@@ -16,7 +16,7 @@ public class BusinessRuleValidationException : Exception
     /// <summary>
     /// Initializes a new instance of <see cref="BusinessRuleValidationException"/>.
     /// </summary>
-    /// <param name="brokenRules">The list of broken rules.</param>
+    /// <param name="brokenRule">The broken rule.</param>
     public BusinessRuleValidationException([NotNull] IBusinessRule brokenRule) : base($"{brokenRule.ErrorTitle}:{Environment.NewLine}{string.Join(Environment.NewLine, brokenRule.Errors)}")
         => BrokenRule = brokenRule;
 

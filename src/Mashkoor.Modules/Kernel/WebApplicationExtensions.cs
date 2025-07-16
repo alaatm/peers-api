@@ -18,7 +18,6 @@ public static class WebApplicationExtensions
     /// Adds all required middleware.
     /// </summary>
     /// <param name="app">The web application.</param>
-    /// <param name="appName">The app name.</param>
     public static void UseMashkoor([NotNull] this WebApplication app)
     {
         var badRequestResponse = Encoding.UTF8.GetBytes(/*lang=json,strict*/ "{\"detail\":\"Bad request.\"}");

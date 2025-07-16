@@ -9,7 +9,7 @@ public interface ISystemUser
     /// The user id.
     /// </summary>
     /// <remarks>
-    /// This is the same as the <see cref="AppUser.Id"/> property. It will be the same across all the user types.
+    /// This is the same as the <see cref="AppUser"/> Id property. It will be the same across all the user types.
     /// </remarks>
     int Id { get; set; }
     /// <summary>

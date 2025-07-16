@@ -30,6 +30,7 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// Creates a new instance of <see cref="Customer"/>.
     /// </summary>
     /// <param name="user">The database user.</param>
+    /// <param name="secret">The secret used for hashing tip request signature.</param>
     /// <returns></returns>
     public static Customer Create([NotNull] AppUser user, string secret)
     {

@@ -11,6 +11,7 @@ public static class IRuleBuilderExtensions
     /// </summary>
     /// <typeparam name="T">Type of object being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder on which the validator should be defined.</param>
+    /// <param name="l">The localization string.</param>
     /// <returns></returns>
     public static IRuleBuilderOptions<T, string> PhoneNumber<T>(
         [NotNull] this IRuleBuilder<T, string> ruleBuilder,
@@ -23,6 +24,7 @@ public static class IRuleBuilderExtensions
     /// </summary>
     /// <typeparam name="T">Type of object being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder on which the validator should be defined.</param>
+    /// <param name="l">Localization object for error messages.</param>
     /// <returns></returns>
     public static IRuleBuilderOptions<T, string> IsIban<T>(
         [NotNull] this IRuleBuilder<T, string> ruleBuilder,
