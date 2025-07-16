@@ -1,4 +1,3 @@
-#pragma warning disable CA1310 // Specify StringComparison for correctness
 using System.Data.Common;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
@@ -645,4 +644,3 @@ public abstract partial class IntegrationTestBase
         conn.Close();
     }
 }
-#pragma warning restore CA1310 // Specify StringComparison for correctness

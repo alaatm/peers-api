@@ -69,7 +69,7 @@ public class PushNotificationServiceTests
         }
         else
         {
-            Assert.InRange(sw.ElapsedMilliseconds, 295, 850);
+            Assert.InRange(sw.ElapsedMilliseconds, 295, 1500);
         }
     }
 

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Mashkoor.Core.Queries;
 
 /// <summary>
@@ -8,5 +10,6 @@ public abstract record LocalizedQuery() : IQuery
     /// <summary>
     /// Returns current thread language.
     /// </summary>
+    [JsonIgnore]
     public string Lang => Localization.Lang.GetCurrent();
 }

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Mashkoor.Core.Commands;
 
 /// <summary>
@@ -8,5 +10,6 @@ public abstract record LocalizedCommand : ICommand
     /// <summary>
     /// Returns current thread language.
     /// </summary>
+    [JsonIgnore]
     public string Lang => Localization.Lang.GetCurrent();
 }

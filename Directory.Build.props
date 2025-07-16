@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <DotNetVer>9.0.6</DotNetVer>
-    <DotNetExtVer>9.6.0</DotNetExtVer>
+    <DotNetVer>9.0.7</DotNetVer>
+    <DotNetExtVer>9.7.0</DotNetExtVer>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
