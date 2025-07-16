@@ -1,5 +1,6 @@
 using Mashkoor.Core.Common.Configs;
 using Mashkoor.Core.Communication.Push.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Mashkoor.Core.Communication.Push;
 
@@ -14,9 +15,14 @@ public static partial class ServiceCollectionExtensions
     public static IServiceCollection AddPushNotifications(
         this IServiceCollection services,
         IConfiguration config)
-        => services
-            .AddScoped<IFirebaseMessagingWrapper, FirebaseMessagingWrapper>()
-            .AddScoped<IFirebaseMessagingService, FirebaseMessagingService>()
+    {
+        services
+            .AddSingleton<IFirebaseMessagingWrapper, FirebaseMessagingWrapper>()
+            .AddSingleton<IFirebaseMessagingService, FirebaseMessagingService>()
             .AddScoped<IPushNotificationService, PushNotificationService>()
-            .RegisterConfig<FirebaseConfig, FirebaseConfigValidator>(config);
+            .RegisterConfig<FirebaseConfig, FirebaseConfigValidator>(config)
+            .TryAddSingleton(TimeProvider.System);
+
+        return services;
+    }
 }

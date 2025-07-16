@@ -1,4 +1,5 @@
 using Mashkoor.Core.Communication.Push;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Mashkoor.Modules.Users.Services;
 
@@ -11,6 +12,11 @@ public static class ServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddPushNotificationProblemReporter(
         this IServiceCollection services)
-        => services
-            .AddScoped<IPushNotificationProblemReporter, PushNotificationProblemReporter>();
+    {
+        services
+            .AddScoped<IPushNotificationProblemReporter, PushNotificationProblemReporter>()
+            .TryAddSingleton(TimeProvider.System);
+
+        return services;
+    }
 }

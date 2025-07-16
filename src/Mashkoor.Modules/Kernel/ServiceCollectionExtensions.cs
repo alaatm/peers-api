@@ -15,6 +15,7 @@ using Mashkoor.Modules.Kernel.Pipelines;
 using Mashkoor.Modules.Kernel.Startup;
 using Mashkoor.Modules.Users.Domain;
 using Mashkoor.Modules.Users.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Mashkoor.Modules.Kernel;
 
@@ -92,8 +93,7 @@ public static class ServiceCollectionExtensions
         //    p.SerializerOptions.PropertyNamingPolicy = GlobalJsonOptions.Default.PropertyNamingPolicy;
         //});
 
-        return services
-            .AddSingleton(TimeProvider.System)
+        services
             .AddLocalizationWithTracking()
             .AddPushNotifications(config)
             .AddSms(config)
@@ -110,6 +110,9 @@ public static class ServiceCollectionExtensions
             .AddPushNotificationProblemReporter()
             .AddDataServices<MashkoorContext, MashkoorContextScopedFactory, AppUser>(cfg)
             .AddMessageBroker()
-            .AddBackgroundJobs();
+            .AddBackgroundJobs()
+            .TryAddSingleton(TimeProvider.System);
+
+        return services;
     }
 }

@@ -8,6 +8,7 @@ namespace Mashkoor.Core.Communication.Push;
 /// </summary>
 public sealed class PushNotificationService : IPushNotificationService
 {
+    private readonly TimeProvider _timeProvider;
     private readonly IFirebaseMessagingService _firebase;
     private readonly IPushNotificationProblemReporter _pushNotificationProblemReporter;
     private readonly ILogger<PushNotificationService> _log;
@@ -20,31 +21,36 @@ public sealed class PushNotificationService : IPushNotificationService
     /// <summary>
     /// Creates a new instance of <see cref="PushNotificationService"/>.
     /// </summary>
+    /// <param name="timeProvider">The time provider.</param>
     /// <param name="firebase">The firebase service implementation.</param>
     /// <param name="pushNotificationProblemReporter">The problem reporting service.</param>
     /// <param name="log">The logger.</param>
     public PushNotificationService(
+        TimeProvider timeProvider,
         IFirebaseMessagingService firebase,
         IPushNotificationProblemReporter pushNotificationProblemReporter,
-        ILogger<PushNotificationService> log) : this(firebase, pushNotificationProblemReporter, log, DefaultMaxRetryCount, DefaultBackoffInMilliseconds)
+        ILogger<PushNotificationService> log) : this(timeProvider, firebase, pushNotificationProblemReporter, log, DefaultMaxRetryCount, DefaultBackoffInMilliseconds)
     {
     }
 
     /// <summary>
     /// Creates a new instance of <see cref="PushNotificationService"/>.
     /// </summary>
+    /// <param name="timeProvider">The time provider.</param>
     /// <param name="firebase">The firebase service implementation.</param>
     /// <param name="pushNotificationProblemReporter">The problem reporting service.</param>
     /// <param name="log">The logger.</param>
     /// <param name="maxRetryCount">The max retry count. Defaults to 3.</param>
     /// <param name="backoffInMilliseconds">The backoff in milliseconds between retries. Defaults to 2000ms.</param>
     public PushNotificationService(
+        TimeProvider timeProvider,
         IFirebaseMessagingService firebase,
         IPushNotificationProblemReporter pushNotificationProblemReporter,
         ILogger<PushNotificationService> log,
         int maxRetryCount,
         int backoffInMilliseconds)
     {
+        _timeProvider = timeProvider;
         _firebase = firebase;
         _pushNotificationProblemReporter = pushNotificationProblemReporter;
         _log = log;
@@ -69,7 +75,7 @@ public sealed class PushNotificationService : IPushNotificationService
 
         do
         {
-            await Task.Delay(_backoffInMilliseconds * retries);
+            await Task.Delay(TimeSpan.FromMilliseconds(_backoffInMilliseconds * retries), _timeProvider);
 
             _log.PushNotificationDispatch(retries + 1, messageGroup.Item1.Count, messageGroup.Item2.Count, messageGroup.Item2.Sum(p => p.Tokens.Count));
             messageGroup = await DispatchCoreAsync(messageGroup);

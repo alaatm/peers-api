@@ -14,7 +14,6 @@ public class ServiceCollectionExtensionsTests
 
         // Act
         var serviceProvider = serviceCollection
-            .AddSingleton(TimeProvider.System)
             .AddDbContext<MashkoorContext>()
             .AddPushNotificationProblemReporter()
             .BuildServiceProvider();

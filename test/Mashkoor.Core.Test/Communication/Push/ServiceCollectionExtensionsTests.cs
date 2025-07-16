@@ -31,11 +31,18 @@ public class ServiceCollectionExtensionsTests
             .BuildServiceProvider();
 
         // Assert
-        serviceProvider.GetRequiredService<IFirebaseMessagingWrapper>();
-        serviceProvider.GetRequiredService<IFirebaseMessagingService>();
+        Assert.Same(GetSingleton<IFirebaseMessagingWrapper>(), GetSingleton<IFirebaseMessagingWrapper>());
+        Assert.Same(GetSingleton<IFirebaseMessagingService>(), GetSingleton<IFirebaseMessagingService>());
         serviceProvider.GetRequiredService<IPushNotificationService>();
         serviceProvider.GetRequiredService<IValidateOptions<FirebaseConfig>>();
         serviceProvider.GetRequiredService<FirebaseConfig>();
+
+        T GetSingleton<T>()
+            where T : class
+        {
+            using var scope = serviceProvider.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<T>();
+        }
     }
 
     private class PushNotificationProblemReporterMoq : IPushNotificationProblemReporter

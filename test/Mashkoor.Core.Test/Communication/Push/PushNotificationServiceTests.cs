@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using System.Reflection;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Microsoft.Extensions.Logging;
 using Mashkoor.Core.Communication.Push;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Mashkoor.Core.Test.Communication.Push;
 
@@ -13,7 +13,7 @@ public class PushNotificationServiceTests
     public async Task DispatchAsync_returns_original_messages_when_empty()
     {
         // Arrange
-        var pushService = new PushNotificationService(Mock.Of<IFirebaseMessagingService>(), Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 1, 1);
+        var pushService = new PushNotificationService(TimeProvider.System, Mock.Of<IFirebaseMessagingService>(), Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 1, 1);
 
         var messages = new List<Message>();
         var multicastMessages = new List<MulticastMessage>();
@@ -32,7 +32,7 @@ public class PushNotificationServiceTests
         // Arrange
         var maxRetryCount = 5;
         var firebaseMoq = new FailingFirebaseMoq();
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), maxRetryCount, 1);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), maxRetryCount, 1);
 
         var messages = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" } };
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["111", "222"] } };
@@ -49,28 +49,28 @@ public class PushNotificationServiceTests
     public async Task DispatchAsync_backsoff_between_retries()
     {
         // Arrange
+        var timeProviderMoq = new FakeTimeProvider();
         var maxRetryCount = 3;
-        var backoff = 100;
+        var backoff = 2000;
         var firebaseMoq = new FailingFirebaseMoq();
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), maxRetryCount, backoff);
+        var pushService = new PushNotificationService(timeProviderMoq, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), maxRetryCount, backoff);
 
         var messages = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" } };
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["111", "222"] } };
 
         // Act
-        var sw = Stopwatch.StartNew();
-        await pushService.DispatchAsync((messages, multicastMessages));
-        sw.Stop();
+        var t = pushService.DispatchAsync((messages, multicastMessages));
 
-        // Assert
-        if (Environment.GetEnvironmentVariable("CI") == "true")
+        // Fast-forward time enough to let retries proceed
+        for (var i = 0; i < maxRetryCount; i++)
         {
-            Assert.InRange(sw.ElapsedMilliseconds, 295, 30000);
+            timeProviderMoq.Advance(TimeSpan.FromMilliseconds(backoff * i));
+            await Task.Delay(1); // Give continuation a chance to run
         }
-        else
-        {
-            Assert.InRange(sw.ElapsedMilliseconds, 295, 1500);
-        }
+
+        await t;
+        Assert.Equal(maxRetryCount, firebaseMoq.SendAsyncCallCount);
+        Assert.Equal(maxRetryCount, firebaseMoq.SendMulticastAsyncCallCount);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new FailingFirebaseMoq();
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
 
         var messagesSingle = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" } };
         var messagesMulti = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" }, new() { Notification = new() { Body = "Test" }, Token = "222" } };
@@ -102,7 +102,7 @@ public class PushNotificationServiceTests
         // Arrange
         var firebaseMoq = new FailingFirebaseMoq();
         var pushNotificationProblemReporterMoq = new Mock<IPushNotificationProblemReporter>();
-        var pushService = new PushNotificationService(firebaseMoq, pushNotificationProblemReporterMoq.Object, Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, pushNotificationProblemReporterMoq.Object, Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
 
         var messagesSingle = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" } };
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["333", "444"] } };
@@ -130,7 +130,7 @@ public class PushNotificationServiceTests
         // Arrange
         var firebaseMoq = new FailingFirebaseMoq();
         var pushNotificationProblemReporterMoq = new Mock<IPushNotificationProblemReporter>();
-        var pushService = new PushNotificationService(firebaseMoq, pushNotificationProblemReporterMoq.Object, Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, pushNotificationProblemReporterMoq.Object, Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
 
         var messagesMulti = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" }, new() { Notification = new() { Body = "Test" }, Token = "222" } };
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["333", "444"] } };
@@ -158,7 +158,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(0);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
 
         var message = new Message { Notification = new() { Body = "Test" }, Token = "111" };
 
@@ -176,7 +176,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(2);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
 
         var message = new Message { Notification = new() { Body = "Test" }, Token = "111" };
 
@@ -194,7 +194,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(999);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
 
         var message = new Message { Notification = new() { Body = "Test" }, Token = "111" };
 
@@ -212,7 +212,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(0);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 3, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 3, 0);
 
         var messages = Enumerable.Range(0, 10).Select(i => new Message { Notification = new() { Body = "Test" }, Token = $"{i:00}" }).ToList();
         var multicastMessages = new List<MulticastMessage>
@@ -259,7 +259,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(0);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 4, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 4, 0);
 
         var messages = Enumerable.Range(0, 10).Select(i => new Message { Notification = new() { Body = "Test" }, Token = $"{i:00}" }).ToList();
         var multicastMessages = new List<MulticastMessage>
@@ -309,7 +309,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new PartiallySucceedingFirebaseMoq(0);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
 
         var messages = Enumerable.Range(0, 10).Select(i => new Message { Notification = new() { Body = "Test" }, Token = $"{i:00}" }).ToList();
         var multicastMessages = new List<MulticastMessage>
@@ -362,7 +362,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new FailingNonRetryingFirebaseMoq(errorCode, default);
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 0, 0);
 
         var messagesSingle = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" } };
         var messagesMulti = new List<Message> { new() { Notification = new() { Body = "Test" }, Token = "111" }, new() { Notification = new() { Body = "Test" }, Token = "222" } };
@@ -384,7 +384,7 @@ public class PushNotificationServiceTests
     {
         // Arrange
         var firebaseMoq = new SucceedingFirebaseMoq();
-        var pushService = new PushNotificationService(firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
+        var pushService = new PushNotificationService(TimeProvider.System, firebaseMoq, Mock.Of<IPushNotificationProblemReporter>(), Mock.Of<ILogger<PushNotificationService>>(), 5, 0);
 
         var messages = Enumerable.Range(0, 1001).Select(i => new Message { Notification = new() { Body = $"Test-{i}" }, Token = $"{i}" }).ToList();
 
