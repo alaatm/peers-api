@@ -41,6 +41,16 @@ jobs:
         with:
           dotnet-version: 9.0
 
+      - name: install & run azurite
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - run: |
+          npm ci
+          mkdir ~/azurite
+          ./node_modules/.bin/azurite --skipApiVersionCheck -s -l ~/azurite &
+
       - name: run build script
         run: |
           ./build.sh --target Test \
