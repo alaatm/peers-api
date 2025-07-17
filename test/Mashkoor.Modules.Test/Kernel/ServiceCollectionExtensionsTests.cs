@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using FluentValidation;
+using Mashkoor.Core.AzureServices.Storage;
 using Mashkoor.Core.Background;
 using Mashkoor.Core.Commands;
 using Mashkoor.Core.Communication.Email;
@@ -133,7 +134,6 @@ public class ServiceCollectionExtensionsTests
                 { "Logging:LogLevel:Default", "None" },
                 { "Logging:Console:LogLevel:Default", "None" },
                 { "azure:storageConnectionString", "UseDevelopmentStorage=true" },
-                { "azure:tablesConnectionString", "UseDevelopmentStorage=true" },
                 { "firebase:serviceAccountKey", IntegrationTestBase.TestFirebaseServiceAccount },
                 { "jwt:issuer", "https://www.jwt-test.com/iss" },
                 { "jwt:key", Convert.ToBase64String(new byte[32]) },
@@ -205,6 +205,7 @@ public class ServiceCollectionExtensionsTests
         serviceProvider.GetRequiredService<IOptions<RateLimiterOptions>>();
         serviceProvider.GetRequiredService<ITotpTokenProvider>();
         serviceProvider.GetRequiredService<IMediator>();
+        serviceProvider.GetRequiredService<IStorageManager>();
         serviceProvider.GetRequiredService<IPushNotificationProblemReporter>();
         serviceProvider.GetRequiredService<IMemoryCache>();
 

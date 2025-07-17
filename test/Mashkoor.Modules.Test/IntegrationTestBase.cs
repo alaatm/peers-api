@@ -68,6 +68,7 @@ public abstract partial class IntegrationTestBase
             { "Logging:LogLevel:Default", "None" },
             { "Logging:Console:LogLevel:Default", "None" },
             { "ConnectionStrings:Default", ConnStr },
+            { "azure:storageConnectionString", "UseDevelopmentStorage=true" },
             { "jwt:issuer", "https://integration-tests.com/iss" },
             { "jwt:key", Convert.ToBase64String(new byte[32]) },
             { "jwt:durationInMinutes", $"{JwtDuration}" },

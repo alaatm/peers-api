@@ -109,6 +109,7 @@ public static class ServiceCollectionExtensions
             .AddCqrs(cfg => cfg.AddOpenBehavior(typeof(IdentityCheckBehavior<,>)), mergedAssemblies)
             .AddPushNotificationProblemReporter()
             .AddDataServices<MashkoorContext, MashkoorContextScopedFactory, AppUser>(cfg)
+            .AddAzureStorage(config)
             .AddMessageBroker()
             .AddBackgroundJobs()
             .TryAddSingleton(TimeProvider.System);
