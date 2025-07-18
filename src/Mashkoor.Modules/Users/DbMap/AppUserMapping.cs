@@ -12,7 +12,6 @@ internal sealed class AppUserMapping : IEntityTypeConfiguration<AppUser>
         builder.HasIndex(p => p.UserName).IsUnique(true);
         builder.HasIndex(p => p.IsDeleted);
 
-        builder.Property(p => p.DisplayName).IsRequired(false);
         builder.Property(p => p.PreferredLanguage).HasMaxLength(6);
         builder.Property(p => p.UserName).HasMaxLength(128);
         builder.Property(p => p.OriginalDeletedUsername).HasMaxLength(128);

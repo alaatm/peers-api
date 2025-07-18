@@ -648,7 +648,6 @@ public class AppUserTests : DomainEntityTestBase
 
         // Assert
         Assert.Equal(firstname?.Trim() ?? user.Firstname, user.Firstname);
-        Assert.Equal(firstname?.Trim() ?? user.DisplayName, user.DisplayName);
         Assert.Equal(lastname?.Trim() ?? user.Lastname, user.Lastname);
         Assert.Equal(email?.Trim(), user.UpdatedEmail);
         Assert.Equal(preferredLanguage?.Trim() ?? user.PreferredLanguage, user.PreferredLanguage);

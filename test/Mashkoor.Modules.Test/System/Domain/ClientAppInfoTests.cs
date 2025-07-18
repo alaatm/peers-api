@@ -8,7 +8,7 @@ public class ClientAppInfoTests
     [InlineData("android", "android")]
     [InlineData("ios", "ios")]
     [InlineData("?", null)]
-    public void GetUpdateLink_returns_storeLink_for_requested_platform(string platform, string expectedStoreLink)
+    public void GetStoreLink_returns_storeLink_for_requested_platform(string platform, string expectedStoreLink)
     {
         // Arrange
         var clientAppInfo = new ClientAppInfo
@@ -18,7 +18,7 @@ public class ClientAppInfoTests
         };
 
         // Act
-        var storeLink = clientAppInfo.GetUpdateLink(platform);
+        var storeLink = clientAppInfo.GetStoreLink(platform);
         Assert.Equal(expectedStoreLink, storeLink);
     }
 }

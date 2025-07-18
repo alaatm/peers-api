@@ -43,8 +43,6 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
             Secret = secret,
         };
 
-        customer.User.DisplayName = customer.User.Firstname;
-
         return customer;
     }
 

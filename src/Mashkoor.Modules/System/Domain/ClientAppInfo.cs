@@ -27,11 +27,11 @@ public sealed class ClientAppInfo : Entity
     public ClientAppVersion LatestVersion { get; set; } = default!;
 
     /// <summary>
-    /// Gets the update link for the specified platform.
+    /// Gets the app store link for the specified platform.
     /// </summary>
     /// <param name="platform">The platform.</param>
     /// <returns></returns>
-    public string? GetUpdateLink([NotNull] string platform) => platform.ToUpperInvariant() switch
+    public string? GetStoreLink([NotNull] string platform) => platform.ToUpperInvariant() switch
     {
         "ANDROID" => AndroidStoreLink,
         "IOS" => IOSStoreLink,

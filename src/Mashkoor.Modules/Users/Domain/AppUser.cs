@@ -14,10 +14,6 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// </summary>
     public DateTime RegisteredOn { get; set; }
     /// <summary>
-    /// The name to be displayed to identify this user.
-    /// </summary>
-    public string DisplayName { get; set; } = default!;
-    /// <summary>
     /// The first name.
     /// </summary>
     /// <value></value>
@@ -395,7 +391,6 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         InitiateEmailUpdate(email);
         Firstname = firstname?.Trim() ?? Firstname;
         Lastname = lastname?.Trim() ?? Lastname;
-        DisplayName = Firstname;
         PreferredLanguage = preferredLanguage ?? PreferredLanguage;
     }
 

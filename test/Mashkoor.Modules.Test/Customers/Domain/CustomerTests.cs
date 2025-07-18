@@ -19,7 +19,6 @@ public class CustomerTests
         Assert.Equal(user.UserName, customer.Username);
         Assert.Equal(secret, customer.Secret);
         Assert.Same(user, customer.User);
-        Assert.Equal(user.Firstname, customer.User.DisplayName);
         Assert.Null(customer.PinCodeHash);
     }
 }

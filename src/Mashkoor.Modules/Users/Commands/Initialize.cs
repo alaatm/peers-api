@@ -91,7 +91,7 @@ public static class Initialize
 
             if (clientApp is not null && TryParse(version, out var current) && current < clientApp.LatestVersion.Version)
             {
-                updateLink = clientApp.GetUpdateLink(platform);
+                updateLink = clientApp.GetStoreLink(platform);
             }
 
             return (updateLink, clientApp?.LatestVersion.VersionString);
