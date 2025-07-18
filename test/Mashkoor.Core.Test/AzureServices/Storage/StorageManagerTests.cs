@@ -50,30 +50,11 @@ public class StorageManagerTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Can_upload_and_download_blobs()
+    public async Task UploadAsync_uploads_and_returns_blobUri_on_success()
     {
         // Arrange
         await _manager.CreateContainerAsync(_container);
-
-        var content = "Hello, Azurite!";
-        using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-
-        // Act & assert
-        var blobUri = await _manager.UploadAsync(_container, _blobName, "text/plain", uploadStream);
-        Assert.NotNull(blobUri);
-
-        using var downloadStream = new MemoryStream();
-        await _manager.DownloadAsync(blobUri, downloadStream);
-
-        var result = Encoding.UTF8.GetString(downloadStream.ToArray());
-        Assert.Equal(content, result);
-    }
-
-    [Fact]
-    public async Task UploadAsync_returns_blobUri_on_success()
-    {
-        // Arrange
-        await _manager.CreateContainerAsync(_container);
+        var serviceClient = new BlobServiceClient("UseDevelopmentStorage=true");
 
         var content = "Hello, Azurite!";
         using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
@@ -83,6 +64,9 @@ public class StorageManagerTests : IAsyncLifetime
 
         // Assert
         Assert.EndsWith($"{_container}/{_blobName}", blobUri.ToString());
+
+        var blobClient = serviceClient.GetBlobContainerClient(_container).GetBlobClient(_blobName);
+        Assert.True(await blobClient.ExistsAsync());
     }
 
     [Fact]
@@ -110,6 +94,7 @@ public class StorageManagerTests : IAsyncLifetime
     {
         // Arrange
         await _manager.CreateContainerAsync(_container);
+        var serviceClient = new BlobServiceClient("UseDevelopmentStorage=true");
 
         using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes("To be deleted"));
         var blobUri = await _manager.UploadAsync(_container, _blobName, "text/plain", uploadStream);
@@ -119,9 +104,8 @@ public class StorageManagerTests : IAsyncLifetime
         await _manager.DeleteAsync(blobUri);
 
         // Assert
-        using var outputStream = new MemoryStream();
-        await _manager.DownloadAsync(blobUri, outputStream);
-        Assert.Equal(0, outputStream.Length); // Nothing downloaded
+        var blobClient = serviceClient.GetBlobContainerClient(_container).GetBlobClient(_blobName);
+        Assert.False(await blobClient.ExistsAsync());
     }
 
     [Fact]

@@ -8,7 +8,7 @@ namespace Mashkoor.Core.AzureServices.Storage;
 
 public sealed class StorageManager : IStorageManager
 {
-    private readonly BlobServiceClient _blobClient;
+    private readonly BlobServiceClient _blobServiceClient;
     private readonly ILogger<StorageManager> _log;
     private readonly Uri _publicBaseUri;
 
@@ -16,7 +16,7 @@ public sealed class StorageManager : IStorageManager
     {
         _log = log;
 
-        _blobClient = new BlobServiceClient(config.StorageConnectionString, new BlobClientOptions
+        _blobServiceClient = new BlobServiceClient(config.StorageConnectionString, new BlobClientOptions
         {
             Retry =
             {
@@ -28,7 +28,7 @@ public sealed class StorageManager : IStorageManager
             }
         });
 
-        var realBaseUri = _blobClient.Uri;
+        var realBaseUri = _blobServiceClient.Uri;
 
         _publicBaseUri = config.DevTunnelsUri is null
             ? realBaseUri
@@ -49,7 +49,7 @@ public sealed class StorageManager : IStorageManager
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(containerName, nameof(containerName));
 
-        return _blobClient
+        return _blobServiceClient
             .GetBlobContainerClient(containerName)
             .CreateIfNotExistsAsync(PublicAccessType.Blob);
     }
@@ -63,7 +63,7 @@ public sealed class StorageManager : IStorageManager
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(containerName, nameof(containerName));
 
-        return _blobClient
+        return _blobServiceClient
             .GetBlobContainerClient(containerName)
             .DeleteIfExistsAsync();
     }
@@ -102,22 +102,6 @@ public sealed class StorageManager : IStorageManager
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Downloads the blob with the specified URI and writes it to the provided stream.
-    /// </summary>
-    /// <param name="blobUri">The blob's URI.</param>
-    /// <param name="stream">The stream to write the blob's content to.</param>
-    /// <returns></returns>
-    public async Task DownloadAsync(Uri blobUri, Stream stream)
-    {
-        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
-        var blobClient = GetBlobClient(blobUri);
-
-        _log.DownloadingBlob(blobUri);
-
-        await TryAzOperationAsync("Download", blobUri, () => blobClient.DownloadToAsync(stream));
     }
 
     /// <summary>
@@ -198,7 +182,7 @@ public sealed class StorageManager : IStorageManager
         ArgumentNullException.ThrowIfNull(blobUri, nameof(blobUri));
 
         var (containerName, blobName) = ExtractContainerAndBlob(blobUri);
-        return _blobClient
+        return _blobServiceClient
             .GetBlobContainerClient(containerName)
             .GetBlobClient(blobName);
     }

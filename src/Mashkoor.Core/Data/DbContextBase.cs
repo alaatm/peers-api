@@ -57,6 +57,7 @@ public abstract class DbContextBase<TUser> : IdentityDbContext<TUser, IdentityRo
     protected override void ConfigureConventions([NotNull] ModelConfigurationBuilder builder)
     {
         builder.Properties<string>().HaveMaxLength(256);
+        builder.Properties<Uri>().HaveMaxLength(256);
         builder.Properties<decimal>().HavePrecision(18, 2);
         builder.Properties<DateTime>().HaveConversion<DateTimeUTCConverter>();
         builder.Properties<DateTime?>().HaveConversion<NullableDateTimeUTCConverter>();

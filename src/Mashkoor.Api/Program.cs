@@ -1,4 +1,3 @@
-
 using Mashkoor.Modules.Kernel;
 
 var builder = WebApplication.CreateBuilder(args);

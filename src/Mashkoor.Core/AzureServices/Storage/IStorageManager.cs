@@ -31,13 +31,6 @@ public interface IStorageManager
         string contentType,
         Stream stream);
     /// <summary>
-    /// Downloads the blob with the specified URI and writes it to the provided stream.
-    /// </summary>
-    /// <param name="blobUri">The blob's URI.</param>
-    /// <param name="stream">The stream to write the blob's content to.</param>
-    /// <returns></returns>
-    Task DownloadAsync(Uri blobUri, Stream stream);
-    /// <summary>
     /// Deletes the blob with the specified URI if exists.
     /// </summary>
     /// <param name="blobUri">The blob's URI.</param>
