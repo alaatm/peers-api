@@ -128,7 +128,7 @@ public class HttpRequestExtensionsTests
     {
         // Arrange
         Model model = null;
-        List<(string name, string descr)> nameAndDesc = null;
+        List<string> names = null;
         var f1 = new Memory<byte>(new byte[2]);
         var f2 = new Memory<byte>(new byte[2]);
 
@@ -138,7 +138,7 @@ public class HttpRequestExtensionsTests
                 {
                     var data = await ctx.Request.BindFormDataAsync<Model>();
                     model = data.Data;
-                    nameAndDesc = [.. data.Files.Select(f => (f.Name, f.Description))];
+                    names = [.. data.Files.Select(f => f.Name)];
                     await data.Files[0].Stream.ReadExactlyAsync(f1);
                     await data.Files[1].Stream.ReadExactlyAsync(f2);
                 })
@@ -147,8 +147,8 @@ public class HttpRequestExtensionsTests
         var content = new MultipartFormDataContent
         {
             { new StringContent(JsonSerializer.Serialize(new { Name = "Test" }, GlobalJsonOptions.Default), Encoding.UTF8, "application/json"), "data" },
-            { GetImageContent([1, 1]), "Description for file #1", "subFile1.abc" },
-            { GetImageContent([2, 2]), "Description for file #2", "subFile2.xyz" }
+            { GetImageContent([1, 1]), "f1", "subFile1.abc" },
+            { GetImageContent([2, 2]), "f2", "subFile2.xyz" }
         };
 
         // Act
@@ -158,10 +158,8 @@ public class HttpRequestExtensionsTests
         result.EnsureSuccessStatusCode();
         Assert.NotNull(model);
         Assert.Equal("Test", model.Name);
-        Assert.Equal("subFile1.abc", nameAndDesc[0].name);
-        Assert.Equal("Description for file #1", nameAndDesc[0].descr);
-        Assert.Equal("subFile2.xyz", nameAndDesc[1].name);
-        Assert.Equal("Description for file #2", nameAndDesc[1].descr);
+        Assert.Equal("subFile1.abc", names[0]);
+        Assert.Equal("subFile2.xyz", names[1]);
         Assert.Equal(f1.ToArray(), [1, 1,]);
         Assert.Equal(f2.ToArray(), [2, 2,]);
     }
@@ -247,7 +245,6 @@ public class HttpRequestExtensionsTests
         var ff = new FormFile
         {
             Name = "name",
-            Description = "description",
             ContentType = "image/heif",
             Stream = new MemoryStream(),
         };
@@ -256,27 +253,24 @@ public class HttpRequestExtensionsTests
         var ff1 = ff.With(name: "name2");
         Assert.NotSame(ff, ff1);
         Assert.Equal("name2", ff1.Name);
-        Assert.Equal(ff.Description, ff1.Description);
         Assert.Equal(ff.ContentType, ff1.ContentType);
         Assert.Same(ff.Stream, ff1.Stream);
-        Assert.Equal("{ Name = name2, Descr = description, ContentType = image/heif }", ff1.ToString());
+        Assert.Equal("{ Name = name2, ContentType = image/heif }", ff1.ToString());
 
         var ff2 = ff.With(contentType: "audio/mp3");
         Assert.NotSame(ff, ff2);
         Assert.Equal(ff.Name, ff2.Name);
-        Assert.Equal(ff.Description, ff2.Description);
         Assert.Equal("audio/mp3", ff2.ContentType);
         Assert.Same(ff.Stream, ff2.Stream);
-        Assert.Equal("{ Name = name, Descr = description, ContentType = audio/mp3 }", ff2.ToString());
+        Assert.Equal("{ Name = name, ContentType = audio/mp3 }", ff2.ToString());
 
         var stream = new MemoryStream();
         var ff3 = ff.With(stream: stream);
         Assert.NotSame(ff, ff3);
         Assert.Equal(ff.Name, ff3.Name);
-        Assert.Equal(ff.Description, ff3.Description);
         Assert.Equal(ff.ContentType, ff3.ContentType);
         Assert.Same(stream, ff3.Stream);
-        Assert.Equal("{ Name = name, Descr = description, ContentType = image/heif }", ff3.ToString());
+        Assert.Equal("{ Name = name, ContentType = image/heif }", ff3.ToString());
     }
 
     private record Model(string Name);

@@ -116,11 +116,10 @@ public static class EntityBuilder
 
 public static class CommandBuilder
 {
-    public static FormFile TestFormFile(string name = null, string descr = null, string contentType = null, int size = 2) => new()
+    public static FormFile TestFormFile(string name = null, string contentType = null, int size = 2) => new()
     {
         ContentType = contentType ?? "image/jpeg",
         Name = name ?? "test name",
-        Description = descr ?? "test descr",
         Stream = new MemoryStream(new byte[size]),
     };
 

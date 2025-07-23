@@ -81,7 +81,6 @@ public static class HttpRequestExtensions
             files[i] = new()
             {
                 Name = file.FileName,
-                Description = file.Name,
                 ContentType = file.ContentType,
                 Stream = file.OpenReadStream(),
             };
@@ -110,10 +109,6 @@ public sealed class FormFile
     /// </summary>
     public string Name { get; init; } = default!;
     /// <summary>
-    /// The file description.
-    /// </summary>
-    public string Description { get; init; } = default!;
-    /// <summary>
     /// The content type of the file.
     /// </summary>
     public string ContentType { get; set; } = default!;
@@ -133,11 +128,10 @@ public sealed class FormFile
         => new()
         {
             Name = name ?? Name,
-            Description = Description,
             ContentType = contentType ?? ContentType,
             Stream = stream ?? Stream,
         };
 
     public override string ToString()
-        => $"{{ Name = {Name}, Descr = {Description}, ContentType = {ContentType} }}";
+        => $"{{ Name = {Name}, ContentType = {ContentType} }}";
 }
