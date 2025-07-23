@@ -145,7 +145,7 @@ public class StorageManagerTests : IAsyncLifetime
         var uri = new Uri(url);
 
         // Act & assert
-        var ex = Assert.Throws<ArgumentException>(() => StorageManager.ExtractContainerAndBlob(uri));
+        var ex = Assert.Throws<ArgumentException>(() => _manager.ExtractContainerAndBlob(uri));
         Assert.Equal("The URI does not contain both a container name and a blob name.", ex.Message);
     }
 
@@ -156,7 +156,7 @@ public class StorageManagerTests : IAsyncLifetime
         var blobUri = _manager.GetBlobUri("mycontainer", "some/path/blob.txt");
 
         // Act
-        var (container, blob) = StorageManager.ExtractContainerAndBlob(blobUri);
+        var (container, blob) = _manager.ExtractContainerAndBlob(blobUri);
 
         // Assert
         Assert.Equal("mycontainer", container);

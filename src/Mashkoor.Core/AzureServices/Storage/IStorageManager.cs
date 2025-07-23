@@ -43,4 +43,11 @@ public interface IStorageManager
     /// <param name="blobName">The blob name.</param>
     /// <returns></returns>
     Uri GetBlobUri(string containerName, string blobName);
+    /// <summary>
+    /// Extracts the container and blob name from the given URL.
+    /// </summary>
+    /// <param name="uri">The url.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    (string containerName, string blobName) ExtractContainerAndBlob(Uri uri);
 }

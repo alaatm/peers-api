@@ -15,6 +15,7 @@ public static class GetClientApp
     public sealed class Handler : ICommandHandler<Query>
     {
         private readonly MashkoorContext _context;
+
         public Handler(MashkoorContext context)
             => _context = context;
 

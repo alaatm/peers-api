@@ -130,29 +130,13 @@ public sealed class StorageManager : IStorageManager
             Path = $"{containerName}/{blobName}"
         }.Uri;
 
-    internal async Task<bool> TryAzOperationAsync(string operationName, Uri blobUri, Func<Task> operation)
-    {
-        try
-        {
-            await operation();
-            return true;
-        }
-        catch (RequestFailedException ex)
-        {
-            _log.BlobOperationFailed(operationName, blobUri, ex.Status, ex.ErrorCode, ex.Message);
-            return false;
-        }
-        catch (AggregateException ae) when (ae.InnerExceptions.All(e => e is RequestFailedException))
-        {
-            foreach (var ex in ae.InnerExceptions.Cast<RequestFailedException>())
-            {
-                _log.BlobOperationFailed(operationName, blobUri, ex.Status, ex.ErrorCode, ex.Message); // Log each failure
-            }
-            return false;
-        }
-    }
-
-    internal static (string containerName, string blobName) ExtractContainerAndBlob(Uri uri)
+    /// <summary>
+    /// Extracts the container and blob name from the given URL.
+    /// </summary>
+    /// <param name="uri">The url.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public (string containerName, string blobName) ExtractContainerAndBlob([NotNull] Uri uri)
     {
         // Get the path, e.g. "/container-name/a/b/c.x"
         var path = uri.AbsolutePath.AsSpan();
@@ -175,6 +159,28 @@ public sealed class StorageManager : IStorageManager
         var blobNameSpan = path[(slashIndex + 1)..];
 
         return (containerNameSpan.ToString(), blobNameSpan.ToString());
+    }
+
+    internal async Task<bool> TryAzOperationAsync(string operationName, Uri blobUri, Func<Task> operation)
+    {
+        try
+        {
+            await operation();
+            return true;
+        }
+        catch (RequestFailedException ex)
+        {
+            _log.BlobOperationFailed(operationName, blobUri, ex.Status, ex.ErrorCode, ex.Message);
+            return false;
+        }
+        catch (AggregateException ae) when (ae.InnerExceptions.All(e => e is RequestFailedException))
+        {
+            foreach (var ex in ae.InnerExceptions.Cast<RequestFailedException>())
+            {
+                _log.BlobOperationFailed(operationName, blobUri, ex.Status, ex.ErrorCode, ex.Message); // Log each failure
+            }
+            return false;
+        }
     }
 
     private BlobClient GetBlobClient(Uri blobUri)
