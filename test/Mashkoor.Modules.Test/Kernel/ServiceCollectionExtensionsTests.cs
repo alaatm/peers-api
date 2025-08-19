@@ -9,6 +9,7 @@ using Mashkoor.Core.Communication.Push;
 using Mashkoor.Core.Communication.Sms;
 using Mashkoor.Core.Cqrs.Pipeline;
 using Mashkoor.Core.Identity;
+using Mashkoor.Core.Media;
 using Mashkoor.Core.Security.Jwt;
 using Mashkoor.Core.Security.Totp;
 using Mashkoor.Modules.Kernel.Pipelines;
@@ -208,6 +209,7 @@ public class ServiceCollectionExtensionsTests
         serviceProvider.GetRequiredService<IStorageManager>();
         serviceProvider.GetRequiredService<IPushNotificationProblemReporter>();
         serviceProvider.GetRequiredService<IMemoryCache>();
+        serviceProvider.GetRequiredService<IThumbnailGenerator>();
 
         serviceProvider.GetRequiredService<IProducer>();
         Assert.Equal(1024, serviceProvider.GetRequiredService<IEnumerable<IConsumer>>().Count());

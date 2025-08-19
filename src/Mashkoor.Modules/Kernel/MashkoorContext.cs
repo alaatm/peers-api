@@ -3,6 +3,7 @@ using Humanizer;
 using Mashkoor.Core.Data;
 using Mashkoor.Modules.Customers.Domain;
 using Mashkoor.Modules.I18n.Domain;
+using Mashkoor.Modules.Media.Domain;
 using Mashkoor.Modules.Settings.Domain;
 using Mashkoor.Modules.System.Domain;
 using Mashkoor.Modules.Users.Domain;
@@ -13,6 +14,7 @@ public sealed class MashkoorContext : DbContextBase<AppUser>
 {
     public DbSet<Customer> Customers { get; set; } = default!;
 
+    public DbSet<MediaFile> MediaFiles { get; set; } = default!;
     public DbSet<DeviceError> DevicesErrors { get; set; } = default!;
     public DbSet<PushNotificationProblem> PushNotificationProblems { get; set; } = default!;
 

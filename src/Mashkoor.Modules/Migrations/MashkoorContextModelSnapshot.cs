@@ -75,6 +75,93 @@ namespace Mashkoor.Modules.Migrations
                     b.ToTable("language", "i18n");
                 });
 
+            modelBuilder.Entity("Mashkoor.Modules.Media.Domain.MediaFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("bit")
+                        .HasColumnName("approved");
+
+                    b.Property<Guid>("BatchId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("batch_id");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int")
+                        .HasColumnName("category");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("MediaUrl")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("media_url");
+
+                    b.Property<long?>("SizeInBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_in_bytes");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<int?>("ThumbnailId")
+                        .HasColumnType("int")
+                        .HasColumnName("thumbnail_id");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Approved");
+
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("ThumbnailId")
+                        .IsUnique()
+                        .HasFilter("[thumbnail_id] IS NOT NULL");
+
+                    b.HasIndex("Type");
+
+                    b.HasIndex("Type", "ThumbnailId", "CustomerId")
+                        .IsUnique()
+                        .HasFilter("[type] = 0");
+
+                    b.ToTable("media_file", "dbo");
+                });
+
             modelBuilder.Entity("Mashkoor.Modules.Settings.Domain.PrivacyPolicy", b =>
                 {
                     b.Property<int>("Id")
@@ -848,6 +935,24 @@ namespace Mashkoor.Modules.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Mashkoor.Modules.Media.Domain.MediaFile", b =>
+                {
+                    b.HasOne("Mashkoor.Modules.Customers.Domain.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mashkoor.Modules.Media.Domain.MediaFile", "Thumbnail")
+                        .WithOne("Original")
+                        .HasForeignKey("Mashkoor.Modules.Media.Domain.MediaFile", "ThumbnailId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Thumbnail");
+                });
+
             modelBuilder.Entity("Mashkoor.Modules.Settings.Domain.PrivacyPolicyTranslation", b =>
                 {
                     b.HasOne("Mashkoor.Modules.Settings.Domain.PrivacyPolicy", "Entity")
@@ -1057,6 +1162,11 @@ namespace Mashkoor.Modules.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Mashkoor.Modules.Media.Domain.MediaFile", b =>
+                {
+                    b.Navigation("Original");
                 });
 
             modelBuilder.Entity("Mashkoor.Modules.Settings.Domain.PrivacyPolicy", b =>

@@ -532,6 +532,44 @@ namespace Mashkoor.Modules.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "media_file",
+                schema: "dbo",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    batch_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    media_url = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    approved = table.Column<bool>(type: "bit", nullable: false),
+                    type = table.Column<int>(type: "int", nullable: false),
+                    category = table.Column<int>(type: "int", nullable: false),
+                    content_type = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    size_in_bytes = table.Column<long>(type: "bigint", nullable: true),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    thumbnail_id = table.Column<int>(type: "int", nullable: true),
+                    customer_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_media_file", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_media_file_customer_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_media_file_media_file_thumbnail_id",
+                        column: x => x.thumbnail_id,
+                        principalSchema: "dbo",
+                        principalTable: "media_file",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_app_usage_history_user_id",
                 schema: "dbo",
@@ -622,6 +660,58 @@ namespace Mashkoor.Modules.Migrations
                 schema: "dbo",
                 table: "device",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_approved",
+                schema: "dbo",
+                table: "media_file",
+                column: "approved");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_batch_id",
+                schema: "dbo",
+                table: "media_file",
+                column: "batch_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_category",
+                schema: "dbo",
+                table: "media_file",
+                column: "category");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_customer_id",
+                schema: "dbo",
+                table: "media_file",
+                column: "customer_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_status",
+                schema: "dbo",
+                table: "media_file",
+                column: "status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_thumbnail_id",
+                schema: "dbo",
+                table: "media_file",
+                column: "thumbnail_id",
+                unique: true,
+                filter: "[thumbnail_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_type",
+                schema: "dbo",
+                table: "media_file",
+                column: "type");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_type_thumbnail_id_customer_id",
+                schema: "dbo",
+                table: "media_file",
+                columns: new[] { "type", "thumbnail_id", "customer_id" },
+                unique: true,
+                filter: "[type] = 0");
 
             migrationBuilder.CreateIndex(
                 name: "IX_privacy_policy_translation_language_id",
@@ -723,14 +813,15 @@ namespace Mashkoor.Modules.Migrations
                 name: "client_app_info");
 
             migrationBuilder.DropTable(
-                name: "customer");
-
-            migrationBuilder.DropTable(
                 name: "device",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
                 name: "device_error",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "media_file",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
@@ -774,6 +865,9 @@ namespace Mashkoor.Modules.Migrations
             migrationBuilder.DropTable(
                 name: "user_token",
                 schema: "id");
+
+            migrationBuilder.DropTable(
+                name: "customer");
 
             migrationBuilder.DropTable(
                 name: "privacy_policy",

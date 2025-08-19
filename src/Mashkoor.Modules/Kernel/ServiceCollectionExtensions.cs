@@ -6,6 +6,7 @@ using Mashkoor.Core.Communication.Push;
 using Mashkoor.Core.Communication.Sms;
 using Mashkoor.Core.Data;
 using Mashkoor.Core.Localization;
+using Mashkoor.Core.Media;
 using Mashkoor.Core.RateLimiting;
 using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Core.Security.Jwt;
@@ -112,6 +113,7 @@ public static class ServiceCollectionExtensions
             .AddAzureStorage(config)
             .AddMessageBroker()
             .AddBackgroundJobs()
+            .AddThumbnailGenerator()
             .TryAddSingleton(TimeProvider.System);
 
         return services;
