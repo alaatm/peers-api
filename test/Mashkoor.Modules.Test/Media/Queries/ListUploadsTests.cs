@@ -37,6 +37,7 @@ public class ListUploadsTests : IntegrationTestBase
 
         Assert.Equal(customer.Id, upload.UploadedBy.Key);
         Assert.Equal(customer.Username, upload.UploadedBy.Value);
+        Assert.NotNull(upload.Url);
         Assert.Null(upload.Description);
         Assert.Equal(MediaType.ProfilePicture, upload.Type);
         Assert.Equal(MediaCategory.Image, upload.Category);
