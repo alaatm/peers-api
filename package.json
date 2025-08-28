@@ -2,6 +2,6 @@
   "name": "mashkoor-api",
   "version": "1.0.0",
   "dependencies": {
-    "azurite": "^3.34.0"
+    "azurite": "^3.35.0"
   }
 }
