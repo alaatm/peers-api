@@ -1,9 +1,11 @@
 using System.Data.Common;
 using System.Runtime.InteropServices;
 using System.Text;
+using Mashkoor.Core.AzureServices.Storage;
 using Mashkoor.Core.Data;
 using Mashkoor.Core.Domain.Rules;
 using Mashkoor.Modules.Kernel.Startup;
+using Mashkoor.Modules.Media.Domain;
 using Mashkoor.Modules.Test.SharedClasses;
 using Mashkoor.Modules.Users.Domain;
 using Microsoft.AspNetCore.Hosting;
@@ -47,8 +49,15 @@ public class StartupBackgroundServiceTests
         var hostMoq = new Mock<IWebHostEnvironment>();
         hostMoq.SetupGet(p => p.EnvironmentName).Returns(Environments.Development);
 
+        var storageManagerMoq = new Mock<IStorageManager>(MockBehavior.Strict);
+        storageManagerMoq
+            .Setup(p => p.CreateContainerAsync(MediaFile.ContainerName))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
         var startupService = new StartupBackgroundService(
             TimeProvider.System,
+            storageManagerMoq.Object,
             serviceProvider,
             hostMoq.Object,
             MockBuilder.GetLocalizerFactoryMoq().Object,
@@ -72,6 +81,7 @@ public class StartupBackgroundServiceTests
         Assert.Equal(3, await context.Languages.CountAsync());
         Assert.NotNull(await context.Terms.SingleAsync());
         Assert.NotNull(await context.PrivacyPolicy.SingleAsync());
+        storageManagerMoq.VerifyAll();
     }
 
     private static void DeleteDatabaseDate()

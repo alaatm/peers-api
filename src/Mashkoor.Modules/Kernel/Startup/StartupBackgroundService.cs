@@ -1,4 +1,5 @@
 using System.Reflection;
+using Mashkoor.Core.AzureServices.Storage;
 using Mashkoor.Core.Data.Identity;
 using Mashkoor.Core.Domain.Rules;
 using Mashkoor.Modules.I18n.Domain;
@@ -22,18 +23,21 @@ public sealed class StartupBackgroundService : BackgroundService
     private static readonly string _policyRu = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.ru.txt"));
 
     private readonly TimeProvider _timeProvider;
+    private readonly IStorageManager _storageManager;
     private readonly IServiceProvider _serviceProvider;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<StartupBackgroundService> _log;
 
     public StartupBackgroundService(
         TimeProvider timeProvider,
+        IStorageManager storageManager,
         IServiceProvider serviceProvider,
         IWebHostEnvironment env,
         IStringLocalizerFactory stringLocalizerFactory,
         ILogger<StartupBackgroundService> log)
     {
         _timeProvider = timeProvider;
+        _storageManager = storageManager;
         _serviceProvider = serviceProvider;
         _env = env;
         _log = log;
@@ -51,6 +55,7 @@ public sealed class StartupBackgroundService : BackgroundService
             var userManager = scope.ServiceProvider.GetRequiredService<IdentityUserManager<AppUser, MashkoorContext>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<IdentityRoleManager<AppUser, MashkoorContext>>();
 
+            await CreateStorageAsync();
             await SeedDefaultsAsync(context, userManager, roleManager);
         }
         catch (Exception ex)
@@ -160,5 +165,11 @@ public sealed class StartupBackgroundService : BackgroundService
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         });
+    }
+
+    private async Task CreateStorageAsync()
+    {
+        using var _ = new TaskTimer(_log, "Storage containers creation");
+        await _storageManager.CreateContainerAsync(Media.Domain.MediaFile.ContainerName);
     }
 }
