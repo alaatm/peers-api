@@ -1,4 +1,5 @@
 using Mashkoor.Modules.Customers.Commands;
+using Mashkoor.Modules.Media.Commands;
 
 namespace Mashkoor.Modules.Customers.Endpoints;
 
@@ -22,6 +23,13 @@ public static class EndpointRouteBuilderExtensions
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status204NoContent);
+
+        gCustomers.MapPut("/me/avatar", (IMediator mediator, SetProfilePicture.Command cmd)
+            => mediator.Send(cmd))
+            .Accepts<SetProfilePicture.CommandDoc>("multipart/form-data")
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<Upload.BatchIdObj>(StatusCodes.Status202Accepted);
 
         return ep;
     }
