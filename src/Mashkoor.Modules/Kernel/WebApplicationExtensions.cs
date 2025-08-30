@@ -8,6 +8,7 @@ using Mashkoor.Modules.Media.Endpoints;
 using Mashkoor.Modules.System.Endpoints;
 using Mashkoor.Modules.Users.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
+using Scalar.AspNetCore;
 
 namespace Mashkoor.Modules.Kernel;
 
@@ -31,6 +32,7 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference();
         }
         else
         {

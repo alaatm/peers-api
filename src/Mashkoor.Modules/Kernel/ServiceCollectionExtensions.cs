@@ -12,6 +12,7 @@ using Mashkoor.Core.Security.Hashing;
 using Mashkoor.Core.Security.Jwt;
 using Mashkoor.Core.Security.Totp;
 using Mashkoor.Modules.BackgroundJobs;
+using Mashkoor.Modules.Kernel.OpenApi;
 using Mashkoor.Modules.Kernel.Pipelines;
 using Mashkoor.Modules.Kernel.Startup;
 using Mashkoor.Modules.Users.Domain;
@@ -56,7 +57,7 @@ public static class ServiceCollectionExtensions
 
         if (env.IsDevelopment())
         {
-            services.AddOpenApi();
+            services.AddOpenApiWithTransformers();
         }
         else if (env.IsProduction())
         {

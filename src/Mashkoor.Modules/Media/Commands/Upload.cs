@@ -10,6 +10,21 @@ namespace Mashkoor.Modules.Media.Commands;
 
 public static class Upload
 {
+    ///////// These are for openapi docs only
+    [ExcludeFromCodeCoverage]
+    public sealed class CommandDoc
+    {
+        public required CommandDataDoc Data { get; init; }
+        public required IFormFile[] Files { get; init; }
+    }
+    [ExcludeFromCodeCoverage]
+    public sealed class CommandDataDoc
+    {
+        public int? TargetId { get; init; }
+        public required Dictionary<string, Command.FileMetadata> Metadata { get; init; }
+    }
+    ///////// These are for openapi docs only
+
     /// <summary>
     /// The command.
     /// </summary>
@@ -38,7 +53,7 @@ public static class Upload
         /// <param name="Description">An optional description of the media.</param>
         public sealed record FileMetadata(
             MediaType Type,
-            string? Description);
+            string? Description = null);
     }
 
     public readonly record struct BatchIdObj(Guid BatchId);
