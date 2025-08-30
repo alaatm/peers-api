@@ -32,6 +32,7 @@ public sealed class ThumbnailGenerator : IThumbnailGenerator
 
         try
         {
+            input.Position = 0;
             using var image = await Image.LoadAsync(input);
 
             if (image.Width > width)

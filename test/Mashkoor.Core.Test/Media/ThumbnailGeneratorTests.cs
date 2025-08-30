@@ -68,6 +68,28 @@ public class ThumbnailGeneratorTests
     }
 
     [Fact]
+    public async Task GenerateThumbnailAsync_ensures_input_stream_position_is_at_start()
+    {
+        // Arrange
+        var generator = new ThumbnailGenerator();
+        using var input = GetTestImageStream();
+        using var output = new MemoryStream();
+
+        // Act
+        input.Seek(input.Length, SeekOrigin.Begin);
+        var size = await generator.GenerateThumbnailAsync(input, output, 100);
+
+        // Assert
+        Assert.Equal(output.Length, size);
+        Assert.Equal(0, input.Position);
+        Assert.Equal(0, output.Position);
+
+        using var image = Image.Load(output);
+        Assert.Equal(100, image.Width);
+        Assert.Equal(100, image.Height);
+    }
+
+    [Fact]
     public async Task GenerateThumbnailAsync_should_not_resize_small_image()
     {
         // Arrange
