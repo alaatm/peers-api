@@ -78,7 +78,7 @@ public class StartupBackgroundServiceTests
         var context = scope.ServiceProvider.GetRequiredService<PeersContext>();
         Assert.Equal(Roles.Default.Length, await context.Roles.CountAsync());
         Assert.Equal(1, await context.Users.CountAsync());
-        Assert.Equal(3, await context.Languages.CountAsync());
+        Assert.Equal(2, await context.Languages.CountAsync());
         Assert.NotNull(await context.Terms.SingleAsync());
         Assert.NotNull(await context.PrivacyPolicy.SingleAsync());
         storageManagerMoq.VerifyAll();

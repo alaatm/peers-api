@@ -17,10 +17,8 @@ public sealed class StartupBackgroundService : BackgroundService
 
     private static readonly string _termsEn = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.en.txt"));
     private static readonly string _termsAr = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.ar.txt"));
-    private static readonly string _termsRu = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.ru.txt"));
     private static readonly string _policyEn = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.en.txt"));
     private static readonly string _policyAr = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.ar.txt"));
-    private static readonly string _policyRu = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.ru.txt"));
 
     private readonly TimeProvider _timeProvider;
     private readonly IStorageManager _storageManager;
@@ -130,7 +128,6 @@ public sealed class StartupBackgroundService : BackgroundService
 
         var en = Language.En;
         var ar = Language.Ar;
-        var ru = Language.Ru;
 
         var strategy = context.Database.CreateExecutionStrategy();
 
@@ -138,18 +135,18 @@ public sealed class StartupBackgroundService : BackgroundService
         {
             using var transaction = await context.Database.BeginTransactionAsync();
 
-            await context.Languages.AddRangeAsync(en, ar, ru);
+            await context.Languages.AddRangeAsync(en, ar);
 
             await context.Terms.AddAsync(
                 Terms.Create(
-                    TranslatedField.CreateList((en, "Terms of Service"), (ar, "شروط الخدمة"), (ru, "Условия обслуживания")),
-                    TranslatedField.CreateList((en, _termsEn), (ar, _termsAr), (ru, _termsRu)))
+                    TranslatedField.CreateList((en, "Terms of Service"), (ar, "شروط الخدمة")),
+                    TranslatedField.CreateList((en, _termsEn), (ar, _termsAr)))
             );
 
             await context.PrivacyPolicy.AddAsync(
                 PrivacyPolicy.Create(
-                    TranslatedField.CreateList((en, "Privacy Policy"), (ar, "سياسة الخصوصية"), (ru, "Политика конфиденциальности")),
-                    TranslatedField.CreateList((en, _policyEn), (ar, _policyAr), (ru, _policyRu)),
+                    TranslatedField.CreateList((en, "Privacy Policy"), (ar, "سياسة الخصوصية")),
+                    TranslatedField.CreateList((en, _policyEn), (ar, _policyAr)),
                     new(2025, 7, 9))
             );
 

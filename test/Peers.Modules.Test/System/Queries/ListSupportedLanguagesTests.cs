@@ -24,16 +24,13 @@ public class ListSupportedLanguagesTests : IntegrationTestBase
         // Assert
         var okResult = Assert.IsType<Ok<PagedQueryResponse<ListSupportedLanguages.Response>>>(result);
         var data = Assert.IsType<PagedQueryResponse<ListSupportedLanguages.Response>>(okResult.Value);
-        Assert.Equal(3, data.Total);
+        Assert.Equal(2, data.Total);
         Assert.Equal(Language.Ar.Name, data.Data[0].Name);
         Assert.Equal(Language.Ar.Id, data.Data[0].Code);
         Assert.Equal(Language.Ar.Dir, data.Data[0].Dir);
         Assert.Equal(Language.En.Name, data.Data[1].Name);
         Assert.Equal(Language.En.Id, data.Data[1].Code);
         Assert.Equal(Language.En.Dir, data.Data[1].Dir);
-        Assert.Equal(Language.Ru.Name, data.Data[2].Name);
-        Assert.Equal(Language.Ru.Id, data.Data[2].Code);
-        Assert.Equal(Language.Ru.Dir, data.Data[2].Dir);
     }
 }
 

@@ -11,16 +11,13 @@ public class LanguageTests
         var actual = Language.SupportedLanguages;
 
         // Assert
-        Assert.Equal(3, actual.Length);
+        Assert.Equal(2, actual.Length);
         Assert.Equal(Language.Ar.Name, actual[0].Name);
         Assert.Equal(Language.Ar.Id, actual[0].Id);
         Assert.Equal(Language.Ar.Dir, actual[0].Dir);
         Assert.Equal(Language.En.Name, actual[1].Name);
         Assert.Equal(Language.En.Id, actual[1].Id);
         Assert.Equal(Language.En.Dir, actual[1].Dir);
-        Assert.Equal(Language.Ru.Name, actual[2].Name);
-        Assert.Equal(Language.Ru.Id, actual[2].Id);
-        Assert.Equal(Language.Ru.Dir, actual[2].Dir);
     }
 
     [Theory]

@@ -10,13 +10,12 @@ public sealed class Language
 {
     public static Language Ar => new() { Id = Lang.ArLangCode, Name = "العربية", Dir = "rtl" };
     public static Language En => new() { Id = Lang.EnLangCode, Name = "English", Dir = "ltr" };
-    public static Language Ru => new() { Id = Lang.RuLangCode, Name = "Русский", Dir = "ltr" };
 
     /// <summary>
     /// IMPORTANT: Must ALWAYS be in sync with <see cref="Lang.SupportedLanguages"/>.
     /// The list of supported languages.
     /// </summary>
-    public static Language[] SupportedLanguages => [Ar, En, Ru];
+    public static Language[] SupportedLanguages => [Ar, En];
 
     /// <summary>
     /// The language code.
