@@ -15,7 +15,7 @@
     <Using Include="Peers.Core.Cqrs" />
     <Using Include="Peers.Core.Http" />
     <Using Include="Peers.Core.Identity" />
-    <Using Include="Peers.Modules.Kernel" /> 
+    <Using Include="Peers.Modules.Kernel" />
     <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="Microsoft.AspNetCore.Mvc" />
     <Using Include="Microsoft.EntityFrameworkCore" />
@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.7.2" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.7.4" />
   </ItemGroup>
 
   <ItemGroup>
