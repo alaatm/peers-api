@@ -3,7 +3,7 @@
   <PropertyGroup>
     <SpaRoot>..\peers.api.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>https://localhost:60707</SpaProxyServerUrl>
+    <SpaProxyServerUrl>https://localhost:60717</SpaProxyServerUrl>
     <IsPublishable>true</IsPublishable>
   </PropertyGroup>
 

@@ -1,4 +1,4 @@
-@Peers.Api.Server_HostAddress = http://localhost:5175
+@Peers.Api.Server_HostAddress = http://localhost:5185
 
 GET {{Peers.Api.Server_HostAddress}}/weatherforecast/
 Accept: application/json
