@@ -14,7 +14,7 @@ namespace Peers.Modules.Test.SharedClasses;
 
 public static class EntityBuilder
 {
-    public static string TestPhoneNumber() => new PhoneNumbers().PhoneNumber("+9715########");
+    public static string TestPhoneNumber() => new PhoneNumbers().PhoneNumber("+9665########");
 
     public static Faker<AppUser> Test2FUser(
         DateTime? date = null,

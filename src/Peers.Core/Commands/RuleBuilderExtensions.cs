@@ -19,8 +19,8 @@ public static class IRuleBuilderExtensions
         => ruleBuilder.SetValidator(new PhoneNumberValidator<T>(l));
 
     /// <summary>
-    /// Defines a UAE IBAN validator on the current rule builder for string properties.
-    /// Validation will fail if the value returned by the lambda is not a valid UAE IBAN.
+    /// Defines a Saudi IBAN validator on the current rule builder for string properties.
+    /// Validation will fail if the value returned by the lambda is not a valid Saudi IBAN.
     /// </summary>
     /// <typeparam name="T">Type of object being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder on which the validator should be defined.</param>

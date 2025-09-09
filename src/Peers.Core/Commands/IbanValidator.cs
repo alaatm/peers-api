@@ -7,7 +7,7 @@ namespace Peers.Core.Commands;
 
 internal sealed class IbanValidator<T> : PropertyValidator<T, string>
 {
-    private static readonly Regex _uaeIban = new(@"^AE\d{21}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(2));
+    private static readonly Regex _saudiIban = new(@"^SA\d{22}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(2));
     private readonly IStrLoc _l;
 
     public override string Name => "IbanValidator";
@@ -17,13 +17,13 @@ internal sealed class IbanValidator<T> : PropertyValidator<T, string>
     public override bool IsValid(ValidationContext<T> context, string value)
     {
         //
-        // Validation based on Wikipedia article:
+        // Validation based on wikipedia article:
         // https://en.wikipedia.org/wiki/International_Bank_Account_Number
         //
 
         if (value is null)
         {
-            context.AddFailure(_l["IBAN is empty."]);
+            context.AddFailure("IBAN is empty.");
             return false;
         }
 
@@ -32,7 +32,7 @@ internal sealed class IbanValidator<T> : PropertyValidator<T, string>
             .Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Trim();
 
-        if (!_uaeIban.IsMatch(value))
+        if (!_saudiIban.IsMatch(value))
         {
             context.AddFailure(_l["Invalid IBAN structure."]);
             return false;
@@ -42,7 +42,7 @@ internal sealed class IbanValidator<T> : PropertyValidator<T, string>
         value = value[4..] + value[..4];
 
         // Replace letters with digits
-        value = value.Replace("AE", "1014", StringComparison.OrdinalIgnoreCase);
+        value = value.Replace("SA", "2810", StringComparison.OrdinalIgnoreCase);
 
         // Validate checksum
         if (decimal.Parse(value, CultureInfo.InvariantCulture) % 97 != 1)

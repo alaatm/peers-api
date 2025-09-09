@@ -12,7 +12,7 @@ public static partial class RegexStatic
     public static partial Regex SmtpUriRegex();
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex EmailRegex();
-    [GeneratedRegex(@"^\+9715\d{8}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    [GeneratedRegex(@"^\+9665\d{8}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex PhoneNumberRegex();
     [GeneratedRegex("^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{4}|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2}={2})$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex Base64Regex();

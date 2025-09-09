@@ -256,8 +256,8 @@ public abstract class CommandValidatorTestBase<TCommand, TCommandValidator>
         Check(memberAccessor, "", true);
         Check(memberAccessor, " ", true);
         Check(memberAccessor, "5511111111", true);
-        Check(memberAccessor, "+966511111111", true);
-        Check(memberAccessor, "+971511111111", false);
+        Check(memberAccessor, "+966511111111", false);
+        Check(memberAccessor, "+971511111111", true);
     }
 
     public void CheckCreditCard<TProperty>(Expression<Func<TCommand, TProperty>> memberAccessor)

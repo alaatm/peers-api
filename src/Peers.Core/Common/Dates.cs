@@ -4,7 +4,7 @@ namespace Peers.Core.Common;
 
 public static class DateTimeExtensions
 {
-    private static readonly TimeZoneInfo _uaeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Arabian Standard Time");
+    private static readonly TimeZoneInfo _saudiTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Arab Standard Time");
 
     /// <summary>
     /// Converts the <see cref="DateTime"/> object to a <see cref="DateOnly"/> object.
@@ -27,20 +27,20 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The UTC date/time.</param>
     /// <returns></returns>
-    public static DateTime ToUaeTimeZone(this DateTime dateTime)
+    public static DateTime ToSaudiTimeZone(this DateTime dateTime)
     {
         Debug.Assert(dateTime.Kind == DateTimeKind.Utc);
-        return TimeZoneInfo.ConvertTimeFromUtc(dateTime, _uaeTimeZone);
+        return TimeZoneInfo.ConvertTimeFromUtc(dateTime, _saudiTimeZone);
     }
     /// <summary>
     /// Converts the given <see cref="DateTime"/> to Saudi Arabia time zone.
     /// </summary>
     /// <param name="dateTime">The UTC date/time.</param>
     /// <returns></returns>
-    public static DateTimeOffset ToUaeTimeZoneOffset(this DateTime dateTime)
+    public static DateTimeOffset ToSaudiTimeZoneOffset(this DateTime dateTime)
     {
         Debug.Assert(dateTime.Kind == DateTimeKind.Utc);
         DateTimeOffset dateTimeOffset = dateTime;
-        return TimeZoneInfo.ConvertTime(dateTimeOffset, _uaeTimeZone);
+        return TimeZoneInfo.ConvertTime(dateTimeOffset, _saudiTimeZone);
     }
 }

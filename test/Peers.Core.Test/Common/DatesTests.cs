@@ -22,29 +22,29 @@ public class DatesTests
     };
 
     [Fact]
-    public void ToSaudiTimeZone_returns_uae_time()
+    public void ToSaudiTimeZone_returns_saudi_time()
     {
         // Arrange
         var utcNow = DateTime.UtcNow;
 
         // Act
-        var uaeTime = utcNow.ToUaeTimeZone();
+        var saudiTime = utcNow.ToSaudiTimeZone();
 
         // Assert
-        Assert.Equal(utcNow.AddHours(4), uaeTime);
+        Assert.Equal(utcNow.AddHours(3), saudiTime);
     }
 
     [Fact]
-    public void ToSaudiTimeZoneOffset_returns_uae_time()
+    public void ToSaudiTimeZoneOffset_returns_saudi_time()
     {
         // Arrange
         var utcNow = DateTime.UtcNow;
 
         // Act
-        var uaeTime = utcNow.ToUaeTimeZoneOffset();
+        var saudiTime = utcNow.ToSaudiTimeZoneOffset();
 
         // Assert
-        Assert.Equal(utcNow.AddHours(4), uaeTime.DateTime);
-        Assert.Equal(TimeSpan.FromHours(4), uaeTime.Offset);
+        Assert.Equal(utcNow.AddHours(3), saudiTime.DateTime);
+        Assert.Equal(TimeSpan.FromHours(3), saudiTime.Offset);
     }
 }
