@@ -47,4 +47,4 @@ jobs:
           ./build.ps1 --target Test `
                       --configuration ${{ matrix.build_config }}
         env:
-          ConnStrIntegration: Server=dummy;Database=MashkoorIntegrationTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStrIntegration: Server=dummy;Database=PeersIntegrationTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;

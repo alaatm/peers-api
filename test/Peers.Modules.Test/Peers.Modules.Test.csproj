@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(DotNetExtVer)" />
+    <PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />
+    <PackageReference Include="Bogus" Version="35.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Peers.Core.Common" />
+    <Using Include="Peers.Modules.Test.SharedClasses.CommandBuilder" Static="True" />
+    <Using Include="Peers.Modules.Test.SharedClasses.EntityBuilder" Static="True" />
+    <Using Include="Peers.Modules.Kernel" />
+    <Using Include="Peers.Resources" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Peers.Modules\Peers.Modules.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="testhost.staticwebassets.endpoints.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

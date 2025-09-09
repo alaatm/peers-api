@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="MediatR;" />
+    <Using Include="FluentValidation;" />
+    <Using Include="Peers.Core" />
+    <Using Include="Peers.Core.Common" />
+    <Using Include="Peers.Core.Domain" />
+    <Using Include="Peers.Core.Commands" />
+    <Using Include="Peers.Core.Queries" />
+    <Using Include="Peers.Core.Cqrs" />
+    <Using Include="Peers.Core.Http" />
+    <Using Include="Peers.Core.Identity" />
+    <Using Include="Peers.Modules.Kernel" /> 
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="Microsoft.Extensions.Localization" />
+    <Using Include="Microsoft.AspNetCore.Identity" />
+    <Using Include="Microsoft.AspNetCore.Authorization" />
+    <Using Include="Peers.Resources" />
+    <Using Include="Microsoft.Extensions.Localization.IStringLocalizer&lt;Peers.Resources.res&gt;" Alias="IStrLoc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Peers.Core\Peers.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Peers.Modules.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="_assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

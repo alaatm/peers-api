@@ -56,6 +56,6 @@ jobs:
           ./build.sh --target Test \
                      --configuration ${{ matrix.build_config }}
         env:
-          ConnStr: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
-          ConnStrStartup: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorStartupTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
-          ConnStrIntegration: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=MashkoorIntegrationTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStr: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=PeersTestDb;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStrStartup: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=PeersStartupTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;
+          ConnStrIntegration: Server=tcp:127.0.0.1,${{ job.services.sqlserver.ports[1433] }};Database=PeersIntegrationTests;User Id=sa;Password=g0d4mm!tSQLServer;encrypt=false;

@@ -1,0 +1,3 @@
+startup:Server=.\V22;Database=PeersStartupTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;
+context:Server=.\V22;Database=PeersContextTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;
+integration:Server=.\V22;Database=PeersIntegrationTests;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=false;

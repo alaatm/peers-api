@@ -12,10 +12,10 @@
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <Authors>Mashkoor</Authors>
-    <Copyright>Copyright © Mashkoor</Copyright>
-    <PackageProjectUrl>https://github.com/mashkoor-platform/mashkoor-api</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mashkoor-platform/mashkoor-api</RepositoryUrl>
+    <Authors>Peers</Authors>
+    <Copyright>Copyright © Peers</Copyright>
+    <PackageProjectUrl>https://github.com/peers-platform/peers-api</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/peers-platform/peers-api</RepositoryUrl>
     <RespositoryType>git</RespositoryType>
 
     <VersionPrefix>1.0.1009</VersionPrefix>

@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(DotNetVer)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(DotNetVer)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Peers.Api\Peers.Api.csproj" />
+  </ItemGroup>
+
+</Project>
