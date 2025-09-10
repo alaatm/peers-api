@@ -17,7 +17,6 @@ public static class EndpointRouteBuilderExtensions
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status201Created);
 
-
         gCustomers.MapPut("/me/pin-code", (IMediator mediator, ChangePinCode.Command cmd)
             => mediator.Send(cmd))
             .Produces(StatusCodes.Status401Unauthorized)

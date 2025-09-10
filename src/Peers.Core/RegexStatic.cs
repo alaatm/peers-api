@@ -20,4 +20,6 @@ public static partial class RegexStatic
     public static partial Regex UriRegex();
     [GeneratedRegex("^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<build>\\d+) \\((?<revision>\\d+)\\)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex ClientVersionRegex();
+    [GeneratedRegex(@"^[a-z0-9_]+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex IsSnakeCaseRegex();
 }

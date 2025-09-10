@@ -446,3 +446,7 @@ dotnet_diagnostic.CA5401.severity = none # We generate it using SymmetricAlgorit
 dotnet_diagnostic.CA1515.severity = none
 # CA1716: Identifiers should not match keywords
 dotnet_diagnostic.CA1716.severity = none
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = none
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = none
