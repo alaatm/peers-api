@@ -15,43 +15,41 @@ public static class Lang
     [
         EnLangCode,
         ArLangCode,
-        RuLangCode,
     ];
 
     public const string EnLangCode = "en";
     public const string ArLangCode = "ar";
-    public const string RuLangCode = "ru";
+    public const string DefaultLangCode = EnLangCode;
 
     /// <summary>
-    /// Returns the current thread language. Defaults to English if the current language is
+    /// Returns the current thread language. Defaults to <see cref="DefaultLangCode" /> if the current language is
     /// not part of the supported languages.
     /// </summary>
     /// <returns></returns>
     public static string GetCurrent() => GetOrDefault(Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName);
 
     /// <summary>
-    /// Returns the requested language if found. Defaults to English if the requested language is
-    /// not part of the supported languages.
+    /// Returns the requested language if supported; otherwise returns the default language.
     /// </summary>
-    /// <param name="currentLang">The requested language.</param>
+    /// <param name="requestedLang">The requested language.</param>
     /// <returns></returns>
-    public static string GetOrDefault(string? currentLang)
+    public static string GetOrDefault(string? requestedLang)
     {
-        if (currentLang is null)
+        if (requestedLang is null)
         {
-            return EnLangCode;
+            return DefaultLangCode;
         }
 
-        Debug.Assert(currentLang.Length == 2);
+        Debug.Assert(requestedLang.Length == 2);
 
         foreach (var lang in SupportedLanguages)
         {
-            if (currentLang.Equals(lang, StringComparison.OrdinalIgnoreCase))
+            if (requestedLang.Equals(lang, StringComparison.OrdinalIgnoreCase))
             {
                 return lang;
             }
         }
 
-        return EnLangCode;
+        return DefaultLangCode;
     }
 }

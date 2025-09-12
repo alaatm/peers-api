@@ -10,11 +10,11 @@ public static class ApplicationBuilderExtensions
     public static IApplicationBuilder UseLocalization(
         this IApplicationBuilder app)
     {
-        // Uses localization middleware for setting headers
+        // Uses localization middleware for setting culture info
         // based on 'accept-language' header.
 
         var localizationOptions = new RequestLocalizationOptions()
-            .SetDefaultCulture(Lang.SupportedLanguages[0])
+            .SetDefaultCulture(Lang.DefaultLangCode)
             .AddSupportedCultures(Lang.SupportedLanguages)
             .AddSupportedUICultures(Lang.SupportedLanguages);
         localizationOptions.ApplyCurrentCultureToResponseHeaders = true;

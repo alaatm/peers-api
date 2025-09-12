@@ -106,7 +106,7 @@ public class DispatchMessageTests : IntegrationTestBase
 
         var arg = Assert.Single(broadcastList);
         Assert.Empty(arg.Item2);
-        Assert.Equal(3, arg.Item1.Count);
+        Assert.Equal(2, arg.Item1.Count);
 
         var enMessage = arg.Item1.ElementAt(0);
         Assert.Null(enMessage.Data);
@@ -121,12 +121,5 @@ public class DispatchMessageTests : IntegrationTestBase
         Assert.Equal(_title["ar"], arMessage.Notification.Title);
         Assert.Equal(_body["ar"], arMessage.Notification.Body);
         Assert.Null(arMessage.Token);
-
-        var ruMessage = arg.Item1.ElementAt(2);
-        Assert.Null(arMessage.Data);
-        Assert.Equal("customers-ru", ruMessage.Topic);
-        Assert.Equal(_title["ru"], ruMessage.Notification.Title);
-        Assert.Equal(_body["ru"], ruMessage.Notification.Body);
-        Assert.Null(ruMessage.Token);
     }
 }

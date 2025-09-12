@@ -38,7 +38,6 @@ public class LangTests
     [InlineData(null, "en")]
     [InlineData("en", "en")]
     [InlineData("ar", "ar")]
-    [InlineData("ru", "ru")]
     [InlineData("fr", "en")]
     public void GetOrDefault_returns_requested_language_if_found_or_default(string requestedLang, string expectedLang)
     {
