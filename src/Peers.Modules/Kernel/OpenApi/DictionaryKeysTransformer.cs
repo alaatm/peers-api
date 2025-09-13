@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Peers.Modules.Kernel.OpenApi;
 
@@ -16,35 +15,27 @@ internal sealed class DictionaryKeysTransformer : IOpenApiSchemaTransformer
 
         if (type == typeof(Media.Commands.Upload.CommandDoc))
         {
-            var dictSchema = schema.Properties["data"].Properties["metadata"];
-            dictSchema.AdditionalProperties.Extensions["x-additionalPropertiesName"] = new OpenApiString("<fileName>");
-            dictSchema.Description = string.IsNullOrWhiteSpace(dictSchema.Description)
-                ? "Keys are file names matching uploaded files; values are file metadata."
-                : dictSchema.Description + "\n\nKeys are file names matching uploaded files; values are file metadata.";
+            PutKeyName(schema.Properties?["data"]?.Properties?["metadata"] as OpenApiSchema, "<fileName>");
         }
         else if (type == typeof(Media.Queries.GetStatus.Response))
         {
-            var dictSchema = schema.Properties["status"];
-            dictSchema.AdditionalProperties.Extensions["x-additionalPropertiesName"] = new OpenApiString("<mediaUrl>");
-            dictSchema.Description = string.IsNullOrWhiteSpace(dictSchema.Description)
-                ? "Keys are media URLs; values are upload statuses."
-                : dictSchema.Description + "\n\nKeys are media URLs; values are upload statuses.";
+            PutKeyName(schema.Properties?["status"] as OpenApiSchema, "<mediaUrl>");
         }
         else if (type == typeof(Users.Commands.DispatchMessage.Command))
         {
-            var dictSchema = schema.Properties["title"];
-            dictSchema.AdditionalProperties.Extensions["x-additionalPropertiesName"] = new OpenApiString("<lang>");
-            dictSchema.Description = string.IsNullOrWhiteSpace(dictSchema.Description)
-                ? "Keys are ISO lang code (en, ar, etc..); values are the localized value."
-                : dictSchema.Description + "\n\nKeys are ISO lang code (en, ar, etc..); values are the localized value.";
-
-            dictSchema = schema.Properties["body"];
-            dictSchema.AdditionalProperties.Extensions["x-additionalPropertiesName"] = new OpenApiString("<lang>");
-            dictSchema.Description = string.IsNullOrWhiteSpace(dictSchema.Description)
-                ? "Keys are ISO lang code (en, ar, etc..); values are the localized value."
-                : dictSchema.Description + "\n\nKeys are ISO lang code (en, ar, etc..); values are the localized value.";
+            PutKeyName(schema.Properties?["title"] as OpenApiSchema, "<lang>");
+            PutKeyName(schema.Properties?["body"] as OpenApiSchema, "<lang>");
         }
 
         return Task.CompletedTask;
+
+        static void PutKeyName(OpenApiSchema? schema, string keyName)
+        {
+            if (schema?.AdditionalProperties is OpenApiSchema props)
+            {
+                props.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                props.Extensions.Add("x-additionalPropertiesName", new JsonNodeExtension(keyName));
+            }
+        }
     }
 }

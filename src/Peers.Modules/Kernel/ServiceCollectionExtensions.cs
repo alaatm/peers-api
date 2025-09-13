@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
                 cfg.UseSqlServer(config.GetConnectionString("Default"), p => p
                     .EnableRetryOnFailure(5)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
-                    .TranslateParameterizedCollectionsToConstants());
+                    .UseParameterizedCollectionMode(ParameterTranslationMode.Constant));
 
             });
 

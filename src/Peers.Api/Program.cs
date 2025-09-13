@@ -10,5 +10,3 @@ var app = builder.Build();
 app.UsePeers();
 
 await app.RunAsync();
-
-public partial class Program { }

@@ -1,11 +1,11 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
+using DA = System.ComponentModel.DataAnnotations;
 
 namespace Peers.Modules.Kernel.OpenApi;
 
@@ -33,9 +33,9 @@ internal sealed class EnumNamesTransformer : IOpenApiSchemaTransformer
         var values = Enum.GetValues(t).Cast<object>().Select(Convert.ToInt32).ToArray();
         if (schema.Enum is null || schema.Enum.Count == 0)
         {
-            schema.Enum = [.. values.Select(v => (IOpenApiAny)new OpenApiInteger(v))];
+            schema.Enum = [.. values.Select(v => JsonValue.Create(v))];
         }
-        schema.Type = "integer";
+        schema.Type = JsonSchemaType.Integer;
         schema.Format = "int32";
 
         // Build names (prefer customized names when available)
@@ -51,25 +51,24 @@ internal sealed class EnumNamesTransformer : IOpenApiSchemaTransformer
         var descs = Enum.GetNames(t).Select(n =>
         {
             var mi = t.GetMember(n)[0];
-            return mi.GetCustomAttribute<DisplayAttribute>()?.Description
+            return mi.GetCustomAttribute<DA.DisplayAttribute>()?.Description
                 ?? mi.GetCustomAttribute<DescriptionAttribute>()?.Description
                 ?? string.Empty;
         }).ToArray();
 
-        // Add vendor extensions many tools/UIs understand
-        var enumNames = new OpenApiArray();
-        enumNames.AddRange(names.Select(n => (IOpenApiAny)new OpenApiString(n)));
-        schema.Extensions["x-enumNames"] = enumNames;
+        schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
 
-        var enumVarNames = new OpenApiArray();
-        enumVarNames.AddRange(names.Select(n => (IOpenApiAny)new OpenApiString(n)));
-        schema.Extensions["x-enum-varnames"] = enumVarNames;
+        // Add vendor extensions many tools/UIs understand
+        var enumNames = new JsonArray([.. names.Select(n => JsonValue.Create(n))]);
+        schema.Extensions["x-enumNames"] = new JsonNodeExtension(enumNames);
+
+        var enumVarNames = new JsonArray([.. names.Select(n => JsonValue.Create(n))]);
+        schema.Extensions["x-enum-varnames"] = new JsonNodeExtension(enumVarNames);
 
         if (descs.Any(d => !string.IsNullOrEmpty(d)))
         {
-            var xEnumDescs = new OpenApiArray();
-            xEnumDescs.AddRange(descs.Select(d => (IOpenApiAny)new OpenApiString(d)));
-            schema.Extensions["x-enum-descriptions"] = xEnumDescs;
+            var xEnumDescs = new JsonArray([.. descs.Select(d => JsonValue.Create(d))]);
+            schema.Extensions["x-enum-descriptions"] = new JsonNodeExtension(xEnumDescs);
         }
 
         return Task.CompletedTask;

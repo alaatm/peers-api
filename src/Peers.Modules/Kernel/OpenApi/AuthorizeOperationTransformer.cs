@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Peers.Modules.Kernel.OpenApi;
 
@@ -24,9 +24,10 @@ internal sealed class AuthorizeOperationTransformer : IOpenApiOperationTransform
 
         if (hasProtectedTag)
         {
+            op.Security ??= [];
             op.Security.Add(new OpenApiSecurityRequirement
             {
-                [new OpenApiSecurityScheme { Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme } }] = Array.Empty<string>()
+                [new OpenApiSecuritySchemeReference("Bearer", ctx.Document)] = [],
             });
         }
 

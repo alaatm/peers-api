@@ -10,6 +10,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddOpenApiWithTransformers(this IServiceCollection services) => services
         .AddOpenApi(o =>
         {
+            o.CreateSchemaReferenceId = typeInfo =>
+            {
+                var t = typeInfo.Type;
+                return SchemaIdBuilder.Build(t);
+            };
             o.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
             o.AddOperationTransformer<AuthorizeOperationTransformer>();
             o.AddOperationTransformer<MultipartJsonEncodingTransformer>();

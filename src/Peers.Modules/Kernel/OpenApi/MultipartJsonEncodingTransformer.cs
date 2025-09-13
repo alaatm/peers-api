@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Peers.Modules.Kernel.OpenApi;
 
@@ -11,8 +11,9 @@ internal sealed class MultipartJsonEncodingTransformer : IOpenApiOperationTransf
 {
     public Task TransformAsync(OpenApiOperation op, OpenApiOperationTransformerContext ctx, CancellationToken _)
     {
-        if (op.RequestBody?.Content.TryGetValue("multipart/form-data", out var fd) ?? false)
+        if (op.RequestBody?.Content?.TryGetValue("multipart/form-data", out var fd) ?? false)
         {
+            fd.Encoding ??= new Dictionary<string, OpenApiEncoding>();
             fd.Encoding["data"] = new OpenApiEncoding { ContentType = "application/json" };
             fd.Encoding["files"] = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
         }

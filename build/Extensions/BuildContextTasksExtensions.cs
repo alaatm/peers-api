@@ -81,8 +81,8 @@ public static partial class BuildContextExtensions
                 ResultsDirectory = context.Coverage.Root,
                 ArgumentCustomization = args => args
                     .Append($"{CollectorConfigArg}.Exclude={excludeTypes}")
-                    .Append($"{CollectorConfigArg}.ExcludeByFile=**/obj/**/*.g.cs")
-                    .Append($"{CollectorConfigArg}.ExcludeByAttribute=GeneratedCodeAttribute;CompilerGeneratedAttribute;ExcludeFromCodeCoverageAttribute")
+                    .Append($"{CollectorConfigArg}.ExcludeByFile=**/*.g.cs,**/*.generated.cs")
+                // .Append($"{CollectorConfigArg}.ExcludeByAttribute=GeneratedCodeAttribute;CompilerGeneratedAttribute;ExcludeFromCodeCoverageAttribute")
             });
         }
 

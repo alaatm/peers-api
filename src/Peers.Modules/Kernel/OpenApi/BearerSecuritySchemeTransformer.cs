@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Peers.Modules.Kernel.OpenApi;
 
@@ -11,7 +11,7 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
 {
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        var requirements = new Dictionary<string, OpenApiSecurityScheme>
+        var requirements = new Dictionary<string, IOpenApiSecurityScheme>
         {
             ["Bearer"] = new OpenApiSecurityScheme
             {

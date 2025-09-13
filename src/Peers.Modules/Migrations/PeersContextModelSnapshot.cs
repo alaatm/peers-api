@@ -18,7 +18,7 @@ namespace Peers.Modules.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "10.0.0-rc.1.25451.107")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -442,7 +442,7 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasColumnName("package_name");
 
-                    b.ComplexProperty<Dictionary<string, object>>("LatestVersion", "Peers.Modules.System.Domain.ClientAppInfo.LatestVersion#ClientAppVersion", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "LatestVersion", "Peers.Modules.System.Domain.ClientAppInfo.LatestVersion#ClientAppVersion", b1 =>
                         {
                             b1.IsRequired();
 

@@ -21,17 +21,25 @@ public static class GetClientApp
 
         public async Task<IResult> Handle([NotNull] Query cmd, CancellationToken ctk)
         {
+            // TODO: Fix when this is resolved: https://github.com/dotnet/efcore/issues/36761
             var clientApp = await _context.ClientApps
                 .AsNoTracking()
-                .Select(c => new Response(
+                .Select(c => new
+                {
                     c.PackageName,
                     c.HashString,
                     c.AndroidStoreLink,
                     c.IOSStoreLink,
-                    c.LatestVersion.VersionString))
+                    c.LatestVersion,
+                })
                 .FirstAsync(ctk);
 
-            return Results.Ok(clientApp);
+            return Results.Ok(new Response(
+                clientApp.PackageName,
+                clientApp.HashString,
+                clientApp.AndroidStoreLink,
+                clientApp.IOSStoreLink,
+                clientApp.LatestVersion.VersionString));
         }
     }
 }
