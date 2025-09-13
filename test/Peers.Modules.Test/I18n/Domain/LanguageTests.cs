@@ -19,24 +19,4 @@ public class LanguageTests
         Assert.Equal(Language.En.Id, actual[1].Id);
         Assert.Equal(Language.En.Dir, actual[1].Dir);
     }
-
-    [Theory]
-    [MemberData(nameof(HasError_returns_whether_input_has_error_TestData))]
-    public void HasError_returns_whether_input_has_error(Language[] languages, LocalizedField[] field, bool expectedResult, string expectedError, string expectedArgs)
-    {
-        // Arrange and act
-        var actualResult = Language.HasError(languages, field, out var actualError, out var actualArgs);
-
-        // Assert
-        Assert.Equal(expectedResult, actualResult);
-        Assert.Equal(expectedError, actualError);
-        Assert.Equal(expectedArgs, actualArgs);
-    }
-
-    public static TheoryData<Language[], LocalizedField[], bool, string, string> HasError_returns_whether_input_has_error_TestData() => new()
-    {
-        { new[] { Language.Ar, Language.En }, LocalizedField.CreateList(("ar", "عربي")), true, "No translation was provided for the following language(s): {0}. Field name: '{1}'.", "en" },
-        { new[] { Language.Ar }, LocalizedField.CreateList(("ar", "عربي"), ("ru", "русский")), true, "Translation was provided for the following non-supported language(s): {0}. Field name: '{1}'.", "ru" },
-        { new[] { Language.Ar }, LocalizedField.CreateList(("ar", "عربي")), false, null, null },
-    };
 }

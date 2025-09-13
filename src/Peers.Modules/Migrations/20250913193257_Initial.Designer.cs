@@ -13,7 +13,7 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20250912134151_Initial")]
+    [Migration("20250913193257_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -222,7 +222,8 @@ namespace Peers.Modules.Migrations
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
@@ -341,33 +342,34 @@ namespace Peers.Modules.Migrations
                     b.ToTable("privacy_policy", "settings");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicyTranslation", b =>
+            modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicyTr", b =>
                 {
                     b.Property<int>("EntityId")
                         .HasColumnType("int")
                         .HasColumnName("entity_id");
 
-                    b.Property<string>("LanguageId")
+                    b.Property<string>("LangCode")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)")
-                        .HasColumnName("language_id");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("description");
+                        .HasColumnName("body");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
-                        .HasColumnName("name");
+                        .HasColumnName("title");
 
-                    b.HasKey("EntityId", "LanguageId");
+                    b.HasKey("EntityId", "LangCode");
 
-                    b.HasIndex("LanguageId");
+                    b.HasIndex("LangCode");
 
-                    b.ToTable("privacy_policy_translation", "i18n");
+                    b.ToTable("privacy_policy_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Settings.Domain.Terms", b =>
@@ -384,33 +386,34 @@ namespace Peers.Modules.Migrations
                     b.ToTable("terms", "settings");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Settings.Domain.TermsTranslation", b =>
+            modelBuilder.Entity("Peers.Modules.Settings.Domain.TermsTr", b =>
                 {
                     b.Property<int>("EntityId")
                         .HasColumnType("int")
                         .HasColumnName("entity_id");
 
-                    b.Property<string>("LanguageId")
+                    b.Property<string>("LangCode")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)")
-                        .HasColumnName("language_id");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("description");
+                        .HasColumnName("body");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
-                        .HasColumnName("name");
+                        .HasColumnName("title");
 
-                    b.HasKey("EntityId", "LanguageId");
+                    b.HasKey("EntityId", "LangCode");
 
-                    b.HasIndex("LanguageId");
+                    b.HasIndex("LangCode");
 
-                    b.ToTable("terms_translation", "i18n");
+                    b.ToTable("terms_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.System.Domain.ClientAppInfo", b =>
@@ -1007,9 +1010,9 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Thumbnail");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicyTranslation", b =>
+            modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicyTr", b =>
                 {
-                    b.HasOne("Peers.Modules.Settings.Domain.PrivacyPolicy", "Entity")
+                    b.HasOne("Peers.Modules.Settings.Domain.PrivacyPolicy", null)
                         .WithMany("Translations")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1017,16 +1020,14 @@ namespace Peers.Modules.Migrations
 
                     b.HasOne("Peers.Modules.I18n.Domain.Language", null)
                         .WithMany()
-                        .HasForeignKey("LanguageId")
+                        .HasForeignKey("LangCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Settings.Domain.TermsTranslation", b =>
+            modelBuilder.Entity("Peers.Modules.Settings.Domain.TermsTr", b =>
                 {
-                    b.HasOne("Peers.Modules.Settings.Domain.Terms", "Entity")
+                    b.HasOne("Peers.Modules.Settings.Domain.Terms", null)
                         .WithMany("Translations")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1034,11 +1035,9 @@ namespace Peers.Modules.Migrations
 
                     b.HasOne("Peers.Modules.I18n.Domain.Language", null)
                         .WithMany()
-                        .HasForeignKey("LanguageId")
+                        .HasForeignKey("LangCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Entity");
                 });
 
             modelBuilder.Entity("Peers.Modules.Users.Domain.AppUser", b =>

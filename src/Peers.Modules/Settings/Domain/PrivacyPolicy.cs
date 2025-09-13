@@ -1,11 +1,11 @@
-using Peers.Modules.I18n.Domain;
+using Peers.Core.Localization.Infrastructure;
 
 namespace Peers.Modules.Settings.Domain;
 
 /// <summary>
 /// Represents value of privacy policy.
 /// </summary>
-public sealed class PrivacyPolicy : Entity, ILocalizedEntity<PrivacyPolicy, PrivacyPolicyTranslation>
+public sealed class PrivacyPolicy : Entity, ILocalizable<PrivacyPolicy, PrivacyPolicyTr>
 {
     /// <summary>
     /// The effective date of the policy.
@@ -14,19 +14,17 @@ public sealed class PrivacyPolicy : Entity, ILocalizedEntity<PrivacyPolicy, Priv
     /// <summary>
     /// The list of translations for this entity.
     /// </summary>
-    public ICollection<PrivacyPolicyTranslation> Translations { get; set; } = default!;
+    public ICollection<PrivacyPolicyTr> Translations { get; set; } = default!;
 
     /// <summary>
     /// Creates a new instance of <see cref="PrivacyPolicy"/>.
     /// </summary>
-    /// <param name="title">The title.</param>
-    /// <param name="body">The HTML body.</param>
     /// <param name="effectiveDate">The effective date of the policy.</param>
+    /// <param name="translations">The translations.</param>
     /// <returns></returns>
     public static PrivacyPolicy Create(
-        [NotNull] TranslatedField[] title,
-        [NotNull] TranslatedField[] body,
-        DateOnly effectiveDate)
+        DateOnly effectiveDate,
+        [NotNull] PrivacyPolicyTr.Dto[] translations)
     {
         var privacyPolicy = new PrivacyPolicy
         {
@@ -34,39 +32,20 @@ public sealed class PrivacyPolicy : Entity, ILocalizedEntity<PrivacyPolicy, Priv
             EffectiveDate = effectiveDate,
         };
 
-        privacyPolicy.AddOrUpdateTranslations(title, Normalize(body));
+        privacyPolicy.UpsertTranslations(translations);
         return privacyPolicy;
     }
 
     /// <summary>
     /// Updates privacy policy information.
     /// </summary>
-    /// <param name="title">The title.</param>
-    /// <param name="body">The HTML body.</param>
     /// <param name="effectiveDate">The effective date of the policy.</param>
+    /// <param name="translations">The translations.</param>
     public void Update(
-        [NotNull] TranslatedField[] title,
-        [NotNull] TranslatedField[] body,
-        DateOnly effectiveDate)
+        DateOnly effectiveDate,
+        [NotNull] PrivacyPolicyTr.Dto[] translations)
     {
         EffectiveDate = effectiveDate;
-        this.AddOrUpdateTranslations(title, Normalize(body));
-    }
-
-    private static TranslatedField[] Normalize(TranslatedField[] body)
-    {
-        for (var i = 0; i < body.Length; i++)
-        {
-            var field = body[i];
-
-            var normalizedValue = field.Value
-                .Replace("\r\n", "", StringComparison.Ordinal)
-                .Replace("\n", "", StringComparison.Ordinal)
-                .Replace("\r", "", StringComparison.Ordinal);
-
-            body[i] = field with { Value = normalizedValue };
-        }
-
-        return body;
+        this.UpsertTranslations(translations);
     }
 }

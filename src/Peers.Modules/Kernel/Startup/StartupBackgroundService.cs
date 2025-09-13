@@ -2,6 +2,7 @@ using System.Reflection;
 using Peers.Core.AzureServices.Storage;
 using Peers.Core.Data.Identity;
 using Peers.Core.Domain.Rules;
+using Peers.Core.Localization;
 using Peers.Modules.I18n.Domain;
 using Peers.Modules.Settings.Domain;
 using Peers.Modules.System.Domain;
@@ -15,10 +16,10 @@ public sealed class StartupBackgroundService : BackgroundService
 
     private static readonly string _assetsPath = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "_assets");
 
-    private static readonly string _termsEn = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.en.txt"));
-    private static readonly string _termsAr = File.ReadAllText(Path.Join(_assetsPath, "legal/terms.ar.txt"));
-    private static readonly string _policyEn = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.en.txt"));
-    private static readonly string _policyAr = File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.ar.txt"));
+    private static readonly string _termsEn = Normalize(File.ReadAllText(Path.Join(_assetsPath, "legal/terms.en.txt")));
+    private static readonly string _termsAr = Normalize(File.ReadAllText(Path.Join(_assetsPath, "legal/terms.ar.txt")));
+    private static readonly string _policyEn = Normalize(File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.en.txt")));
+    private static readonly string _policyAr = Normalize(File.ReadAllText(Path.Join(_assetsPath, "legal/privacy.ar.txt")));
 
     private readonly TimeProvider _timeProvider;
     private readonly IStorageManager _storageManager;
@@ -139,16 +140,18 @@ public sealed class StartupBackgroundService : BackgroundService
 
             await context.Terms.AddAsync(
                 Terms.Create(
-                    TranslatedField.CreateList((en, "Terms of Service"), (ar, "شروط الخدمة")),
-                    TranslatedField.CreateList((en, _termsEn), (ar, _termsAr)))
-            );
+                [
+                    TermsTr.Dto.Create(Lang.EnLangCode, "Terms of Service", _termsEn),
+                    TermsTr.Dto.Create(Lang.ArLangCode, "شروط الخدمة", _termsAr),
+                ]));
 
             await context.PrivacyPolicy.AddAsync(
                 PrivacyPolicy.Create(
-                    TranslatedField.CreateList((en, "Privacy Policy"), (ar, "سياسة الخصوصية")),
-                    TranslatedField.CreateList((en, _policyEn), (ar, _policyAr)),
-                    new(2025, 7, 9))
-            );
+                new DateOnly(2025, 7, 9),
+                [
+                    PrivacyPolicyTr.Dto.Create(Lang.EnLangCode, "Privacy Policy", _policyEn),
+                    PrivacyPolicyTr.Dto.Create(Lang.ArLangCode, "سياسة الخصوصية", _policyAr),
+                ]));
 
             await context.ClientApps.AddAsync(new ClientAppInfo
             {
@@ -169,4 +172,9 @@ public sealed class StartupBackgroundService : BackgroundService
         using var _ = new TaskTimer(_log, "Storage containers creation");
         await _storageManager.CreateContainerAsync(Media.Domain.MediaFile.ContainerName);
     }
+
+    private static string Normalize(string value) => value
+        .Replace("\r\n", "", StringComparison.Ordinal)
+        .Replace("\n", "", StringComparison.Ordinal)
+        .Replace("\r", "", StringComparison.Ordinal);
 }

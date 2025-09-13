@@ -1,4 +1,4 @@
-using Peers.Modules.I18n.Domain;
+using Peers.Core.Localization;
 using Peers.Modules.Settings.Domain;
 
 namespace Peers.Modules.Test.Settings.Domain;
@@ -9,9 +9,6 @@ public class TermsTests
     public void Create_creates_instance()
     {
         // Arrange
-        var en = Language.En;
-        var ar = Language.Ar;
-
         var title = "title ";
         var arabicTitle = "arabicTitle ";
         var body = "body ";
@@ -19,116 +16,53 @@ public class TermsTests
 
         // Act
         var terms = Terms.Create(
-            TranslatedField.CreateList((en, title), (ar, arabicTitle)),
-            TranslatedField.CreateList((en, body), (ar, arabicBody)));
+            [
+                TermsTr.Dto.Create(Lang.EnLangCode, title, body),
+                TermsTr.Dto.Create(Lang.ArLangCode, arabicTitle, arabicBody),
+            ]);
 
         // Assert
         Assert.Equal(2, terms.Translations.Count);
 
-        Assert.Same(en.Id, terms.Translations.ElementAt(0).LanguageId);
-        Assert.Equal(title.Trim(), terms.Translations.ElementAt(0).Name);
-        Assert.Same(ar.Id, terms.Translations.ElementAt(1).LanguageId);
-        Assert.Equal(arabicTitle.Trim(), terms.Translations.ElementAt(1).Name);
+        var en = terms.Translations.Single(p => p.LangCode == Lang.EnLangCode);
+        Assert.Equal(title.Trim(), en.Title);
+        Assert.Equal(body.Trim(), en.Body);
 
-        Assert.Same(en.Id, terms.Translations.ElementAt(0).LanguageId);
-        Assert.Equal(body.Trim(), terms.Translations.ElementAt(0).Description);
-        Assert.Same(ar.Id, terms.Translations.ElementAt(1).LanguageId);
-        Assert.Equal(arabicBody.Trim(), terms.Translations.ElementAt(1).Description);
-    }
-
-    [Fact]
-    public void Create_removes_newline_from_body_html()
-    {
-        // Arrange
-        var en = Language.En;
-        var ar = Language.Ar;
-
-        var body = "\n a\rb\nc\r\nd\ne\rf \r\n";
-
-        // Act
-        var terms = Terms.Create(
-            TranslatedField.CreateList((en, "x"), (ar, "x")),
-            TranslatedField.CreateList((en, body), (ar, body)));
-
-        // Assert
-        Assert.Equal("abcdef", terms.Translations.ElementAt(0).Description);
-        Assert.Equal("abcdef", terms.Translations.ElementAt(1).Description);
+        var ar = terms.Translations.Single(p => p.LangCode == Lang.ArLangCode);
+        Assert.Equal(arabicTitle.Trim(), ar.Title);
+        Assert.Equal(arabicBody.Trim(), ar.Body);
     }
 
     [Fact]
     public void Update_updates_instance()
     {
         // Arrange
-        var en = Language.En;
-        var ar = Language.Ar;
-
         var title = "title";
         var arabicTitle = "arabicTitle";
         var body = "body";
         var arabicBody = "arabicBody";
+
         var terms = Terms.Create(
-            TranslatedField.CreateList((en, title), (ar, arabicTitle)),
-            TranslatedField.CreateList((en, body), (ar, arabicBody)));
+            [
+                TermsTr.Dto.Create(Lang.EnLangCode, title, body),
+                TermsTr.Dto.Create(Lang.ArLangCode, arabicTitle, arabicBody),
+            ]);
 
         // Act
         terms.Update(
-            TranslatedField.CreateList((en, $" new {title} "), (ar, $" new {arabicTitle} ")),
-            TranslatedField.CreateList((en, $" new {body} "), (ar, $" new {arabicBody} ")));
+            [
+                TermsTr.Dto.Create(Lang.EnLangCode, $" new {title} ", $" new {body} "),
+                TermsTr.Dto.Create(Lang.ArLangCode, $" new {arabicTitle} ", $" new {arabicBody} "),
+            ]);
 
-        Assert.Same(en.Id, terms.Translations.ElementAt(0).LanguageId);
-        Assert.Equal($"new {title}", terms.Translations.ElementAt(0).Name);
-        Assert.Same(ar.Id, terms.Translations.ElementAt(1).LanguageId);
-        Assert.Equal($"new {arabicTitle}", terms.Translations.ElementAt(1).Name);
+        Assert.Equal(2, terms.Translations.Count);
 
-        Assert.Same(en.Id, terms.Translations.ElementAt(0).LanguageId);
-        Assert.Equal($"new {body}", terms.Translations.ElementAt(0).Description);
-        Assert.Same(ar.Id, terms.Translations.ElementAt(1).LanguageId);
-        Assert.Equal($"new {arabicBody}", terms.Translations.ElementAt(1).Description);
-    }
+        var en = terms.Translations.Single(p => p.LangCode == Lang.EnLangCode);
+        Assert.Equal($"new {title}", en.Title);
+        Assert.Equal($"new {body}", en.Body);
 
-    [Fact]
-    public void Update_adds_extra_language_translations_if_present()
-    {
-        // Arrange
-        var en = Language.En;
-        var ar = Language.Ar;
-        var ru = new Language { Name = "Russian", Id = "ru" };
-
-        var terms = Terms.Create(
-            TranslatedField.CreateList((en, "title"), (ar, "arabicTitle")),
-            TranslatedField.CreateList((en, "body"), (ar, "arabicBody")));
-
-        // Act
-        terms.Update(
-            TranslatedField.CreateList((en, "title"), (ar, "arabicTitle"), (ru, "russianTitle")),
-            TranslatedField.CreateList((en, "body"), (ar, "arabicBody"), (ru, "russianBody")));
-
-        Assert.Equal(3, terms.Translations.Count);
-        Assert.Same(ru.Id, terms.Translations.ElementAt(2).LanguageId);
-        Assert.Equal("russianTitle", terms.Translations.ElementAt(2).Name);
-        Assert.Equal("russianBody", terms.Translations.ElementAt(2).Description);
-    }
-
-    [Fact]
-    public void Update_removes_newline_from_body_html()
-    {
-        // Arrange
-        var en = Language.En;
-        var ar = Language.Ar;
-
-        var terms = Terms.Create(
-            TranslatedField.CreateList((en, "title"), (ar, "arabicTitle")),
-            TranslatedField.CreateList((en, "body"), (ar, "arabicBody")));
-
-        var body = "\n a\rb\nc\r\nd\ne\rf \r\n";
-
-        // Act
-        terms.Update(
-            TranslatedField.CreateList((en, "title"), (ar, "arabicTitle")),
-            TranslatedField.CreateList((en, body), (ar, body)));
-
-        // Assert
-        Assert.Equal("abcdef", terms.Translations.ElementAt(0).Description);
-        Assert.Equal("abcdef", terms.Translations.ElementAt(1).Description);
+        var ar = terms.Translations.Single(p => p.LangCode == Lang.ArLangCode);
+        Assert.Equal($"new {arabicTitle}", ar.Title);
+        Assert.Equal($"new {arabicBody}", ar.Body);
     }
 }

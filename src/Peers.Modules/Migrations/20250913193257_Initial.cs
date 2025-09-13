@@ -111,7 +111,7 @@ namespace Peers.Modules.Migrations
                 schema: "i18n",
                 columns: table => new
                 {
-                    id = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
+                    id = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
                     name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
                 },
                 constraints: table =>
@@ -425,27 +425,27 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "privacy_policy_translation",
+                name: "privacy_policy_tr",
                 schema: "i18n",
                 columns: table => new
                 {
                     entity_id = table.Column<int>(type: "int", nullable: false),
-                    language_id = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
-                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    body = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_privacy_policy_translation", x => new { x.entity_id, x.language_id });
+                    table.PrimaryKey("PK_privacy_policy_tr", x => new { x.entity_id, x.lang_code });
                     table.ForeignKey(
-                        name: "FK_privacy_policy_translation_language_language_id",
-                        column: x => x.language_id,
+                        name: "FK_privacy_policy_tr_language_lang_code",
+                        column: x => x.lang_code,
                         principalSchema: "i18n",
                         principalTable: "language",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_privacy_policy_translation_privacy_policy_entity_id",
+                        name: "FK_privacy_policy_tr_privacy_policy_entity_id",
                         column: x => x.entity_id,
                         principalSchema: "settings",
                         principalTable: "privacy_policy",
@@ -504,27 +504,27 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "terms_translation",
+                name: "terms_tr",
                 schema: "i18n",
                 columns: table => new
                 {
                     entity_id = table.Column<int>(type: "int", nullable: false),
-                    language_id = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
-                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    body = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_terms_translation", x => new { x.entity_id, x.language_id });
+                    table.PrimaryKey("PK_terms_tr", x => new { x.entity_id, x.lang_code });
                     table.ForeignKey(
-                        name: "FK_terms_translation_language_language_id",
-                        column: x => x.language_id,
+                        name: "FK_terms_tr_language_lang_code",
+                        column: x => x.lang_code,
                         principalSchema: "i18n",
                         principalTable: "language",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_terms_translation_terms_entity_id",
+                        name: "FK_terms_tr_terms_entity_id",
                         column: x => x.entity_id,
                         principalSchema: "settings",
                         principalTable: "terms",
@@ -714,10 +714,10 @@ namespace Peers.Modules.Migrations
                 filter: "[type] = 0");
 
             migrationBuilder.CreateIndex(
-                name: "IX_privacy_policy_translation_language_id",
+                name: "IX_privacy_policy_tr_lang_code",
                 schema: "i18n",
-                table: "privacy_policy_translation",
-                column: "language_id");
+                table: "privacy_policy_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_push_notification_problem_error_code",
@@ -758,10 +758,10 @@ namespace Peers.Modules.Migrations
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_terms_translation_language_id",
+                name: "IX_terms_tr_lang_code",
                 schema: "i18n",
-                table: "terms_translation",
-                column: "language_id");
+                table: "terms_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_user_claim_user_id",
@@ -825,7 +825,7 @@ namespace Peers.Modules.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
-                name: "privacy_policy_translation",
+                name: "privacy_policy_tr",
                 schema: "i18n");
 
             migrationBuilder.DropTable(
@@ -841,7 +841,7 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
-                name: "terms_translation",
+                name: "terms_tr",
                 schema: "i18n");
 
             migrationBuilder.DropTable(
