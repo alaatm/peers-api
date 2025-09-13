@@ -64,8 +64,10 @@ public class PushNotificationServiceTests
         // Fast-forward time enough to let retries proceed
         for (var i = 0; i < maxRetryCount; i++)
         {
+            // // Give continuation a chance to run
+            await Task.Yield();
+            await Task.Delay(1);
             timeProviderMoq.Advance(TimeSpan.FromMilliseconds(backoff * i));
-            await Task.Delay(1); // Give continuation a chance to run
         }
 
         await t;
