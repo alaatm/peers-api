@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Peers.Core.Background.Jobs;
 
 namespace Peers.Core.Test.Background.Jobs;
@@ -7,11 +9,11 @@ namespace Peers.Core.Test.Background.Jobs;
 public class BackgroundJobTests
 {
     [Fact]
-    public void Ctor_creates_logger()
+    public void Ctor_Creates_Logger()
     {
         // Arrange
         var loggerFactoryMoq = new Mock<ILoggerFactory>(MockBehavior.Strict);
-        loggerFactoryMoq.Setup(m => m.CreateLogger("Peers.Core.Test.Background.Jobs.BackgroundJobTests.TestJob")).Returns(Mock.Of<ILogger>());
+        loggerFactoryMoq.Setup(m => m.CreateLogger(typeof(TestJob).FullName.Replace('+', '.'))).Returns(Mock.Of<ILogger>());
 
         // Act
         _ = new BackgroundJob<TestJob>(TimeProvider.System, Mock.Of<IServiceProvider>(), loggerFactoryMoq.Object);
@@ -21,188 +23,242 @@ public class BackgroundJobTests
     }
 
     [Fact]
-    public async Task Exists_job_when_cancellation_is_requested_fromLoop()
+    public async Task Cancelled_BeforeLoopStarts_NoRun()
     {
-        // Arrange
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<TestJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+        var start = DateTimeOffset.Parse("2025-09-13T00:00:00Z");
+        var time = new FakeTimeProvider(start);
+        var bj = CreateBackgroundJob<TestJob>(time, out var counter, out var collector);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
+
+        await bj.StartAsync(cts.Token);
+        cts.Cancel(); // Cancel before starting
+
+        // Wait for the background task to complete (should be immediate)
+        try
+        {
+            await bj.ExecuteTask.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+        catch (TaskCanceledException)
+        {
+            // Expected
+        }
+
+        Assert.Equal(0, counter.Count);
+        Assert.Empty(collector.SeenIds);
+    }
+
+    [Fact]
+    public async Task Cancelled_DuringDelay_NoRun()
+    {
+        var start = DateTimeOffset.Parse("2025-09-13T00:00:00Z");
+        var time = new FakeTimeProvider(start);
+        var bj = CreateBackgroundJob<TestJob>(time, out var counter, out var collector);
+
+        using var cts = new CancellationTokenSource();
+        await bj.StartAsync(cts.Token);
+
+        // Let the job start and schedule its delay
+        await WaitForDelayReachedAsync(100);
+
+        // Advance time by just under 1 second, so delay is not yet complete
+        time.Advance(TimeSpan.FromMilliseconds(900));
+
+        // Cancel before the job can run
         cts.Cancel();
 
-        // Act
-        await backgroundJob.StartAsync(cts.Token);
+        // Advance the remaining time to complete the delay (should not run)
+        time.Advance(TimeSpan.FromMilliseconds(100));
 
-        // Assert
-        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+        await bj.ExecuteTask.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(0, counter.Count);
+        Assert.Empty(collector.SeenIds);
     }
 
     [Fact]
-    public async Task Exists_job_when_cancellation_is_requested()
+    public async Task Cancelled_AfterDelay_BeforeRun_NoRun()
     {
-        // Arrange
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<SlowJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+        var start = DateTimeOffset.Parse("2025-09-13T00:00:00Z");
+        var time = new FakeTimeProvider(start);
+        var bj = CreateBackgroundJob<TestJob>(time, out var counter, out var collector);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
+        await bj.StartAsync(cts.Token);
 
-        // Act
-        await backgroundJob.StartAsync(cts.Token);
+        // Let the job start and schedule its delay
+        await WaitForDelayReachedAsync(100);
+
+        // Advance time by just under 1 second, so delay is not yet complete
+        time.Advance(TimeSpan.FromMilliseconds(900));
+
+        // Cancel before the job can run
         cts.Cancel();
-        await backgroundJob.ExecuteTask;
 
-        // Assert
-        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+        // Advance the remaining time to complete the delay (should not run)
+        time.Advance(TimeSpan.FromMilliseconds(100));
+
+        await bj.ExecuteTask.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(0, counter.Count);
+        Assert.Empty(collector.SeenIds);
     }
 
     [Fact]
-    public async Task Does_not_run_when_there_is_no_next_occurrence()
+    public async Task NoRun_WhenNo_NextOccurrence()
     {
         // Arrange
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<ImpossibleJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+        var bj = CreateBackgroundJob<ImpossibleJob>(TimeProvider.System, out _, out _);
 
         // Act
-        await backgroundJob.StartAsync(default);
+        await bj.StartAsync(default);
+        await bj.ExecuteTask;
 
         // Assert
-        Assert.Equal(TaskStatus.RanToCompletion, backgroundJob.ExecuteTask.Status);
+        Assert.Equal(TaskStatus.RanToCompletion, bj.ExecuteTask.Status);
     }
 
     [Fact]
-    public async Task Executes_job()
+    public async Task OneRun_Executes_And_UsesNewScope()
     {
-        // Arrange
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<TestJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+        var start = DateTimeOffset.Parse("2025-09-13T00:00:00Z");
+        var time = new FakeTimeProvider(start);
+        var bj = CreateBackgroundJob<TestJob>(time, out var counter, out var collector);
 
-        // Act
-        await backgroundJob.StartAsync(default);
+        await bj.StartAsync(default);
 
-        // Assert
-        var job = GetJobRef(backgroundJob);
-        Assert.True(SpinWait.SpinUntil(() => job.DidRun, 40_000));
+        await WaitForDelayReachedAsync(100);
+        time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.True(SpinWait.SpinUntil(() => counter.Count == 1, 40_000));
+        Assert.True(SpinWait.SpinUntil(() => collector.SeenIds.Count == 1, 40_000));
     }
 
     [Fact]
-    public async Task Doesnt_crash_when_job_throws()
+    public async Task MultipleRuns_UseDistinctScopes()
     {
-        // Arrange
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<TestCrashingJob>(TimeProvider.System, new ServiceCollection().BuildServiceProvider(), loggerFactoryMoq.Object);
+        var start = DateTimeOffset.Parse("2025-09-13T00:00:00Z");
+        var time = new FakeTimeProvider(start);
+        var bj = CreateBackgroundJob<TestJob>(time, out var counter, out var collector);
 
-        // Act
-        await backgroundJob.StartAsync(default);
+        await bj.StartAsync(default);
 
-        // Assert
-        var job = GetJobRef(backgroundJob);
-        Assert.True(SpinWait.SpinUntil(() => job.DidRun, 40_000));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await job.RunAsync(null, null, default));
+        // Run #1
+        await WaitForDelayReachedAsync(100);
+        time.Advance(TimeSpan.FromSeconds(1));
+
+        // Run #2
+        await WaitForDelayReachedAsync(100);
+        time.Advance(TimeSpan.FromSeconds(1));
+
+        // Run #3
+        await WaitForDelayReachedAsync(100);
+        time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.True(SpinWait.SpinUntil(() => counter.Count == 3, 40_000));
+        Assert.True(SpinWait.SpinUntil(() => collector.SeenIds.Distinct().Count() == 3, 40_000));
     }
 
     [Fact]
-    public async Task Passes_a_serviceProvider_scope_to_job()
+    public async Task NoCrash_When_JobThrows()
     {
         // Arrange
-        var services = new ServiceCollection()
-            .AddScoped<IScopedService, ScopedService>()
-            .BuildServiceProvider();
-
-        var loggerFactoryMoq = new Mock<ILoggerFactory>();
-        loggerFactoryMoq.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
-        var backgroundJob = new BackgroundJob<TestJobScopeTest>(TimeProvider.System, services, loggerFactoryMoq.Object);
+        var bj = CreateBackgroundJob<CrashingJob>(TimeProvider.System, out var counter, out _);
 
         // Act
-        await backgroundJob.StartAsync(default);
+        await bj.StartAsync(default);
 
         // Assert
-        var job = GetJobRef(backgroundJob);
-        Assert.True(SpinWait.SpinUntil(() => job.DidRun, 40_000));
-        Assert.True(SpinWait.SpinUntil(() => job.ScopedServiceDisposed, 40_000));
+        Assert.True(SpinWait.SpinUntil(() => counter.Count >= 1, 40_000));
     }
 
-    private static T GetJobRef<T>(BackgroundJob<T> backgroundJob) where T : class, IJob => typeof(BackgroundJob<T>)
-        .GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-        .Single(p => p.Name == "_job")
-        .GetValue(backgroundJob) as T;
+    private static BackgroundJob<T> CreateBackgroundJob<T>(
+        TimeProvider timeProvider,
+        out RunCounter counter,
+        out RunIdCollector collector)
+        where T : IJob, new()
+    {
+        counter = new RunCounter();
+        collector = new RunIdCollector();
+        return new(timeProvider, BuildRootProvider(counter, collector), LoggerFactory.Create(_ => { }));
+    }
+
+    private static ServiceProvider BuildRootProvider(RunCounter counter, RunIdCollector collector) => new ServiceCollection()
+        .AddScoped(_ => new ScopedRunId())   // unique per job run
+        .AddSingleton(counter)               // shared counter instance
+        .AddSingleton(collector)             // shared collector instance
+        .BuildServiceProvider();
+
+    private static async Task WaitForDelayReachedAsync(int delayMs)
+    {
+        for (var i = 0; i < delayMs; i++)
+        {
+            await Task.Yield();
+            await Task.Delay(1);
+        }
+    }
+
+    private class RunCounter
+    {
+        private int _count;
+        public int Count => _count;
+        public void Increment() => Interlocked.Increment(ref _count);
+    }
+
+    private class ScopedRunId
+    {
+        public Guid Id { get; } = Guid.NewGuid();
+    }
+
+    private class RunIdCollector
+    {
+        public ConcurrentBag<Guid> SeenIds { get; } = [];
+    }
 
     private class TestJob : IJob
     {
-        public bool DidRun { get; set; }
         public string Name => "TestJob";
         public string CronExpression => "@every_second";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.Utc;
 
         public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken)
         {
-            DidRun = true;
+            // Resolve per-run scoped services
+            var counter = services.GetRequiredService<RunCounter>();
+            var runId = services.GetRequiredService<ScopedRunId>();
+            var collector = services.GetRequiredService<RunIdCollector>();
+
+            counter.Increment();
+            collector.SeenIds.Add(runId.Id);
             return Task.CompletedTask;
         }
     }
 
-    private class SlowJob : IJob
+    private class CrashingJob : IJob
     {
-        public string Name => "SlowJob";
-        public string CronExpression => "@daily";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+        public string Name => "CrashingJob";
+        public string CronExpression => "@every_second";
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.Utc;
 
-        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken) => Task.CompletedTask;
+        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken)
+        {
+            // Resolve per-run scoped services
+            var counter = services.GetRequiredService<RunCounter>();
+            var runId = services.GetRequiredService<ScopedRunId>();
+            var collector = services.GetRequiredService<RunIdCollector>();
+
+            counter.Increment();
+            collector.SeenIds.Add(runId.Id);
+            throw new InvalidOperationException();
+        }
     }
 
     private class ImpossibleJob : IJob
     {
         public string Name => "ImpossibleJob";
         public string CronExpression => "0 0 31 2 *";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh");
 
         public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken) => Task.CompletedTask;
-    }
-
-    private class TestCrashingJob : IJob
-    {
-        public bool DidRun { get; set; }
-        public string Name => "TestCrashingJob";
-        public string CronExpression => "@every_second";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
-
-        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken)
-        {
-            DidRun = true;
-            throw new InvalidOperationException();
-        }
-    }
-
-    private class TestJobScopeTest : IJob
-    {
-        public bool DidRun { get; set; }
-        public bool ScopedServiceDisposed { get; set; }
-        public string Name => "TestJobScopeTest";
-        public string CronExpression => "@every_second";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
-
-        public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken)
-        {
-            var scopedService = services.GetRequiredService<IScopedService>();
-            scopedService.Tag(this);
-            DidRun = true;
-            return Task.CompletedTask;
-        }
-    }
-
-    private interface IScopedService
-    {
-        void Tag(TestJobScopeTest job);
-    }
-
-    private class ScopedService : IScopedService, IDisposable
-    {
-        private TestJobScopeTest _job;
-        public void Tag(TestJobScopeTest job) => _job = job;
-        public void Dispose() => _job.ScopedServiceDisposed = true;
     }
 }

@@ -8,7 +8,7 @@ namespace Peers.Core.Background.Jobs;
 /// </summary>
 /// <typeparam name="T">The type of the job.</typeparam>
 public sealed class BackgroundJob<T> : BackgroundService
-    where T : IJob
+    where T : IJob, new()
 {
     private readonly T _job;
     private readonly CronExpression _cronExpression;
@@ -27,7 +27,7 @@ public sealed class BackgroundJob<T> : BackgroundService
         IServiceProvider serviceProvider,
         ILoggerFactory loggerFactory)
     {
-        _job = Activator.CreateInstance<T>();
+        _job = new T();
         ArgumentException.ThrowIfNullOrEmpty(_job.Name);
         ArgumentNullException.ThrowIfNull(_job.CronExpression);
         ArgumentNullException.ThrowIfNull(_job.TimeZoneInfo);
@@ -55,6 +55,7 @@ public sealed class BackgroundJob<T> : BackgroundService
             if (next.HasValue)
             {
                 var delay = next.Value - now;
+                Debug.Assert(delay > TimeSpan.Zero);
 
                 _logger.JobScheduled(_job.Name, delay, next.Value);
 

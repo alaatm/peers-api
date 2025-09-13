@@ -25,7 +25,7 @@ public class ServiceCollectionExtensionsTests
     {
         public string Name => "Test Job";
         public string CronExpression => "* * * * *";
-        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Dubai");
+        public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh");
 
         public Task RunAsync(IServiceProvider services, ILogger log, CancellationToken stoppingToken) => Task.CompletedTask;
     }

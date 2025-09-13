@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     /// <typeparam name="T">The type of the job to add.</typeparam>
     /// <returns></returns>
     public static IServiceCollection AddBackgroundJob<T>(this IServiceCollection services)
-        where T : IJob
+        where T : IJob, new()
     {
         services
             .AddHostedService<BackgroundJob<T>>()
