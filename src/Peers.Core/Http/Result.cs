@@ -312,21 +312,21 @@ internal static partial class HttpResultsHelper
 
     internal static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Information,
+        [LoggerMessage(LogLevel.Information,
             "Setting HTTP status code {StatusCode}.",
             EventName = "WritingResultAsStatusCode")]
         public static partial void WritingResultAsStatusCode(ILogger logger, int statusCode);
 
-        //[LoggerMessage(2, LogLevel.Information,
+        //[LoggerMessage(LogLevel.Information,
         //    "Write content with HTTP Response ContentType of {ContentType}",
         //    EventName = "WritingResultAsContent")]
         //public static partial void WritingResultAsContent(ILogger logger, string contentType);
 
-        [LoggerMessage(3, LogLevel.Information, "Writing value of type '{Type}' as Json.",
+        [LoggerMessage(LogLevel.Information, "Writing value of type '{Type}' as Json.",
             EventName = "WritingResultAsJson")]
         public static partial void WritingResultAsJson(ILogger logger, string type);
 
-        //[LoggerMessage(5, LogLevel.Information,
+        //[LoggerMessage(LogLevel.Information,
         //    "Sending file with download name '{FileDownloadName}'.",
         //    EventName = "WritingResultAsFileWithNoFileName")]
         //public static partial void WritingResultAsFile(ILogger logger, string fileDownloadName);
