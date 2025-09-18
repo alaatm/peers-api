@@ -450,3 +450,5 @@ dotnet_diagnostic.CA1716.severity = none
 dotnet_diagnostic.CA1308.severity = none
 # CA1720: Identifiers should not contain type names
 dotnet_diagnostic.CA1720.severity = none
+# CA1002: Do not expose generic lists
+dotnet_diagnostic.CA1002.severity = none

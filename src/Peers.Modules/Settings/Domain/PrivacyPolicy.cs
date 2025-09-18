@@ -14,7 +14,7 @@ public sealed class PrivacyPolicy : Entity, ILocalizable<PrivacyPolicy, PrivacyP
     /// <summary>
     /// The list of translations for this entity.
     /// </summary>
-    public ICollection<PrivacyPolicyTr> Translations { get; set; } = default!;
+    public List<PrivacyPolicyTr> Translations { get; set; } = default!;
 
     /// <summary>
     /// Creates a new instance of <see cref="PrivacyPolicy"/>.

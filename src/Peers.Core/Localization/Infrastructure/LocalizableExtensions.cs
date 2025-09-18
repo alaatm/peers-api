@@ -57,7 +57,7 @@ public static class LocalizableExtensions
     /// <exception cref="TranslationValidationException">Thrown if an incoming translation specifies an unsupported or duplicate language code.</exception>
     public static void UpsertTranslations<T, TTr, TIn>(
         [NotNull] this ILocalizable<T, TTr> entity,
-        [NotNull] TIn[] incoming)
+        [NotNull] params TIn[] incoming)
         where T : IEntity
         where TTr : ITranslation<T>, new()
         where TIn : IIncomingTranslation<TTr>

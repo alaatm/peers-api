@@ -10,7 +10,7 @@ public sealed class Terms : Entity, ILocalizable<Terms, TermsTr>
     /// <summary>
     /// The list of translations for this entity.
     /// </summary>
-    public ICollection<TermsTr> Translations { get; set; } = default!;
+    public List<TermsTr> Translations { get; set; } = default!;
 
     /// <summary>
     /// Creates a new instance of <see cref="Terms"/>.

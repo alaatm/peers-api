@@ -14,5 +14,5 @@ public interface ILocalizable<T, TTr>
     /// <summary>
     /// The collection of translations associated with the current entity.
     /// </summary>
-    ICollection<TTr> Translations { get; }
+    List<TTr> Translations { get; }
 }
