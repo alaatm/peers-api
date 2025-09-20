@@ -184,6 +184,258 @@ namespace Peers.Modules.Migrations
                     b.ToTable("user_token", "id");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_required");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("key");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int")
+                        .HasColumnName("position");
+
+                    b.Property<int>("ProductTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_type_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductTypeId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("ProductTypeId", "Position");
+
+                    b.ToTable("attribute_definition", "catalog", t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator<int>("Kind");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttributeDefinitionId")
+                        .HasColumnType("int")
+                        .HasColumnName("attribute_definition_id");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("key");
+
+                    b.Property<int?>("ParentOptionId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_option_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int")
+                        .HasColumnName("position");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentOptionId");
+
+                    b.HasIndex("AttributeDefinitionId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("AttributeDefinitionId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("attribute_option", (string)null);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
+                {
+                    b.Property<int>("ProductTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_type_id");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("type_id");
+
+                    b.Property<int>("ValueId")
+                        .HasColumnType("int")
+                        .HasColumnName("value_id");
+
+                    b.HasKey("ProductTypeId", "TypeId", "ValueId");
+
+                    b.HasIndex("ProductTypeId", "TypeId");
+
+                    b.HasIndex("TypeId", "ValueId");
+
+                    b.ToTable("lookup_allowed", "catalog");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsSelectable")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_selectable");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("SlugPath")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(512)")
+                        .HasColumnName("slug_path");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int")
+                        .HasColumnName("state");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SlugPath")
+                        .IsUnique();
+
+                    b.HasIndex("IsSelectable", "ParentId");
+
+                    b.HasIndex("ParentId", "Slug", "Version")
+                        .IsUnique()
+                        .HasFilter("[parent_id] IS NOT NULL");
+
+                    b.ToTable("product_type", "catalog");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeDefinitionTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("unit");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("attribute_definition_tr", "i18n");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeOptionTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("attribute_option_tr", "i18n");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.ProductTypeTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("product_type_tr", "i18n");
+                });
+
             modelBuilder.Entity("Peers.Modules.Customers.Domain.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -232,6 +484,108 @@ namespace Peers.Modules.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("language", "i18n");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
+                {
+                    b.Property<int>("ParentTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_type_id");
+
+                    b.Property<int>("ParentValueId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_value_id");
+
+                    b.Property<int>("ChildTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("child_type_id");
+
+                    b.Property<int>("ChildValueId")
+                        .HasColumnType("int")
+                        .HasColumnName("child_value_id");
+
+                    b.HasKey("ParentTypeId", "ParentValueId", "ChildTypeId", "ChildValueId");
+
+                    b.HasIndex("ChildTypeId", "ChildValueId");
+
+                    b.ToTable("lookup_link", "lookup");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("key");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("lookup_type", "lookup");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("key");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("type_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TypeId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("lookup_value", "lookup");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupValueTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("lookup_value_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
@@ -927,6 +1281,162 @@ namespace Peers.Modules.Migrations
                     b.ToTable("user_status_change_history", (string)null);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.BoolAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(3);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DateAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(4);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.Property<string>("Unit")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasColumnName("unit");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<int?>("DependsOnId")
+                        .HasColumnType("int")
+                        .HasColumnName("depends_on_id");
+
+                    b.HasIndex("DependsOnId");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.IntAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.Property<string>("Unit")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasColumnName("unit");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.StringAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
+
+                    b.Property<bool>("IsVariant")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_variant");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(5);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
+
+                    b.Property<int>("LookupTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("lookup_type_id");
+
+                    b.HasIndex("LookupTypeId");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                        });
+
+                    b.HasDiscriminator().HasValue(6);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
@@ -978,6 +1488,110 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
+                        .WithMany("Attributes")
+                        .HasForeignKey("ProductTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductType");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", "AttributeDefinition")
+                        .WithMany("Options")
+                        .HasForeignKey("AttributeDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", "ParentOption")
+                        .WithMany()
+                        .HasForeignKey("ParentOptionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AttributeDefinition");
+
+                    b.Navigation("ParentOption");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
+                        .WithMany("LookupAllowedList")
+                        .HasForeignKey("ProductTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "Value")
+                        .WithMany()
+                        .HasForeignKey("TypeId", "ValueId")
+                        .HasPrincipalKey("TypeId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductType");
+
+                    b.Navigation("Value");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeDefinitionTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeOptionTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.ProductTypeTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Peers.Modules.Customers.Domain.Customer", b =>
                 {
                     b.HasOne("Peers.Modules.Users.Domain.AppUser", "User")
@@ -987,6 +1601,53 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
+                {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "ChildValue")
+                        .WithMany()
+                        .HasForeignKey("ChildTypeId", "ChildValueId")
+                        .HasPrincipalKey("TypeId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "ParentValue")
+                        .WithMany()
+                        .HasForeignKey("ParentTypeId", "ParentValueId")
+                        .HasPrincipalKey("TypeId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ChildValue");
+
+                    b.Navigation("ParentValue");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
+                {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "Type")
+                        .WithMany("Values")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupValueTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
@@ -1163,6 +1824,58 @@ namespace Peers.Modules.Migrations
                     b.Navigation("ChangedBy");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", "DependsOn")
+                        .WithMany()
+                        .HasForeignKey("DependsOnId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DependsOn");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
+                {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "LookupType")
+                        .WithMany()
+                        .HasForeignKey("LookupTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LookupType");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
+                {
+                    b.Navigation("Attributes");
+
+                    b.Navigation("Children");
+
+                    b.Navigation("LookupAllowedList");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
+                {
+                    b.Navigation("Values");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
                 {
                     b.Navigation("Original");
@@ -1185,6 +1898,11 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("StatusChangeHistory");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
+                {
+                    b.Navigation("Options");
                 });
 #pragma warning restore 612, 618
         }

@@ -18,7 +18,13 @@ namespace Peers.Modules.Migrations
                 name: "id");
 
             migrationBuilder.EnsureSchema(
+                name: "catalog");
+
+            migrationBuilder.EnsureSchema(
                 name: "i18n");
+
+            migrationBuilder.EnsureSchema(
+                name: "lookup");
 
             migrationBuilder.EnsureSchema(
                 name: "settings");
@@ -120,6 +126,20 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "lookup_type",
+                schema: "lookup",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_type", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "notification",
                 columns: table => new
                 {
@@ -146,6 +166,33 @@ namespace Peers.Modules.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_privacy_policy", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "product_type",
+                schema: "catalog",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    kind = table.Column<int>(type: "int", nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    slug = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
+                    slug_path = table.Column<string>(type: "varchar(512)", unicode: false, maxLength: 512, nullable: false),
+                    is_selectable = table.Column<bool>(type: "bit", nullable: false),
+                    version = table.Column<int>(type: "int", nullable: false),
+                    parent_id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_product_type", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_product_type_product_type_parent_id",
+                        column: x => x.parent_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -397,6 +444,29 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "lookup_value",
+                schema: "lookup",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
+                    type_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_value", x => x.id);
+                    table.UniqueConstraint("AK_lookup_value_type_id_id", x => new { x.type_id, x.id });
+                    table.ForeignKey(
+                        name: "FK_lookup_value_lookup_type_type_id",
+                        column: x => x.type_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "user_notification",
                 columns: table => new
                 {
@@ -449,6 +519,80 @@ namespace Peers.Modules.Migrations
                         column: x => x.entity_id,
                         principalSchema: "settings",
                         principalTable: "privacy_policy",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "attribute_definition",
+                schema: "catalog",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    key = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    kind = table.Column<int>(type: "int", nullable: false),
+                    is_required = table.Column<bool>(type: "bit", nullable: false),
+                    position = table.Column<int>(type: "int", nullable: false),
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    config = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    depends_on_id = table.Column<int>(type: "int", nullable: true),
+                    is_variant = table.Column<bool>(type: "bit", nullable: true),
+                    lookup_type_id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_attribute_definition", x => x.id);
+                    table.CheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                    table.CheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_attribute_definition_depends_on_id",
+                        column: x => x.depends_on_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_lookup_type_lookup_type_id",
+                        column: x => x.lookup_type_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_product_type_product_type_id",
+                        column: x => x.product_type_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "product_type_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_product_type_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_product_type_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_product_type_tr_product_type_entity_id",
+                        column: x => x.entity_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -570,6 +714,176 @@ namespace Peers.Modules.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "lookup_allowed",
+                schema: "catalog",
+                columns: table => new
+                {
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    type_id = table.Column<int>(type: "int", nullable: false),
+                    value_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_allowed", x => new { x.product_type_id, x.type_id, x.value_id });
+                    table.ForeignKey(
+                        name: "FK_lookup_allowed_lookup_value_type_id_value_id",
+                        columns: x => new { x.type_id, x.value_id },
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumns: new[] { "type_id", "id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_lookup_allowed_product_type_product_type_id",
+                        column: x => x.product_type_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "lookup_link",
+                schema: "lookup",
+                columns: table => new
+                {
+                    parent_type_id = table.Column<int>(type: "int", nullable: false),
+                    parent_value_id = table.Column<int>(type: "int", nullable: false),
+                    child_type_id = table.Column<int>(type: "int", nullable: false),
+                    child_value_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_link", x => new { x.parent_type_id, x.parent_value_id, x.child_type_id, x.child_value_id });
+                    table.ForeignKey(
+                        name: "FK_lookup_link_lookup_value_child_type_id_child_value_id",
+                        columns: x => new { x.child_type_id, x.child_value_id },
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumns: new[] { "type_id", "id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_lookup_link_lookup_value_parent_type_id_parent_value_id",
+                        columns: x => new { x.parent_type_id, x.parent_value_id },
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumns: new[] { "type_id", "id" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "lookup_value_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_value_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_lookup_value_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_lookup_value_tr_lookup_value_entity_id",
+                        column: x => x.entity_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "attribute_definition_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    unit = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_attribute_definition_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_tr_attribute_definition_entity_id",
+                        column: x => x.entity_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "attribute_option",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    key = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    position = table.Column<int>(type: "int", nullable: false),
+                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    parent_option_id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_attribute_option", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_attribute_option_attribute_definition_attribute_definition_id",
+                        column: x => x.attribute_definition_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_attribute_option_attribute_option_parent_option_id",
+                        column: x => x.parent_option_id,
+                        principalTable: "attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "attribute_option_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_attribute_option_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_attribute_option_tr_attribute_option_entity_id",
+                        column: x => x.entity_id,
+                        principalTable: "attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_attribute_option_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_app_usage_history_user_id",
                 schema: "dbo",
@@ -609,6 +923,60 @@ namespace Peers.Modules.Migrations
                 column: "normalized_user_name",
                 unique: true,
                 filter: "[normalized_user_name] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_depends_on_id",
+                schema: "catalog",
+                table: "attribute_definition",
+                column: "depends_on_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_lookup_type_id",
+                schema: "catalog",
+                table: "attribute_definition",
+                column: "lookup_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_product_type_id_key",
+                schema: "catalog",
+                table: "attribute_definition",
+                columns: new[] { "product_type_id", "key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_product_type_id_position",
+                schema: "catalog",
+                table: "attribute_definition",
+                columns: new[] { "product_type_id", "position" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_tr_lang_code",
+                schema: "i18n",
+                table: "attribute_definition_tr",
+                column: "lang_code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_option_attribute_definition_id_key",
+                table: "attribute_option",
+                columns: new[] { "attribute_definition_id", "key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_option_attribute_definition_id_position",
+                table: "attribute_option",
+                columns: new[] { "attribute_definition_id", "position" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_option_parent_option_id",
+                table: "attribute_option",
+                column: "parent_option_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_option_tr_lang_code",
+                schema: "i18n",
+                table: "attribute_option_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_client_app_info_android_store_link",
@@ -660,6 +1028,44 @@ namespace Peers.Modules.Migrations
                 schema: "dbo",
                 table: "device",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_allowed_product_type_id_type_id",
+                schema: "catalog",
+                table: "lookup_allowed",
+                columns: new[] { "product_type_id", "type_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_allowed_type_id_value_id",
+                schema: "catalog",
+                table: "lookup_allowed",
+                columns: new[] { "type_id", "value_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_link_child_type_id_child_value_id",
+                schema: "lookup",
+                table: "lookup_link",
+                columns: new[] { "child_type_id", "child_value_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_type_key",
+                schema: "lookup",
+                table: "lookup_type",
+                column: "key",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_value_type_id_key",
+                schema: "lookup",
+                table: "lookup_value",
+                columns: new[] { "type_id", "key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_value_tr_lang_code",
+                schema: "i18n",
+                table: "lookup_value_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_media_file_approved",
@@ -717,6 +1123,33 @@ namespace Peers.Modules.Migrations
                 name: "IX_privacy_policy_tr_lang_code",
                 schema: "i18n",
                 table: "privacy_policy_tr",
+                column: "lang_code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_type_is_selectable_parent_id",
+                schema: "catalog",
+                table: "product_type",
+                columns: new[] { "is_selectable", "parent_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_type_parent_id_slug_version",
+                schema: "catalog",
+                table: "product_type",
+                columns: new[] { "parent_id", "slug", "version" },
+                unique: true,
+                filter: "[parent_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_type_slug_path",
+                schema: "catalog",
+                table: "product_type",
+                column: "slug_path",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_product_type_tr_lang_code",
+                schema: "i18n",
+                table: "product_type_tr",
                 column: "lang_code");
 
             migrationBuilder.CreateIndex(
@@ -810,6 +1243,14 @@ namespace Peers.Modules.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
+                name: "attribute_definition_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
+                name: "attribute_option_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
                 name: "client_app_info");
 
             migrationBuilder.DropTable(
@@ -821,11 +1262,27 @@ namespace Peers.Modules.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
+                name: "lookup_allowed",
+                schema: "catalog");
+
+            migrationBuilder.DropTable(
+                name: "lookup_link",
+                schema: "lookup");
+
+            migrationBuilder.DropTable(
+                name: "lookup_value_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
                 name: "media_file",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
                 name: "privacy_policy_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
+                name: "product_type_tr",
                 schema: "i18n");
 
             migrationBuilder.DropTable(
@@ -867,6 +1324,13 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
+                name: "attribute_option");
+
+            migrationBuilder.DropTable(
+                name: "lookup_value",
+                schema: "lookup");
+
+            migrationBuilder.DropTable(
                 name: "customer");
 
             migrationBuilder.DropTable(
@@ -889,8 +1353,20 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
+                name: "attribute_definition",
+                schema: "catalog");
+
+            migrationBuilder.DropTable(
                 name: "app_user",
                 schema: "id");
+
+            migrationBuilder.DropTable(
+                name: "lookup_type",
+                schema: "lookup");
+
+            migrationBuilder.DropTable(
+                name: "product_type",
+                schema: "catalog");
 
             migrationBuilder.DropSequence(
                 name: "app_user_seq");

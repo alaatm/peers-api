@@ -280,7 +280,7 @@ public class LocalizableExtensionsTests
 
     private class TestEntity : Entity, ILocalizable<TestEntity, TestEntityTr>
     {
-        public ICollection<TestEntityTr> Translations { get; } = [];
+        public List<TestEntityTr> Translations { get; } = [];
     }
 
     private class TestEntityTr : TranslationBase<TestEntity, TestEntityTr>
