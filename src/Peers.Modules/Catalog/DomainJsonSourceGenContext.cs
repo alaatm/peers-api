@@ -12,6 +12,7 @@ namespace Peers.Modules.Catalog;
 [JsonSerializable(typeof(StringAttrConfig))]
 [JsonSerializable(typeof(NumericAttrConfig<int>))]
 [JsonSerializable(typeof(NumericAttrConfig<decimal>))]
+[JsonSerializable(typeof(LookupAttrConfig))]
 public partial class DomainJsonSourceGenContext : JsonSerializerContext
 {
 }

@@ -9,10 +9,6 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 public abstract class NumericAttributeDefinition<T> : AttributeDefinition
     where T : struct, INumber<T>
 {
-    /// <summary>
-    /// The unit of measurement associated with the value, if any.
-    /// </summary>
-    public string? Unit { get; private set; }
     public NumericAttrConfig<T> Config { get; set; }
 
     protected NumericAttributeDefinition() : base() { }
@@ -27,18 +23,12 @@ public abstract class NumericAttributeDefinition<T> : AttributeDefinition
         T? minValue,
         T? maxValue) : base(owner, key, kind, isRequired, position)
     {
-        Unit = unit;
-        SetRange(minValue, maxValue);
-    }
-
-    private void SetRange(T? min, T? max)
-    {
-        if (min > max)
+        if (minValue > maxValue)
         {
             throw new InvalidOperationException("Min cannot be greater than Max.");
         }
 
-        Config = new(min, max);
+        Config = new(minValue, maxValue, unit?.Trim().ToLowerInvariant());
     }
 }
 

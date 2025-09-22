@@ -75,38 +75,24 @@ internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguratio
 
 internal sealed class IntAttributeDefinitionMapping : IEntityTypeConfiguration<IntAttributeDefinition>
 {
-    public void Configure(EntityTypeBuilder<IntAttributeDefinition> builder)
-    {
-        builder
-            .Property(p => p.Unit)
-            .HasColumnName(nameof(NumericAttributeDefinition<>.Unit).Underscore())
-            .HasMaxLength(32);
-
+    public void Configure(EntityTypeBuilder<IntAttributeDefinition> builder) =>
         builder
             .Property(e => e.Config)
             .HasColumnName(nameof(NumericAttributeDefinition<>.Config).Underscore())
             .HasConversion(
                 v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.NumericAttrConfigInt32),
                 s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.NumericAttrConfigInt32));
-    }
 }
 
 internal sealed class DecimalAttributeDefinitionMapping : IEntityTypeConfiguration<DecimalAttributeDefinition>
 {
-    public void Configure(EntityTypeBuilder<DecimalAttributeDefinition> builder)
-    {
-        builder
-            .Property(p => p.Unit)
-            .HasColumnName(nameof(NumericAttributeDefinition<>.Unit).Underscore())
-            .HasMaxLength(32);
-
+    public void Configure(EntityTypeBuilder<DecimalAttributeDefinition> builder) =>
         builder
             .Property(e => e.Config)
             .HasColumnName(nameof(NumericAttributeDefinition<>.Config).Underscore())
             .HasConversion(
                 v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.NumericAttrConfigDecimal),
                 s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.NumericAttrConfigDecimal));
-    }
 }
 
 internal sealed class StringAttributeDefinitionMapping : IEntityTypeConfiguration<StringAttributeDefinition>

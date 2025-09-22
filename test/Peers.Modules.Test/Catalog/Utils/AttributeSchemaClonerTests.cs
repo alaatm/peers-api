@@ -173,7 +173,7 @@ public sealed class AttributeSchemaClonerTests
         Assert.Equal(AttributeKind.Int, tWeight.Kind);
         Assert.True(tWeight.IsRequired);
         Assert.Equal(3, tWeight.Position);
-        Assert.Equal("g", tWeight.Unit);
+        Assert.Equal("g", tWeight.Config.Unit);
         Assert.Equal(0, tWeight.Config.Min);
         Assert.Equal(10_000, tWeight.Config.Max);
         var wtr = Assert.Single(tWeight.Translations);
@@ -187,7 +187,7 @@ public sealed class AttributeSchemaClonerTests
         Assert.Equal(AttributeKind.Decimal, tPrice.Kind);
         Assert.True(tPrice.IsRequired);
         Assert.Equal(4, tPrice.Position);
-        Assert.Equal("sar", tPrice.Unit);
+        Assert.Equal("sar", tPrice.Config.Unit);
         Assert.Equal(0.5m, tPrice.Config.Min);
         Assert.Equal(99_999.99m, tPrice.Config.Max);
         var ptr = Assert.Single(tPrice.Translations);
@@ -244,8 +244,8 @@ public sealed class AttributeSchemaClonerTests
         Assert.NotNull(light.ParentOption);
         Assert.NotNull(dark.ParentOption);
 
-        Assert.Equal("color", light.ParentOption.AttributeDefinition.Key);
-        Assert.Equal("color", dark.ParentOption.AttributeDefinition.Key);
+        Assert.Equal("color", light.ParentOption.EnumAttributeDefinition.Key);
+        Assert.Equal("color", dark.ParentOption.EnumAttributeDefinition.Key);
 
         Assert.Equal("red", light.ParentOption.Key);
         Assert.Equal("blue", dark.ParentOption.Key);

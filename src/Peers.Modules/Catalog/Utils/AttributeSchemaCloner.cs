@@ -116,12 +116,12 @@ internal static class AttributeSchemaCloner
         switch (def)
         {
             case NumericAttributeDefinition<int> i:
-                unit = i.Unit;
+                unit = i.Config.Unit;
                 minInt = i.Config.Min;
                 maxInt = i.Config.Max;
                 break;
             case NumericAttributeDefinition<decimal> d:
-                unit = d.Unit;
+                unit = d.Config.Unit;
                 minDecimal = d.Config.Min;
                 maxDecimal = d.Config.Max;
                 break;
