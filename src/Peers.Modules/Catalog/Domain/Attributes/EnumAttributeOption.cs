@@ -16,7 +16,7 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// cref="ParentOption"/>.
 /// </remarks>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class AttributeOption : Entity, ILocalizable<AttributeOption, AttributeOptionTr>
+public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOption, EnumAttributeOptionTr>
 {
     /// <summary>
     /// The unique, non-localizable identifier (e.g., "red", "green")
@@ -30,11 +30,11 @@ public sealed class AttributeOption : Entity, ILocalizable<AttributeOption, Attr
     /// <summary>
     /// The identifier of the owning attribute definition.
     /// </summary>
-    public int AttributeDefinitionId { get; private set; }
+    public int EnumAttributeDefinitionId { get; private set; }
     /// <summary>
     /// The owning attribute definition.
     /// </summary>
-    public EnumAttributeDefinition AttributeDefinition { get; private set; } = default!;
+    public EnumAttributeDefinition EnumAttributeDefinition { get; private set; } = default!;
 
     /// <summary>
     /// The identifier of the parent option, if any.
@@ -43,26 +43,26 @@ public sealed class AttributeOption : Entity, ILocalizable<AttributeOption, Attr
     /// <summary>
     /// The parent option, if any.
     /// </summary>
-    public AttributeOption? ParentOption { get; private set; }
+    public EnumAttributeOption? ParentOption { get; private set; }
     /// <summary>
     /// The collection of translations associated with this attribute option.
     /// </summary>
-    public List<AttributeOptionTr> Translations { get; private set; } = default!;
+    public List<EnumAttributeOptionTr> Translations { get; private set; } = default!;
 
-    private AttributeOption() { }
+    private EnumAttributeOption() { }
 
-    internal AttributeOption(
+    internal EnumAttributeOption(
         EnumAttributeDefinition owner,
         string key,
         int position)
     {
-        AttributeDefinition = owner;
+        EnumAttributeDefinition = owner;
         Key = key;
         Position = position;
         Translations = [];
     }
 
-    internal void ScopeTo(AttributeOption parentOption)
+    internal void ScopeTo(EnumAttributeOption parentOption)
         => ParentOption = parentOption;
 
     internal void ClearScope()
@@ -71,5 +71,5 @@ public sealed class AttributeOption : Entity, ILocalizable<AttributeOption, Attr
         ParentOptionId = null;
     }
 
-    private string DebuggerDisplay => $"{Key} → {AttributeDefinition?.Key ?? AttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Key ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.AttributeDefinition?.Key ?? ParentOption?.AttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
+    private string DebuggerDisplay => $"{Key} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Key ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
 }

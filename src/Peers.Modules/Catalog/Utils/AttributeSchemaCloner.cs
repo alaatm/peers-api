@@ -18,7 +18,7 @@ internal static class AttributeSchemaCloner
 
         // Maps to resolve keys (safe because target is empty)
         var defMap = new Dictionary<string, AttributeDefinition>(StringComparer.Ordinal);
-        var optMap = new Dictionary<(string defKey, string optKey), AttributeOption>();
+        var optMap = new Dictionary<(string defKey, string optKey), EnumAttributeOption>();
 
         foreach (var srcDef in ordered)
         {
@@ -77,10 +77,10 @@ internal static class AttributeSchemaCloner
                 // Clone options (resolve parent option via optMap)
                 foreach (var srcOpt in srcEnumDef.Options.OrderBy(o => o.Position))
                 {
-                    AttributeOption? dstParentOpt = null;
+                    EnumAttributeOption? dstParentOpt = null;
                     if (srcOpt.ParentOption is { } srcParentOpt)
                     {
-                        dstParentOpt = optMap[(srcParentOpt.AttributeDefinition.Key, srcParentOpt.Key)];
+                        dstParentOpt = optMap[(srcParentOpt.EnumAttributeDefinition.Key, srcParentOpt.Key)];
                     }
 
                     var dstOpt = target.AddAttributeOption(
@@ -152,11 +152,11 @@ internal static class AttributeSchemaCloner
         }
     }
 
-    private static void CopyOptionTranslations(AttributeOption src, AttributeOption dst)
+    private static void CopyOptionTranslations(EnumAttributeOption src, EnumAttributeOption dst)
     {
         foreach (var t in src.Translations)
         {
-            dst.Translations.Add(new Domain.Translations.AttributeOptionTr
+            dst.Translations.Add(new Domain.Translations.EnumAttributeOptionTr
             {
                 LangCode = t.LangCode,
                 Name = t.Name,

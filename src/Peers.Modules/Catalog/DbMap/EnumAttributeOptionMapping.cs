@@ -4,12 +4,12 @@ using Peers.Modules.Catalog.Domain.Attributes;
 
 namespace Peers.Modules.Catalog.DbMap;
 
-internal sealed class AttributeOptionMapping : IEntityTypeConfiguration<AttributeOption>
+internal sealed class EnumAttributeOptionMapping : IEntityTypeConfiguration<EnumAttributeOption>
 {
-    public void Configure(EntityTypeBuilder<AttributeOption> builder)
+    public void Configure(EntityTypeBuilder<EnumAttributeOption> builder)
     {
-        builder.HasIndex(p => new { p.AttributeDefinitionId, p.Key }).IsUnique();
-        builder.HasIndex(p => new { p.AttributeDefinitionId, p.Position }).IsUnique();
+        builder.HasIndex(p => new { p.EnumAttributeDefinitionId, p.Key }).IsUnique();
+        builder.HasIndex(p => new { p.EnumAttributeDefinitionId, p.Position }).IsUnique();
 
         builder.Property(p => p.Key).HasMaxLength(64).IsUnicode(true);
 
@@ -19,6 +19,6 @@ internal sealed class AttributeOptionMapping : IEntityTypeConfiguration<Attribut
             .HasForeignKey(p => p.ParentOptionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable(nameof(AttributeOption).Underscore());
+        builder.ToTable(nameof(EnumAttributeOption).Underscore());
     }
 }

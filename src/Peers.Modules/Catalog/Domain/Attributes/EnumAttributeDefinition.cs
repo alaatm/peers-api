@@ -9,7 +9,7 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// enumerated product attributes.
 /// </summary>
 /// <remarks>EnumAttributeDefinition is used to define attributes that have a fixed list of selectable options,
-/// such as color or size. Each option is represented by an AttributeOption. This class supports defining dependencies
+/// such as color or size. Each option is represented by an EnumAttributeOption. This class supports defining dependencies
 /// on other enum attribute definitions, enabling hierarchical or scoped option selection.</remarks>
 public sealed class EnumAttributeDefinition : DependentAttributeDefinition
 {
@@ -21,7 +21,7 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
     /// <summary>
     /// The list of options associated with this attribute definition.
     /// </summary>
-    public List<AttributeOption> Options { get; private set; } = default!;
+    public List<EnumAttributeOption> Options { get; private set; } = default!;
 
     private EnumAttributeDefinition() : base() { }
 
@@ -36,7 +36,7 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         Options = [];
     }
 
-    internal AttributeOption AddOption(
+    internal EnumAttributeOption AddOption(
         string key,
         int position,
         string? parentOptionKey)
@@ -57,7 +57,7 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
             throw new DomainException(E.ScopeOptReqDep);
         }
 
-        var opt = new AttributeOption(this, key, position);
+        var opt = new EnumAttributeOption(this, key, position);
 
         if (DependsOn is EnumAttributeDefinition dependsOnEnum)
         {

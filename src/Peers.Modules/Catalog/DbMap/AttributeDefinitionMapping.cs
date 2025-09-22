@@ -55,16 +55,12 @@ internal sealed class DependentAttributeDefinitionMapping : IEntityTypeConfigura
 
 internal sealed class EnumAttributeDefinitionMapping : IEntityTypeConfiguration<EnumAttributeDefinition>
 {
-    public void Configure(EntityTypeBuilder<EnumAttributeDefinition> builder)
-    {
+    public void Configure(EntityTypeBuilder<EnumAttributeDefinition> builder) =>
         builder
             .HasMany(p => p.Options)
-            .WithOne(p => p.AttributeDefinition)
-            .HasForeignKey(p => p.AttributeDefinitionId)
+            .WithOne(p => p.EnumAttributeDefinition)
+            .HasForeignKey(p => p.EnumAttributeDefinitionId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Navigation(e => e.Options).AutoInclude();
-    }
 }
 
 internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguration<LookupAttributeDefinition>

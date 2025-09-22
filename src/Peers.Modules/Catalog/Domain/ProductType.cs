@@ -356,7 +356,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <param name="optionKey">The unique key for the new option to add.</param>
     /// <param name="position">The zero-based position at which to insert the new option within the attribute's option list.</param>
     /// <param name="parentOptionKey">The key of the parent option under which to nest the new option, or null to add the option at the root level.</param>
-    public AttributeOption AddAttributeOption(
+    public EnumAttributeOption AddAttributeOption(
         string attributeKey,
         string optionKey,
         int position,
@@ -409,9 +409,9 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
                 {
                     Debug.Assert(opt.ParentOption is not null);
 
-                    if (opt.ParentOption.AttributeDefinition != parentAttr)
+                    if (opt.ParentOption.EnumAttributeDefinition != parentAttr)
                     {
-                        throw new DomainException(E.InvalidScopeParent(attr.Key, parentAttr.Key, opt.Key, opt.ParentOption.AttributeDefinition.Key));
+                        throw new DomainException(E.InvalidScopeParent(attr.Key, parentAttr.Key, opt.Key, opt.ParentOption.EnumAttributeDefinition.Key));
                     }
                 }
             }
