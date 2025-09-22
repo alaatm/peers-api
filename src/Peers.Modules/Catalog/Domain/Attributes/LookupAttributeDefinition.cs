@@ -15,6 +15,7 @@ public sealed class LookupAttributeDefinition : DependentAttributeDefinition
     /// The identifier of the associated lookup type.
     /// </summary>
     public int LookupTypeId { get; private set; }
+    public LookupAttrConfig Config { get; set; }
     /// <summary>
     /// The associated lookup type.
     /// </summary>
@@ -31,6 +32,8 @@ public sealed class LookupAttributeDefinition : DependentAttributeDefinition
     {
         ArgumentNullException.ThrowIfNull(lookupType);
         LookupType = lookupType;
+        // TODO: Allow override
+        Config = new LookupAttrConfig { ConstraintMode = lookupType.ConstraintMode };
     }
 
     protected override string DebuggerDisplay

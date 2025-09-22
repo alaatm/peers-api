@@ -18,6 +18,17 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// </summary>
     public string Key { get; set; } = default!;
     /// <summary>
+    /// The default constraint behavior applied when this lookup type is used
+    /// by a <see cref="Catalog.Domain.Attributes.LookupAttributeDefinition"/> and no explicit override is set.
+    /// </summary>
+    /// <remarks>
+    /// - If <see cref="LookupConstraintMode.Open"/>, listings may use any value of this lookup type
+    ///   unless a product type (or its nearest ancestor) declares an allow-list.
+    /// - If <see cref="LookupConstraintMode.RequireAllowList"/>, a product type must provide an
+    ///   allow-list in its lineage for values of this type to be considered valid.
+    /// </remarks>
+    public LookupConstraintMode ConstraintMode { get; set; }
+    /// <summary>
     /// The list of lookup values associated with this type.
     /// </summary>
     public List<LookupValue> Values { get; set; } = default!;

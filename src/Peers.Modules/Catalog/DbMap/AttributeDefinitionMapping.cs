@@ -65,12 +65,21 @@ internal sealed class EnumAttributeDefinitionMapping : IEntityTypeConfiguration<
 
 internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguration<LookupAttributeDefinition>
 {
-    public void Configure(EntityTypeBuilder<LookupAttributeDefinition> builder) =>
+    public void Configure(EntityTypeBuilder<LookupAttributeDefinition> builder)
+    {
+        builder
+            .Property(e => e.Config)
+            .HasColumnName(nameof(LookupAttributeDefinition.Config).Underscore())
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.LookupAttrConfig),
+                s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.LookupAttrConfig));
+
         builder
             .HasOne(p => p.LookupType)
             .WithMany()
             .HasForeignKey(p => p.LookupTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+    }
 }
 
 internal sealed class IntAttributeDefinitionMapping : IEntityTypeConfiguration<IntAttributeDefinition>
