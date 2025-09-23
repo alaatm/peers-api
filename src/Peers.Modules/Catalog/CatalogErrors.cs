@@ -95,18 +95,36 @@ public static class CatalogErrors
     /// The allowed lookup types contain types not defined in the schema: {0}.
     /// </summary>
     /// <returns></returns>
-    public static DomainError AllowListContainsLookupTypesNotInSchema(string[] lookupTypes)
-        => new(Titles.ValidationFailed, "catalog.allowlist-contains-lookup-types-not-in-schema", LocalizationHelper.FormatList(lookupTypes));
+    public static DomainError AllowListContainsLookupTypesNotInSchema(string[] lookupTypeKeys)
+        => new(Titles.ValidationFailed, "catalog.allowlist-contains-lookup-types-not-in-schema", LocalizationHelper.FormatList(lookupTypeKeys));
     /// <summary>
     /// Lookup type is required for lookup attributes.
     /// </summary>
     public static DomainError LookupTypeRequired => new(Titles.ValidationFailed, "catalog.lookup-type-required");
     /// <summary>
-    /// The following lookup types are assigned to multiple attributes on the same product type, which is not allowed: {0}.
+    /// The lookup types {0} are assigned to multiple attributes on the same product type, which is not allowed.
     /// </summary>
-    /// <returns></returns>
-    public static DomainError DuplicateLookupTypeOnProductType(string[] lookupTypes)
-        => new(Titles.ResourceConflict, "catalog.duplicate-lookup-types-on-product-type", LocalizationHelper.FormatList(lookupTypes));
+    public static DomainError DuplicateLookupTypeOnProductType(string[] lookupTypeKeys)
+        => new(Titles.ResourceConflict, "catalog.duplicate-lookup-types-on-product-type", LocalizationHelper.FormatList(lookupTypeKeys));
+    /// <summary>
+    /// The lookup value '{0}' was not found.
+    /// </summary>
+    public static DomainError LookupValueNotFound(string key) => new(Titles.NotFound, "catalog.lookup-value-not-found", key);
+    /// <summary>
+    /// The lookup value(s) {0} of type '{1}' is not in the allowed set declared by nearest ancestor '{2}'.
+    /// </summary>
+    public static DomainError LookupValuesNotAllowedByAncestor(string[] valueKeys, string typeKey, string ancestorSlugPath)
+        => new(Titles.ValidationFailed, "catalog.lookup-values-not-allowed-by-ancestor", LocalizationHelper.FormatList(valueKeys), typeKey, ancestorSlugPath);
+    /// <summary>
+    /// Duplicate allow-list entry(s) detected for lookup value(s): {0}. Each value may appear at most once.
+    /// </summary>
+    public static DomainError DuplicateAllowedLookupValues(string[] valueKeys)
+        => new(Titles.ResourceConflict, "catalog.duplicate-allowed-lookup-values", LocalizationHelper.FormatList(valueKeys));
+    /// <summary>
+    /// The lookup type '{1}' used by attribute '{0}' requires an allow-list of permitted values on the product type, but none was provided.
+    /// </summary>
+    public static DomainError MissingLookupAllowList(string attrKey, string lookupTypeKey)
+        => new(Titles.ValidationFailed, "catalog.missing-lookup-allow-list", attrKey, lookupTypeKey);
 
     /// <summary>
     /// Key '{0}' must be in lower_snake format.

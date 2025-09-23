@@ -115,6 +115,11 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
+        if (State is not ProductTypeState.Published)
+        {
+            throw new DomainException(E.NotPublished);
+        }
+
         var childSlug = SlugHelper.ToSlug(name);
 
         if (Children.Any(p => p.Slug == childSlug))
@@ -142,11 +147,6 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// the new version. When true, also copies LookupAllowed entries.</param>
     public ProductType CloneAsNextVersion(bool copyAttributes)
     {
-        if (State is not ProductTypeState.Published)
-        {
-            throw new DomainException(E.NotPublished);
-        }
-
         // Create the child under the same parent without copying parent attributes as we want to copy from 'this' (sibling)
         var next = Parent!.AddChild(Slug, IsSelectable, copyAttributes: false, Version + 1);
 
@@ -376,6 +376,57 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     }
 
     /// <summary>
+    /// Adds the specified lookup value to the list of allowed lookups for this product type, enforcing ancestor
+    /// allow-list constraints.
+    /// </summary>
+    /// <remarks>This method ensures that the allow-list for a child product type is always a subset of its
+    /// nearest ancestor's allow-list for the same lookup type. Attempting to add a value not allowed by an ancestor
+    /// will result in an exception.</remarks>
+    /// <param name="value">The lookup value to add to the allow-list. The value's type must be permitted by the nearest
+    /// ancestor's allow-list, if one exists.</param>
+    public void AddAllowedLookup([NotNull] LookupValue value)
+    {
+        if (State is not ProductTypeState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
+
+        // Ensure the value is a member of that ancestor's allow-list
+
+        if (TryGetNearestAllowedSet(includeSelf: false, value.Type, out var owner, out var ancestorSet) &&
+            !ancestorSet.Contains(value))
+        {
+            throw new DomainException(E.LookupValuesNotAllowedByAncestor([value.Key], value.Type.Key, owner.SlugPath));
+        }
+
+        // The lookup value is either a subset of the ancestor's allow-list or there is no ancestor with entries for this type
+        // making this the topmost node.
+
+        // prevent local duplicates
+        if (LookupAllowedList.Any(a => a.Value == value))
+        {
+            throw new DomainException(E.DuplicateAllowedLookupValues([value.Key]));
+        }
+
+        LookupAllowedList.Add(new LookupAllowed(this, value));
+    }
+
+    public void RemoveAllowedLookup([NotNull] LookupValue value)
+    {
+        if (State is not ProductTypeState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
+
+        if (LookupAllowedList.SingleOrDefault(a => a.Value == value) is not { } existing)
+        {
+            throw new DomainException(E.LookupValueNotFound(value.Key));
+        }
+
+        LookupAllowedList.Remove(existing);
+    }
+
+    /// <summary>
     /// Transitions the product type from the draft state to the published state.
     /// </summary>
     public void Publish()
@@ -388,6 +439,27 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         ValidateForPublish();
         State = ProductTypeState.Published;
         // set PublishedAt & schemaHash, etc.
+    }
+
+    /// <summary>
+    /// Returns true if the speicifed lookup value is permitted by this product type or any ancestor that declares an allow-list
+    /// for that value's type. Nearest ancestor with entries wins. If no ancestor declares entries for that value, the fallback policy
+    /// applies as set in noEntriesMeansAllowAll.
+    /// </summary>
+    /// <param name="value">The lookup value to check.</param>
+    /// <param name="noEntriesMeansAllowAll">If true, the absence of any allow-list entries for the value's type in the product type lineage means all values of that type are allowed.</param>
+    /// <returns></returns>
+    public bool IsLookupValueAllowed(
+        [NotNull] LookupValue value,
+        bool noEntriesMeansAllowAll)
+    {
+        if (TryGetNearestAllowedSet(includeSelf: true, value.Type, out _, out var allowedSet))
+        {
+            return allowedSet.Contains(value);
+        }
+
+        // No node declared entries for this type
+        return noEntriesMeansAllowAll;
     }
 
     private void ValidateForPublish()
@@ -421,36 +493,80 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             }
         }
 
-        // Assert no allow-list row for a lookup-type that isn't in the schema.
+        var lookupDefs = Attributes.OfType<LookupAttributeDefinition>().ToArray();
+        var usedLookupTypes = lookupDefs.Select(a => a.LookupType).ToHashSet();
 
-        // types used by attributes
-        var usedLookupTypes = Attributes
-            .OfType<LookupAttributeDefinition>()
-            .Select(a => a.LookupType)
-            .ToHashSet();
-
-        // Stale rows: allow-list entries whose lookup-type is not present anymore
-        var staleLookupTypes = LookupAllowedList
-            .Where(la => !usedLookupTypes.Contains(la.Value.Type))
-            .Select(la => la.Value.Type.Key)
-            .ToArray();
-
-        if (staleLookupTypes.Length > 0)
+        // Ensure no lookup attributes without allow-list when required by ConstraintMode
+        foreach (var la in lookupDefs)
         {
-            throw new DomainException(E.AllowListContainsLookupTypesNotInSchema(staleLookupTypes));
+            if (la.Config.ConstraintMode is LookupConstraintMode.RequireAllowList &&
+                !TryGetNearestAllowedSet(includeSelf: true, la.LookupType, out _, out _))
+            {
+                throw new DomainException(E.MissingLookupAllowList(la.Key, la.LookupType.Key));
+            }
         }
 
-        // Ensure no two or more lookup attributes use the same lookup type (entity equality)
-        var duplicateLookupTypes = Attributes
-            .OfType<LookupAttributeDefinition>()
+        // Stale types: allow-list entries whose type isn't in the schema
+        var staleLookupTypeKeys = LookupAllowedList
+            .Where(la => !usedLookupTypes.Contains(la.Value.Type))
+            .Select(la => la.Value.Type.Key)
+            .Distinct()
+            .ToArray();
+
+        if (staleLookupTypeKeys.Length > 0)
+        {
+            throw new DomainException(E.AllowListContainsLookupTypesNotInSchema(staleLookupTypeKeys));
+        }
+
+        // Ensure no duplicate lookup types across attributes (at most one attr per type)
+        var duplicateLookupTypeKeys = lookupDefs
             .GroupBy(a => a.LookupType)
             .Where(g => g.Count() > 1)
             .Select(g => g.Key.Key)
             .ToArray();
 
-        if (duplicateLookupTypes.Length > 0)
+        if (duplicateLookupTypeKeys.Length > 0)
         {
-            throw new DomainException(E.DuplicateLookupTypeOnProductType(duplicateLookupTypes));
+            throw new DomainException(E.DuplicateLookupTypeOnProductType(duplicateLookupTypeKeys));
+        }
+
+        // Ensure no duplicate values in allow-list (same value added more than once)
+        var duplicateAllowedValues = LookupAllowedList
+            .GroupBy(a => a.Value)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key.Key)
+            .ToArray();
+
+        if (duplicateAllowedValues.Length > 0)
+        {
+            throw new DomainException(E.DuplicateAllowedLookupValues(duplicateAllowedValues));
+        }
+
+        // Build local map: type -> {values}
+        var localAllowedByType = LookupAllowedList
+            .GroupBy(a => a.Value.Type)
+            .ToDictionary(g => g.Key, g => g.Select(a => a.Value).ToHashSet());
+
+        // 4) Subset-of-nearest-ancestor: if this PT declares entries for a type,
+        //    they must be a subset of the nearest ancestor's entries for that type (if any).
+        foreach (var (lookupType, localSet) in localAllowedByType)
+        {
+            if (!TryGetNearestAllowedSet(includeSelf: false, lookupType, out var ancestor, out var ancestorSet))
+            {
+                // No ancestor constraint
+                continue;
+            }
+
+            if (!localSet.IsSubsetOf(ancestorSet))
+            {
+                var offendingKeys = LookupAllowedList
+                    .Where(a => a.Value.Type == lookupType && !ancestorSet.Contains(a.Value))
+                    .Select(a => a.Value.Key)
+                    .Distinct()
+                    .ToArray();
+
+                throw new DomainException(E.LookupValuesNotAllowedByAncestor(offendingKeys, lookupType.Key, ancestor.SlugPath));
+            }
         }
 
         //// disallow deprecated/inactive items at publish time
@@ -463,6 +579,109 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         //{
         //    throw new DomainException(E.AllowListContainsInactiveValues(invalidItems));
         //}
+    }
+
+    private bool TryGetNearestAllowedSet(
+        bool includeSelf,
+        LookupType lookupType,
+        [NotNullWhen(true)] out ProductType? owner,
+        out HashSet<LookupValue> allowSet)
+    {
+        owner = null;
+        allowSet = [];
+
+        // Start from self -or- parent and walk up the ancestor chain
+        // Find nearest ancestor that has entries for the value's lookup type
+        foreach (var t in BuildAncestorChain(reverse: true, includeSelf: includeSelf))
+        {
+            if (t.LookupAllowedList.Any(a => a.Value.Type == lookupType))
+            {
+                owner = t;
+                break;
+            }
+        }
+
+        // If lookup type is found at an ancestor, ensure the value is a member of that ancestor's allow-list,
+        // if not found, this is the topmost node and any value is allowed.
+
+        if (owner is not null)
+        {
+            allowSet = [.. owner.LookupAllowedList
+                .Where(a => a.Value.Type == lookupType)
+                .Select(a => a.Value)];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // Build the full lineage tree (ancestors + self + descendants)
+    private List<ProductType> BuildLineageTree(bool reverse = false)
+    {
+        var ancestors = BuildAncestorChain(reverse: reverse);
+        var descendants = BuildDescendantsChain(reverse: reverse);
+
+        if (reverse)
+        {
+            descendants.AddRange(ancestors);
+            return descendants;
+        }
+        else
+        {
+            ancestors.AddRange(descendants);
+            return ancestors;
+        }
+    }
+
+    // Build ancestor chain from root to this (self inclusive)
+    private List<ProductType> BuildAncestorChain(bool reverse = false, bool includeSelf = true)
+    {
+        var chain = new List<ProductType>();
+        CollectAncestors(this);
+
+        if (reverse)
+        {
+            chain.Reverse();
+        }
+
+        return chain;
+
+        void CollectAncestors(ProductType node)
+        {
+            if (node.Parent is not null)
+            {
+                CollectAncestors(node.Parent);
+            }
+
+            if (includeSelf || node != this)
+            {
+                chain.Add(node);
+            }
+        }
+    }
+
+    // Build descendants chain from this to leaves (self exclusive)
+    private List<ProductType> BuildDescendantsChain(bool reverse = false)
+    {
+        var chain = new List<ProductType>();
+        CollectDescendants(this);
+
+        if (reverse)
+        {
+            chain.Reverse();
+        }
+
+        return chain;
+
+        void CollectDescendants(ProductType node)
+        {
+            foreach (var c in node.Children)
+            {
+                chain.Add(c);
+                CollectDescendants(c);
+            }
+        }
     }
 
     private string DebuggerDisplay => $"{SlugPath} ({Kind}) | (v{Version}, {State})";
