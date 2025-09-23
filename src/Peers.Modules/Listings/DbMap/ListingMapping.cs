@@ -1,0 +1,124 @@
+using Humanizer;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Listings.Domain;
+
+namespace Peers.Modules.Listings.DbMap;
+
+internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
+{
+    public void Configure(EntityTypeBuilder<Listing> builder)
+    {
+        var minOrderQtyPropName = $"{nameof(OrderQtyPolicy.Min)}{nameof(Listing.OrderQty)}";
+        var maxOrderQtyPropName = $"{nameof(OrderQtyPolicy.Max)}{nameof(Listing.OrderQty)}";
+
+        builder.HasIndex(p => new { p.SellerId }).IsUnique();
+        builder.Property(p => p.Title).HasMaxLength(256);
+
+        // Concurrency token
+        builder.Property<byte[]>("RowVersion").IsRowVersion();
+
+        builder.ComplexProperty(x => x.OrderQty, ob =>
+        {
+            ob.Property(p => p.Min).HasColumnName(minOrderQtyPropName.Underscore());
+            ob.Property(p => p.Max).HasColumnName(maxOrderQtyPropName.Underscore());
+        });
+
+        builder.OwnsMany(p => p.Attributes, nav =>
+        {
+            // one value per listing per def
+            nav.HasKey(p => new { p.ListingId, p.AttributeDefinitionId });
+            // Per-listing uniqueness for chosen option
+            nav.HasIndex(p => new { p.ListingId, p.EnumAttributeOptionId }).IsUnique();
+            // Per-listing uniqueness for chosen lookup value
+            nav.HasIndex(p => new { p.ListingId, p.LookupValueId }).IsUnique();
+
+            nav.WithOwner(p => p.Listing)
+               .HasForeignKey(p => p.ListingId);
+
+            nav.HasOne(p => p.AttributeDefinition)
+               .WithMany()
+               .HasForeignKey(p => p.AttributeDefinitionId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            nav.HasOne(p => p.EnumAttributeOption)
+               .WithMany()
+               .HasForeignKey(p => p.EnumAttributeOptionId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            nav.HasOne(p => p.LookupValue)
+               .WithMany()
+               .HasForeignKey(p => p.LookupValueId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            nav.ToTable(nameof(ListingAttribute).Underscore(), p =>
+            {
+                var positionPropName = nameof(ListingAttribute.Position);
+                var positionColName = positionPropName.Underscore();
+                var attrKindColName = nameof(ListingAttribute.AttributeKind).Underscore();
+                var valueColName = nameof(ListingAttribute.Value).Underscore();
+                var enumOptionIdColName = nameof(ListingAttribute.EnumAttributeOptionId).Underscore();
+                var lookupValueIdColName = nameof(ListingAttribute.LookupValueId).Underscore();
+                var primitiveAttrKinds = string.Join(',',
+                [
+                    (int)AttributeKind.Int,
+                    (int)AttributeKind.Decimal,
+                    (int)AttributeKind.String,
+                    (int)AttributeKind.Bool,
+                    (int)AttributeKind.Date,
+                ]);
+
+                p.HasCheckConstraint($"CK_LA_{positionPropName}_NonNegative", $"[{positionColName}] >= 0");
+                p.HasCheckConstraint("CK_LA_OnePayload",
+                $"""
+                (
+                    [{attrKindColName}] IN ({primitiveAttrKinds}) AND [{valueColName}] IS NOT NULL
+                    AND [{enumOptionIdColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                )
+                OR
+                (
+                    [{attrKindColName}] = {(int)AttributeKind.Enum} AND [{enumOptionIdColName}] IS NOT NULL
+                    AND [{valueColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                )
+                OR
+                (
+                    [{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupValueIdColName}] IS NOT NULL
+                    AND [{valueColName}] IS NULL AND [{enumOptionIdColName}] IS NULL
+                )
+                """);
+            });
+        });
+
+        builder
+            .HasOne(p => p.Seller)
+            .WithMany()
+            .HasForeignKey(p => p.SellerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(p => p.ProductType)
+            .WithMany()
+            .HasForeignKey(p => p.ProductTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.ToTable(nameof(Listing).Underscore(), p =>
+        {
+            var basePricePropName = nameof(Listing.BasePrice);
+            var basePriceColName = basePricePropName.Underscore();
+            var orderQtyPropName = nameof(Listing.OrderQty);
+            var minOrderQtyColName = minOrderQtyPropName.Underscore();
+            var maxOrderQtyColName = maxOrderQtyPropName.Underscore();
+
+            p.HasCheckConstraint($"CK_Listing_{basePricePropName}_NonNegative", $"[{basePriceColName}] >= 0");
+            p.HasCheckConstraint($"CK_Listing_{orderQtyPropName}",
+                $"""
+                ([{minOrderQtyColName}] IS NULL OR [{minOrderQtyColName}] >= 1)
+                "AND ([{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= 1)
+                "AND ([{minOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= [{minOrderQtyColName}])"
+                """
+            );
+        });
+
+        builder.Navigation(p => p.Attributes).AutoInclude(false);
+    }
+}

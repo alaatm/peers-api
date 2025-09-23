@@ -16,7 +16,7 @@ public sealed class AttributeSchemaClonerTests
         var source = ProductType.CreateRoot(ProductTypeKind.Physical, "PT-Source");
         var target = ProductType.CreateRoot(ProductTypeKind.Physical, "PT-Target");
 
-        var brandLookupType = new LookupType { Key = "brand" };
+        var brandLookupType = new LookupType { Key = "brand", ConstraintMode = LookupConstraintMode.RequireAllowList };
         brandLookupType.Values = [new() { Key = "apple", Type = brandLookupType }, new() { Key = "samsung", Type = brandLookupType }];
         var modelLookupType = new LookupType { Key = "model" };
         modelLookupType.Values = [new() { Key = "iphone_14", Type = modelLookupType }, new() { Key = "galaxy_s22", Type = modelLookupType }];

@@ -47,5 +47,8 @@ internal sealed class AppUserMapping : IEntityTypeConfiguration<AppUser>
                 a.HasKey("id");
                 a.ToTable(nameof(AppUsageHistory).Underscore(), "dbo");
             });
+
+        builder.Navigation(p => p.RefreshTokens).AutoInclude(false);
+        builder.Navigation(p => p.AppUsage).AutoInclude(false);
     }
 }

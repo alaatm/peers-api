@@ -6,6 +6,7 @@ using Peers.Core.Data;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.I18n.Domain;
+using Peers.Modules.Listings.Domain;
 using Peers.Modules.Lookup.Domain;
 using Peers.Modules.Media.Domain;
 using Peers.Modules.Settings.Domain;
@@ -18,6 +19,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
 {
     public DbSet<ProductType> ProductTypes => Set<ProductType>();
     public DbSet<LookupType> LookupTypes => Set<LookupType>();
+    public DbSet<Listing> Listings => Set<Listing>();
 
     public DbSet<Customer> Customers => Set<Customer>();
 
@@ -37,6 +39,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
     private static readonly Type[] _hiloSeqTypes =
     [
         typeof(AppUser),
+        typeof(Listing),
     ];
 
     protected override void OnModelCreating([NotNull] ModelBuilder builder)
