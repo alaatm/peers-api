@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using Peers.Core.Domain.Errors;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Lookup.Domain;
+using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -103,7 +105,7 @@ public sealed class ListingAttribute
     {
         if (!T.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var iv))
         {
-            throw new DomainException($"{def.Key} must be {(typeof(T) == typeof(int) ? "int" : "decimal")}.");
+            throw new DomainException(E.AttrValueMustBeNumeric<T>(def.Key, value));
         }
 
         ValidateNumericRange(def.Key, iv, def.Config.Min, def.Config.Max);
@@ -112,9 +114,10 @@ public sealed class ListingAttribute
 
     private static ListingAttribute OfString(Listing listing, StringAttributeDefinition def, string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(value) ||
+            (def.Config.Regex is string r && !Regex.IsMatch(value, r)))
         {
-            throw new DomainException($"{def.Key} cannot be empty.");
+            throw new DomainException(E.AttrValueMustBeValidString(def.Key, value, def.Config.Regex));
         }
 
         return new(listing, def, value: value);
@@ -124,7 +127,7 @@ public sealed class ListingAttribute
     {
         if (!bool.TryParse(value, out var bv))
         {
-            throw new DomainException($"{def.Key} must be bool.");
+            throw new DomainException(E.AttrValueMustBeBool(def.Key, value));
         }
 
         return new(listing, def, value: bv ? "true" : "false");
@@ -134,7 +137,7 @@ public sealed class ListingAttribute
     {
         if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
         {
-            throw new DomainException($"{def.Key} must be date (yyyy-MM-dd).");
+            throw new DomainException(E.AttrValueMustBeDate(def.Key, value));
         }
 
         return new(listing, def, value: value);
@@ -144,7 +147,7 @@ public sealed class ListingAttribute
     {
         if (def.Options.FirstOrDefault(p => p.Key == value) is not EnumAttributeOption option)
         {
-            throw new DomainException($"Unknown option '{value}' for '{def.Key}' non-variant enum attribute.");
+            throw new DomainException(E.UnknownAttrOption(def.Key, value));
         }
 
         return new(listing, def, option: option);
@@ -154,12 +157,12 @@ public sealed class ListingAttribute
     {
         if (def.LookupType.Values.FirstOrDefault(p => p.Key == value) is not LookupValue lookupValue)
         {
-            throw new DomainException($"Unknown value '{value}' for '{def.Key}' lookup attribute.");
+            throw new DomainException(E.UnknownAttrOption(def.Key, value));
         }
 
         if (!listing.ProductType.IsLookupValueAllowed(lookupValue, noEntriesMeansAllowAll: true))
         {
-            throw new DomainException($"The value '{value}' is not a valid value for product type '{listing.ProductType.SlugPath}' in attribute '{def.Key}'.");
+            throw new DomainException(E.LookupValueNotAllowedForProductType(value, def.Key, listing.ProductType.SlugPath));
         }
 
         return new(listing, def, lookupValue: lookupValue);
@@ -169,11 +172,11 @@ public sealed class ListingAttribute
     {
         if (min.HasValue && value.CompareTo(min.Value) < 0)
         {
-            throw new DomainException($"{key} must be ≥ {min.Value}");
+            throw new DomainException(E.AttrValueMustBeAtLeast(key, value, min.Value));
         }
         if (max.HasValue && value.CompareTo(max.Value) > 0)
         {
-            throw new DomainException($"{key} must be ≤ {max.Value}");
+            throw new DomainException(E.AttrValueMustBeAtMost(key, value, max.Value));
         }
     }
 }

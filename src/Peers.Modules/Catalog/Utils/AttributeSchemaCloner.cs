@@ -5,8 +5,22 @@ using Peers.Modules.Lookup.Domain;
 
 namespace Peers.Modules.Catalog.Utils;
 
+/// <summary>
+/// Provides functionality to clone attribute schema definitions and options from one product type to another.
+/// </summary>
 internal static class AttributeSchemaCloner
 {
+    /// <summary>
+    /// Copies all attribute definitions and options from the specified source product type to the target product type.
+    /// </summary>
+    /// <remarks>This method performs a deep copy of attribute definitions, including dependencies and
+    /// enumeration options, from the source to the target product type. The target product type must be empty before
+    /// calling this method. Any existing attributes or options in the target will result in undefined behavior. The
+    /// method preserves the dependency order and translations of attributes and options.</remarks>
+    /// <param name="source">The product type from which attribute definitions and options are copied. Must not be null and must have the
+    /// same kind as the target.</param>
+    /// <param name="target">The product type to which attribute definitions and options are copied. Must not be null, must have the same
+    /// kind as the source, and must not contain any attributes prior to the operation.</param>
     public static void CopyFrom(ProductType source, ProductType target)
     {
         Debug.Assert(!ReferenceEquals(source, target));

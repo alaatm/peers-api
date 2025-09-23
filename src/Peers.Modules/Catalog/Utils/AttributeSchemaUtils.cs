@@ -4,13 +4,28 @@ using E = Peers.Modules.Catalog.CatalogErrors;
 
 namespace Peers.Modules.Catalog.Utils;
 
+/// <summary>
+/// Provides utility methods for validating and ordering attribute definitions based on their dependencies.
+/// </summary>
 internal static class AttributeSchemaUtils
 {
-    // Throws on cyclic
+    /// <summary>
+    /// Ensures that the specified collection of attribute definitions does not contain any cyclic dependencies
+    /// and throws a <see cref="DomainException"/> if a cycle is detected.
+    /// </summary>
+    /// <param name="attrs">The list of attribute definitions to validate for acyclic dependencies. Cannot be null.</param>
     public static void EnsureAcyclic(List<AttributeDefinition> attrs)
         => _ = TopoOrderByDependency(attrs);
 
-    // Topological order that keeps parents before children; stable within same depth by Position
+    /// <summary>
+    /// Returns a list of attribute definitions ordered so that each parent attribute appears before its dependent
+    /// children, preserving the original order among attributes at the same dependency depth by their position.
+    /// </summary>
+    /// <remarks>This method performs a stable topological sort based on attribute dependencies. It is useful
+    /// for scenarios where attributes must be processed in dependency order, such as validation or serialization. The
+    /// method does not modify the input list.</remarks>
+    /// <param name="attrs">The list of attribute definitions to order. Each attribute must have a unique key. Attributes that represent
+    /// dependencies must reference other attributes present in the list.</param>
     public static List<AttributeDefinition> TopoOrderByDependency(List<AttributeDefinition> attrs)
     {
         var byKey = attrs.ToDictionary(d => d.Key, StringComparer.Ordinal);

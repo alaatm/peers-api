@@ -2,6 +2,7 @@ using Peers.Core.Domain.Errors;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Customers.Domain;
+using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -95,12 +96,12 @@ public sealed class Listing : Entity, IAggregateRoot
     {
         if (productType.State is not ProductTypeState.Published)
         {
-            throw new DomainException($"Product type '{productType.SlugPath}' must be published to create listing.");
+            throw new DomainException(E.ProductTypeNotPublished(productType.SlugPath));
         }
 
         if (!productType.IsSelectable)
         {
-            throw new DomainException($"Product type '{productType.SlugPath}' is not selectable for listings.");
+            throw new DomainException(E.ProductTypeNotSelectable(productType.SlugPath));
         }
 
         return new()
@@ -148,7 +149,7 @@ public sealed class Listing : Entity, IAggregateRoot
         {
             if (!defs.ContainsKey(key))
             {
-                throw new DomainException($"Attribute '{key}' is not defined for ProductType '{ProductType.SlugPath}'.");
+                throw new DomainException(E.AttrNotDefined(key, ProductType.SlugPath));
             }
         }
 
@@ -165,7 +166,7 @@ public sealed class Listing : Entity, IAggregateRoot
                     axes.Add(enumDef, []);
                     if (axes.Count > maxVariantAxes)
                     {
-                        throw new DomainException($"At most {maxVariantAxes} variant axes are supported.");
+                        throw new DomainException(E.TooManyVariantAxes(maxVariantAxes));
                     }
 
                     continue;
@@ -175,14 +176,14 @@ public sealed class Listing : Entity, IAggregateRoot
 
                 if (values.Length != 1)
                 {
-                    throw new DomainException($"Attribute '{def.Key}' requires exactly one value.");
+                    throw new DomainException(E.NonVariantAttrReqExactlyOneValue(def.Key));
                 }
 
                 newAttrs.Add(ListingAttribute.Create(this, def, values[0]));
             }
             else if (def.IsRequired)
             {
-                throw new DomainException($"Missing required attribute: {def.Key}");
+                throw new DomainException(E.AttrRequired(def.Key));
             }
         }
 
@@ -192,7 +193,7 @@ public sealed class Listing : Entity, IAggregateRoot
         {
             if (!selectedAttrs.TryGetValue(axisDef.Key, out var selectedOptKeys) || selectedOptKeys.Length == 0)
             {
-                throw new DomainException($"Variant axis '{axisDef.Key}' requires at least one option.");
+                throw new DomainException(E.VariantAttrReqAtleastOneOption(axisDef.Key));
             }
 
             var allowed = axisDef.Options.ToDictionary(o => o.Key);
@@ -202,7 +203,7 @@ public sealed class Listing : Entity, IAggregateRoot
             {
                 if (!allowed.TryGetValue(optKey, out var opt))
                 {
-                    throw new DomainException($"Unknown option '{optKey}' for axis '{axisDef.Key}'.");
+                    throw new DomainException(E.UnknownAttrOption(axisDef.Key, optKey));
                 }
 
                 chosen.Add(opt);

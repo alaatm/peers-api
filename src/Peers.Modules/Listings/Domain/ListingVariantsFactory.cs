@@ -7,7 +7,7 @@ namespace Peers.Modules.Listings.Domain;
 /// Provides factory methods for generating all possible combinations of listing variants based on attribute definitions
 /// and their options.
 /// </summary>
-public static class ListingVariantsFactory
+internal static class ListingVariantsFactory
 {
     /// <summary>
     /// Generates all possible combinations of listing variants based on the provided attribute definitions and their options.
@@ -17,7 +17,7 @@ public static class ListingVariantsFactory
     /// <param name="listing">The listing for which the variants are being generated.</param>
     /// <param name="axes">The input dictionary where each key is an attribute definition and the corresponding value is a list of its possible options.</param>
     /// <returns></returns>
-    internal static List<ListingVariant> GenerateVariants(
+    public static List<ListingVariant> GenerateVariants(
         Listing listing,
         Dictionary<EnumAttributeDefinition, List<EnumAttributeOption>> axes)
     {

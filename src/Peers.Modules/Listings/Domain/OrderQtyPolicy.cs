@@ -1,4 +1,5 @@
 using Peers.Core.Domain.Errors;
+using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -27,17 +28,17 @@ public readonly record struct OrderQtyPolicy
     {
         if (min is < 1)
         {
-            throw new DomainException("Min order quantity must be ≥ 1.");
+            throw new DomainException(E.MinOrderQtyMustBeAtLeastOne);
         }
 
         if (max is < 1)
         {
-            throw new DomainException("Max order quantity must be ≥ 1.");
+            throw new DomainException(E.MaxOrderQtyMustBeAtLeastOne);
         }
 
         if (min.HasValue && max.HasValue && max.Value < min.Value)
         {
-            throw new DomainException("Max order quantity must be ≥ min order quantity.");
+            throw new DomainException(E.MaxOrderQtyMustBeGreaterThanOrEqualToMin);
         }
 
         return new OrderQtyPolicy(min, max);

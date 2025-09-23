@@ -30,7 +30,6 @@ public sealed class LookupAllowed
     /// The identifier of the allowed lookup value within <see cref="TypeId"/>
     /// </summary>
     public int ValueId { get; set; }
-
     /// <summary>
     /// The owning product type.
     /// </summary>
