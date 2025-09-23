@@ -1,7 +1,9 @@
 using Peers.Core.Domain.Errors;
+using Peers.Core.Localization.Infrastructure;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Customers.Domain;
+using Peers.Modules.Listings.Domain.Translations;
 using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
@@ -14,7 +16,7 @@ namespace Peers.Modules.Listings.Domain;
 /// price, and available variants. It is associated with a specific product type and maintains both non-variant
 /// attributes and SKU-level variant information. The listing's state and order quantity policy control its availability
 /// and purchasing constraints.</remarks>
-public sealed class Listing : Entity, IAggregateRoot
+public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, ListingTr>
 {
     /// <summary>
     /// The identifier of the seller who created the listing.
@@ -72,6 +74,10 @@ public sealed class Listing : Entity, IAggregateRoot
     /// The list of SKU-level variants of the listing.
     /// </summary>
     public List<ListingVariant> Variants { get; private set; } = default!;
+    /// <summary>
+    /// The list of translations associated with this listing.
+    /// </summary>
+    public List<ListingTr> Translations { get; private set; } = default!;
 
     /// <summary>
     /// Creates a new draft listing for the specified seller and product type with the provided details.
