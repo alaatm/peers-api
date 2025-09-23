@@ -37,7 +37,13 @@ internal sealed class AttributeDefinitionMapping : IEntityTypeConfiguration<Attr
                 $"[{isVariantCol}] = 0 OR [{kindCol}] = {(int)AttributeKind.Enum}");
 
             p.HasCheckConstraint($"CK_AD_{lookupTypeIdProp}_LookupOnly",
-                $"(CASE WHEN [{kindCol}] = {(int)AttributeKind.Lookup} THEN [{lookupTypeIdCol}] IS NOT NULL ELSE [{lookupTypeIdCol}] IS NULL END)");
+                $"""
+                (
+                    ([{kindCol}] = {(int)AttributeKind.Lookup} AND [{lookupTypeIdCol}] IS NOT NULL)
+                    OR
+                    ([{kindCol}] <> {(int)AttributeKind.Lookup} AND [{lookupTypeIdCol}] IS NULL)
+                )
+                """);
         });
     }
 }

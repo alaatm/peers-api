@@ -13,5 +13,5 @@ public interface IPushNotificationProblemReporter
     /// </summary>
     /// <param name="errors">The errors.</param>
     /// <returns></returns>
-    Task ReportErrorsAsync(ICollection<(string, ErrorCode, MessagingErrorCode?)> errors);
+    Task ReportErrorsAsync(List<(string, ErrorCode, MessagingErrorCode?)> errors);
 }

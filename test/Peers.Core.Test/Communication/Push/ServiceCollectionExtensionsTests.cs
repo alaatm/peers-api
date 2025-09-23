@@ -47,6 +47,6 @@ public class ServiceCollectionExtensionsTests
 
     private class PushNotificationProblemReporterMoq : IPushNotificationProblemReporter
     {
-        public Task ReportErrorsAsync(ICollection<(string, ErrorCode, MessagingErrorCode?)> errors) => throw new NotImplementedException();
+        public Task ReportErrorsAsync(List<(string, ErrorCode, MessagingErrorCode?)> errors) => throw new NotImplementedException();
     }
 }

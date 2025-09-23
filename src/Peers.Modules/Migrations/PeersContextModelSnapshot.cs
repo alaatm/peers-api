@@ -26,6 +26,9 @@ namespace Peers.Modules.Migrations
             modelBuilder.HasSequence<int>("app_user_seq")
                 .IncrementsBy(100);
 
+            modelBuilder.HasSequence<int>("listing_seq")
+                .IncrementsBy(100);
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
                 {
                     b.Property<int>("Id")
@@ -227,7 +230,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator<int>("Kind");
@@ -235,7 +238,7 @@ namespace Peers.Modules.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -244,9 +247,9 @@ namespace Peers.Modules.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AttributeDefinitionId")
+                    b.Property<int>("EnumAttributeDefinitionId")
                         .HasColumnType("int")
-                        .HasColumnName("attribute_definition_id");
+                        .HasColumnName("enum_attribute_definition_id");
 
                     b.Property<string>("Key")
                         .IsRequired()
@@ -267,13 +270,13 @@ namespace Peers.Modules.Migrations
 
                     b.HasIndex("ParentOptionId");
 
-                    b.HasIndex("AttributeDefinitionId", "Key")
+                    b.HasIndex("EnumAttributeDefinitionId", "Key")
                         .IsUnique();
 
-                    b.HasIndex("AttributeDefinitionId", "Position")
+                    b.HasIndex("EnumAttributeDefinitionId", "Position")
                         .IsUnique();
 
-                    b.ToTable("attribute_option", (string)null);
+                    b.ToTable("enum_attribute_option", (string)null);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
@@ -386,7 +389,7 @@ namespace Peers.Modules.Migrations
                     b.ToTable("attribute_definition_tr", "i18n");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeOptionTr", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.EnumAttributeOptionTr", b =>
                 {
                     b.Property<int>("EntityId")
                         .HasColumnType("int")
@@ -408,7 +411,7 @@ namespace Peers.Modules.Migrations
 
                     b.HasIndex("LangCode");
 
-                    b.ToTable("attribute_option_tr", "i18n");
+                    b.ToTable("enum_attribute_option_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.ProductTypeTr", b =>
@@ -486,6 +489,146 @@ namespace Peers.Modules.Migrations
                     b.ToTable("language", "i18n");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "listing_seq");
+
+                    b.Property<decimal>("BasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("base_price");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("ProductTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_type_id");
+
+                    b.Property<int>("ProductTypeVersion")
+                        .HasColumnType("int")
+                        .HasColumnName("product_type_version");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int")
+                        .HasColumnName("state");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "OrderQty", "Peers.Modules.Listings.Domain.Listing.OrderQty#OrderQtyPolicy", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<int?>("Max")
+                                .HasColumnType("int")
+                                .HasColumnName("max_order_qty");
+
+                            b1.Property<int?>("Min")
+                                .HasColumnType("int")
+                                .HasColumnName("min_order_qty");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductTypeId");
+
+                    b.HasIndex("SellerId")
+                        .IsUnique();
+
+                    b.ToTable("listing", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
+
+                            t.HasCheckConstraint("CK_Listing_OrderQty", "([min_order_qty] IS NULL OR [min_order_qty] >= 1)\r\nAND ([max_order_qty] IS NULL OR [max_order_qty] >= 1)\r\nAND ([min_order_qty] IS NULL OR [max_order_qty] IS NULL OR [max_order_qty] >= [min_order_qty])");
+                        });
+                });
+
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.ListingVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("InventoryQty")
+                        .HasColumnType("int")
+                        .HasColumnName("inventory_qty");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<int>("ListingId")
+                        .HasColumnType("int")
+                        .HasColumnName("listing_id");
+
+                    b.Property<decimal?>("PriceOverride")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price_override");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
+                    b.Property<string>("SkuCode")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("sku_code");
+
+                    b.Property<string>("VariantKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("variant_key");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("ListingId", "SkuCode")
+                        .IsUnique();
+
+                    b.HasIndex("ListingId", "VariantKey")
+                        .IsUnique();
+
+                    b.ToTable("listing_variant", (string)null);
+                });
+
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
                 {
                     b.Property<int>("ParentTypeId")
@@ -519,6 +662,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConstraintMode")
+                        .HasColumnType("int")
+                        .HasColumnName("constraint_mode");
 
                     b.Property<string>("Key")
                         .IsRequired()
@@ -1289,7 +1436,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(3);
@@ -1303,7 +1450,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(4);
@@ -1319,17 +1466,11 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("config");
 
-                    b.Property<string>("Unit")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasColumnName("unit");
-
                     b.ToTable(t =>
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(1);
@@ -1349,7 +1490,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
                 });
 
@@ -1363,17 +1504,11 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("config");
 
-                    b.Property<string>("Unit")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasColumnName("unit");
-
                     b.ToTable(t =>
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(0);
@@ -1393,7 +1528,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(2);
@@ -1411,7 +1546,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(5);
@@ -1420,6 +1555,12 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
 
                     b.Property<int>("LookupTypeId")
                         .HasColumnType("int")
@@ -1431,7 +1572,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(6);
@@ -1499,20 +1640,20 @@ namespace Peers.Modules.Migrations
                     b.Navigation("ProductType");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", b =>
                 {
-                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", "AttributeDefinition")
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", "EnumAttributeDefinition")
                         .WithMany("Options")
-                        .HasForeignKey("AttributeDefinitionId")
+                        .HasForeignKey("EnumAttributeDefinitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", "ParentOption")
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", "ParentOption")
                         .WithMany()
                         .HasForeignKey("ParentOptionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("AttributeDefinition");
+                    b.Navigation("EnumAttributeDefinition");
 
                     b.Navigation("ParentOption");
                 });
@@ -1562,9 +1703,9 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.AttributeOptionTr", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Translations.EnumAttributeOptionTr", b =>
                 {
-                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", null)
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", null)
                         .WithMany("Translations")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1601,6 +1742,176 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
+                        .WithMany()
+                        .HasForeignKey("ProductTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("Peers.Modules.Listings.Domain.ListingAttribute", "Attributes", b1 =>
+                        {
+                            b1.Property<int>("ListingId")
+                                .HasColumnType("int")
+                                .HasColumnName("listing_id");
+
+                            b1.Property<int>("AttributeDefinitionId")
+                                .HasColumnType("int")
+                                .HasColumnName("attribute_definition_id");
+
+                            b1.Property<int>("AttributeKind")
+                                .HasColumnType("int")
+                                .HasColumnName("attribute_kind");
+
+                            b1.Property<int?>("EnumAttributeOptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("enum_attribute_option_id");
+
+                            b1.Property<int?>("LookupValueId")
+                                .HasColumnType("int")
+                                .HasColumnName("lookup_value_id");
+
+                            b1.Property<int>("Position")
+                                .HasColumnType("int")
+                                .HasColumnName("position");
+
+                            b1.Property<string>("Value")
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("value");
+
+                            b1.HasKey("ListingId", "AttributeDefinitionId");
+
+                            b1.HasIndex("AttributeDefinitionId");
+
+                            b1.HasIndex("EnumAttributeOptionId");
+
+                            b1.HasIndex("LookupValueId");
+
+                            b1.HasIndex("ListingId", "EnumAttributeOptionId")
+                                .IsUnique()
+                                .HasFilter("[enum_attribute_option_id] IS NOT NULL");
+
+                            b1.HasIndex("ListingId", "LookupValueId")
+                                .IsUnique()
+                                .HasFilter("[lookup_value_id] IS NOT NULL");
+
+                            b1.ToTable("listing_attribute", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 5 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+
+                                    t.HasCheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
+                                });
+
+                            b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", "AttributeDefinition")
+                                .WithMany()
+                                .HasForeignKey("AttributeDefinitionId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", "EnumAttributeOption")
+                                .WithMany()
+                                .HasForeignKey("EnumAttributeOptionId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
+                            b1.WithOwner("Listing")
+                                .HasForeignKey("ListingId");
+
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupValue")
+                                .WithMany()
+                                .HasForeignKey("LookupValueId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
+                            b1.Navigation("AttributeDefinition");
+
+                            b1.Navigation("EnumAttributeOption");
+
+                            b1.Navigation("Listing");
+
+                            b1.Navigation("LookupValue");
+                        });
+
+                    b.Navigation("Attributes");
+
+                    b.Navigation("ProductType");
+
+                    b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.ListingVariant", b =>
+                {
+                    b.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
+                        .WithMany("Variants")
+                        .HasForeignKey("ListingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("Peers.Modules.Listings.Domain.ListingVariantAttribute", "Attributes", b1 =>
+                        {
+                            b1.Property<int>("ListingVariantId")
+                                .HasColumnType("int")
+                                .HasColumnName("listing_variant_id");
+
+                            b1.Property<int>("AttributeDefinitionId")
+                                .HasColumnType("int")
+                                .HasColumnName("attribute_definition_id");
+
+                            b1.Property<int>("AttributeOptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("attribute_option_id");
+
+                            b1.Property<int>("Position")
+                                .HasColumnType("int")
+                                .HasColumnName("position");
+
+                            b1.HasKey("ListingVariantId", "AttributeDefinitionId");
+
+                            b1.HasIndex("AttributeDefinitionId");
+
+                            b1.HasIndex("AttributeOptionId");
+
+                            b1.HasIndex("ListingVariantId", "AttributeOptionId")
+                                .IsUnique();
+
+                            b1.ToTable("listing_variant_attribute", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
+                                });
+
+                            b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", "AttributeDefinition")
+                                .WithMany()
+                                .HasForeignKey("AttributeDefinitionId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", "EnumAttributeOption")
+                                .WithMany()
+                                .HasForeignKey("AttributeOptionId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.WithOwner("ListingVariant")
+                                .HasForeignKey("ListingVariantId");
+
+                            b1.Navigation("AttributeDefinition");
+
+                            b1.Navigation("EnumAttributeOption");
+
+                            b1.Navigation("ListingVariant");
+                        });
+
+                    b.Navigation("Attributes");
+
+                    b.Navigation("Listing");
                 });
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
@@ -1850,7 +2161,7 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Translations");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeOption", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", b =>
                 {
                     b.Navigation("Translations");
                 });
@@ -1864,6 +2175,11 @@ namespace Peers.Modules.Migrations
                     b.Navigation("LookupAllowedList");
 
                     b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
+                {
+                    b.Navigation("Variants");
                 });
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>

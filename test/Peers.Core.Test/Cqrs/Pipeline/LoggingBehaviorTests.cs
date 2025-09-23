@@ -58,7 +58,7 @@ public class LoggingBehaviorTests
         Assert.Equal(3, logMoq.Invocations.Count);
         Assert.Equal(LogLevel.Information, logMoq.Invocations[0].Arguments[0]);
         Assert.Equal("HandlingRequestDetailed", ((EventId)logMoq.Invocations[0].Arguments[1]).Name);
-        Assert.Equal(LogLevel.Warning, logMoq.Invocations[1].Arguments[0]);
+        Assert.Equal(LogLevel.Information, logMoq.Invocations[1].Arguments[0]);
         Assert.Equal("BusinessRulesException", ((EventId)logMoq.Invocations[1].Arguments[1]).Name);
         Assert.Equal(LogLevel.Information, logMoq.Invocations[2].Arguments[0]);
         Assert.Equal("HandledRequest", ((EventId)logMoq.Invocations[2].Arguments[1]).Name);

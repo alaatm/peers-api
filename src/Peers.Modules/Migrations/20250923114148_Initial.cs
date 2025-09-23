@@ -33,6 +33,10 @@ namespace Peers.Modules.Migrations
                 name: "app_user_seq",
                 incrementBy: 100);
 
+            migrationBuilder.CreateSequence<int>(
+                name: "listing_seq",
+                incrementBy: 100);
+
             migrationBuilder.CreateTable(
                 name: "app_user",
                 schema: "id",
@@ -132,7 +136,8 @@ namespace Peers.Modules.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false)
+                    key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
+                    constraint_mode = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -535,7 +540,6 @@ namespace Peers.Modules.Migrations
                     is_required = table.Column<bool>(type: "bit", nullable: false),
                     position = table.Column<int>(type: "int", nullable: false),
                     product_type_id = table.Column<int>(type: "int", nullable: false),
-                    unit = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
                     config = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     depends_on_id = table.Column<int>(type: "int", nullable: true),
                     is_variant = table.Column<bool>(type: "bit", nullable: true),
@@ -545,7 +549,7 @@ namespace Peers.Modules.Migrations
                 {
                     table.PrimaryKey("PK_attribute_definition", x => x.id);
                     table.CheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
-                    table.CheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(CASE WHEN [kind] = 6 THEN [lookup_type_id] IS NOT NULL ELSE [lookup_type_id] IS NULL END)");
+                    table.CheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
                     table.ForeignKey(
                         name: "FK_attribute_definition_attribute_definition_depends_on_id",
                         column: x => x.depends_on_id,
@@ -674,6 +678,44 @@ namespace Peers.Modules.Migrations
                         principalTable: "terms",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "listing",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    product_type_version = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    max_order_qty = table.Column<int>(type: "int", nullable: true),
+                    min_order_qty = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing", x => x.id);
+                    table.CheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
+                    table.CheckConstraint("CK_Listing_OrderQty", "([min_order_qty] IS NULL OR [min_order_qty] >= 1)\r\nAND ([max_order_qty] IS NULL OR [max_order_qty] >= 1)\r\nAND ([min_order_qty] IS NULL OR [max_order_qty] IS NULL OR [max_order_qty] >= [min_order_qty])");
+                    table.ForeignKey(
+                        name: "FK_listing_customer_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_product_type_product_type_id",
+                        column: x => x.product_type_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -829,36 +871,61 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "attribute_option",
+                name: "enum_attribute_option",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     key = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     position = table.Column<int>(type: "int", nullable: false),
-                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    enum_attribute_definition_id = table.Column<int>(type: "int", nullable: false),
                     parent_option_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_attribute_option", x => x.id);
+                    table.PrimaryKey("PK_enum_attribute_option", x => x.id);
                     table.ForeignKey(
-                        name: "FK_attribute_option_attribute_definition_attribute_definition_id",
-                        column: x => x.attribute_definition_id,
+                        name: "FK_enum_attribute_option_attribute_definition_enum_attribute_definition_id",
+                        column: x => x.enum_attribute_definition_id,
                         principalSchema: "catalog",
                         principalTable: "attribute_definition",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_attribute_option_attribute_option_parent_option_id",
+                        name: "FK_enum_attribute_option_enum_attribute_option_parent_option_id",
                         column: x => x.parent_option_id,
-                        principalTable: "attribute_option",
+                        principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "attribute_option_tr",
+                name: "listing_variant",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    variant_key = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    sku_code = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    price_override = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    inventory_qty = table.Column<int>(type: "int", nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing_variant", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_listing_variant_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "enum_attribute_option_tr",
                 schema: "i18n",
                 columns: table => new
                 {
@@ -868,18 +935,97 @@ namespace Peers.Modules.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_attribute_option_tr", x => new { x.entity_id, x.lang_code });
+                    table.PrimaryKey("PK_enum_attribute_option_tr", x => new { x.entity_id, x.lang_code });
                     table.ForeignKey(
-                        name: "FK_attribute_option_tr_attribute_option_entity_id",
+                        name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
                         column: x => x.entity_id,
-                        principalTable: "attribute_option",
+                        principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_attribute_option_tr_language_lang_code",
+                        name: "FK_enum_attribute_option_tr_language_lang_code",
                         column: x => x.lang_code,
                         principalSchema: "i18n",
                         principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "listing_attribute",
+                columns: table => new
+                {
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
+                    lookup_value_id = table.Column<int>(type: "int", nullable: true),
+                    attribute_kind = table.Column<int>(type: "int", nullable: false),
+                    value = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    position = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing_attribute", x => new { x.listing_id, x.attribute_definition_id });
+                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 5 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                    table.CheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_attribute_definition_attribute_definition_id",
+                        column: x => x.attribute_definition_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_enum_attribute_option_enum_attribute_option_id",
+                        column: x => x.enum_attribute_option_id,
+                        principalTable: "enum_attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_lookup_value_lookup_value_id",
+                        column: x => x.lookup_value_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "listing_variant_attribute",
+                columns: table => new
+                {
+                    listing_variant_id = table.Column<int>(type: "int", nullable: false),
+                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    attribute_option_id = table.Column<int>(type: "int", nullable: false),
+                    position = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing_variant_attribute", x => new { x.listing_variant_id, x.attribute_definition_id });
+                    table.CheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
+                    table.ForeignKey(
+                        name: "FK_listing_variant_attribute_attribute_definition_attribute_definition_id",
+                        column: x => x.attribute_definition_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_variant_attribute_enum_attribute_option_attribute_option_id",
+                        column: x => x.attribute_option_id,
+                        principalTable: "enum_attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_variant_attribute_listing_variant_listing_variant_id",
+                        column: x => x.listing_variant_id,
+                        principalTable: "listing_variant",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -956,29 +1102,6 @@ namespace Peers.Modules.Migrations
                 column: "lang_code");
 
             migrationBuilder.CreateIndex(
-                name: "IX_attribute_option_attribute_definition_id_key",
-                table: "attribute_option",
-                columns: new[] { "attribute_definition_id", "key" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_attribute_option_attribute_definition_id_position",
-                table: "attribute_option",
-                columns: new[] { "attribute_definition_id", "position" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_attribute_option_parent_option_id",
-                table: "attribute_option",
-                column: "parent_option_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_attribute_option_tr_lang_code",
-                schema: "i18n",
-                table: "attribute_option_tr",
-                column: "lang_code");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_client_app_info_android_store_link",
                 table: "client_app_info",
                 column: "android_store_link",
@@ -1028,6 +1151,102 @@ namespace Peers.Modules.Migrations
                 schema: "dbo",
                 table: "device",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_enum_attribute_option_enum_attribute_definition_id_key",
+                table: "enum_attribute_option",
+                columns: new[] { "enum_attribute_definition_id", "key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_enum_attribute_option_enum_attribute_definition_id_position",
+                table: "enum_attribute_option",
+                columns: new[] { "enum_attribute_definition_id", "position" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_enum_attribute_option_parent_option_id",
+                table: "enum_attribute_option",
+                column: "parent_option_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_enum_attribute_option_tr_lang_code",
+                schema: "i18n",
+                table: "enum_attribute_option_tr",
+                column: "lang_code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_product_type_id",
+                table: "listing",
+                column: "product_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_seller_id",
+                table: "listing",
+                column: "seller_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_attribute_attribute_definition_id",
+                table: "listing_attribute",
+                column: "attribute_definition_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_attribute_enum_attribute_option_id",
+                table: "listing_attribute",
+                column: "enum_attribute_option_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_attribute_listing_id_enum_attribute_option_id",
+                table: "listing_attribute",
+                columns: new[] { "listing_id", "enum_attribute_option_id" },
+                unique: true,
+                filter: "[enum_attribute_option_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_attribute_listing_id_lookup_value_id",
+                table: "listing_attribute",
+                columns: new[] { "listing_id", "lookup_value_id" },
+                unique: true,
+                filter: "[lookup_value_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_attribute_lookup_value_id",
+                table: "listing_attribute",
+                column: "lookup_value_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_is_active",
+                table: "listing_variant",
+                column: "is_active");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_listing_id_sku_code",
+                table: "listing_variant",
+                columns: new[] { "listing_id", "sku_code" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_listing_id_variant_key",
+                table: "listing_variant",
+                columns: new[] { "listing_id", "variant_key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_attribute_attribute_definition_id",
+                table: "listing_variant_attribute",
+                column: "attribute_definition_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_attribute_attribute_option_id",
+                table: "listing_variant_attribute",
+                column: "attribute_option_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_listing_variant_attribute_listing_variant_id_attribute_option_id",
+                table: "listing_variant_attribute",
+                columns: new[] { "listing_variant_id", "attribute_option_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_lookup_allowed_product_type_id_type_id",
@@ -1247,10 +1466,6 @@ namespace Peers.Modules.Migrations
                 schema: "i18n");
 
             migrationBuilder.DropTable(
-                name: "attribute_option_tr",
-                schema: "i18n");
-
-            migrationBuilder.DropTable(
                 name: "client_app_info");
 
             migrationBuilder.DropTable(
@@ -1260,6 +1475,16 @@ namespace Peers.Modules.Migrations
             migrationBuilder.DropTable(
                 name: "device_error",
                 schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "enum_attribute_option_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
+                name: "listing_attribute");
+
+            migrationBuilder.DropTable(
+                name: "listing_variant_attribute");
 
             migrationBuilder.DropTable(
                 name: "lookup_allowed",
@@ -1324,14 +1549,14 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
-                name: "attribute_option");
+                name: "enum_attribute_option");
+
+            migrationBuilder.DropTable(
+                name: "listing_variant");
 
             migrationBuilder.DropTable(
                 name: "lookup_value",
                 schema: "lookup");
-
-            migrationBuilder.DropTable(
-                name: "customer");
 
             migrationBuilder.DropTable(
                 name: "privacy_policy",
@@ -1357,19 +1582,28 @@ namespace Peers.Modules.Migrations
                 schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "app_user",
-                schema: "id");
+                name: "listing");
 
             migrationBuilder.DropTable(
                 name: "lookup_type",
                 schema: "lookup");
 
             migrationBuilder.DropTable(
+                name: "customer");
+
+            migrationBuilder.DropTable(
                 name: "product_type",
                 schema: "catalog");
 
+            migrationBuilder.DropTable(
+                name: "app_user",
+                schema: "id");
+
             migrationBuilder.DropSequence(
                 name: "app_user_seq");
+
+            migrationBuilder.DropSequence(
+                name: "listing_seq");
         }
     }
 }

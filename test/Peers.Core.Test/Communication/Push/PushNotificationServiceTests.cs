@@ -110,8 +110,8 @@ public class PushNotificationServiceTests
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["333", "444"] } };
 
         pushNotificationProblemReporterMoq
-            .Setup(p => p.ReportErrorsAsync(It.IsAny<ICollection<(string, ErrorCode, MessagingErrorCode?)>>()))
-            .Callback<ICollection<(string, ErrorCode, MessagingErrorCode?)>>(arg =>
+            .Setup(p => p.ReportErrorsAsync(It.IsAny<List<(string, ErrorCode, MessagingErrorCode?)>>()))
+            .Callback<List<(string, ErrorCode, MessagingErrorCode?)>>(arg =>
             {
                 Assert.Equal(3, arg.Count);
                 Assert.Equal("111", arg.ElementAt(0).Item1);
@@ -138,8 +138,8 @@ public class PushNotificationServiceTests
         var multicastMessages = new List<MulticastMessage> { new() { Notification = new() { Body = "Test" }, Tokens = ["333", "444"] } };
 
         pushNotificationProblemReporterMoq
-            .Setup(p => p.ReportErrorsAsync(It.IsAny<ICollection<(string, ErrorCode, MessagingErrorCode?)>>()))
-            .Callback<ICollection<(string, ErrorCode, MessagingErrorCode?)>>(arg =>
+            .Setup(p => p.ReportErrorsAsync(It.IsAny<List<(string, ErrorCode, MessagingErrorCode?)>>()))
+            .Callback<List<(string, ErrorCode, MessagingErrorCode?)>>(arg =>
             {
                 Assert.Equal(4, arg.Count);
                 Assert.Equal("111", arg.ElementAt(0).Item1);

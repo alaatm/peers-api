@@ -54,29 +54,29 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// <summary>
     /// The banning change history for this user.
     /// </summary>
-    public ICollection<UserStatusChange> StatusChangeHistory { get; set; } = default!;
+    public List<UserStatusChange> StatusChangeHistory { get; set; } = default!;
     /// <summary>
     /// List of acquired refresh tokens.
     /// </summary>
     /// <value></value>
-    public ICollection<RefreshToken> RefreshTokens { get; set; } = default!;
+    public List<RefreshToken> RefreshTokens { get; set; } = default!;
     /// <summary>
     /// List of registered devices for this user.
     /// </summary>
     /// <value></value>
-    public ICollection<Device> DeviceList { get; set; } = default!;
+    public List<Device> DeviceList { get; set; } = default!;
     /// <summary>
     /// List of notifications for this user.
     /// </summary>
     /// <value></value>
-    public ICollection<UserNotification> Notifications { get; set; } = default!;
+    public List<UserNotification> Notifications { get; set; } = default!;
     /// <summary>
     /// A list of app usage history for this user.
     /// </summary>
     /// <remarks>
     /// Recorded each time the user opens the app.
     /// </remarks>
-    public ICollection<AppUsageHistory> AppUsage { get; set; } = default!;
+    public List<AppUsageHistory> AppUsage { get; set; } = default!;
 
     /// <summary>
     /// Creates an account that supports two factor login via SMS.

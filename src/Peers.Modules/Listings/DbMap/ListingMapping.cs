@@ -70,22 +70,22 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
 
                 p.HasCheckConstraint($"CK_LA_{positionPropName}_NonNegative", $"[{positionColName}] >= 0");
                 p.HasCheckConstraint("CK_LA_OnePayload",
-                $"""
-                (
-                    [{attrKindColName}] IN ({primitiveAttrKinds}) AND [{valueColName}] IS NOT NULL
-                    AND [{enumOptionIdColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
-                )
-                OR
-                (
-                    [{attrKindColName}] = {(int)AttributeKind.Enum} AND [{enumOptionIdColName}] IS NOT NULL
-                    AND [{valueColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
-                )
-                OR
-                (
-                    [{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupValueIdColName}] IS NOT NULL
-                    AND [{valueColName}] IS NULL AND [{enumOptionIdColName}] IS NULL
-                )
-                """);
+                    $"""
+                    (
+                        [{attrKindColName}] IN ({primitiveAttrKinds}) AND [{valueColName}] IS NOT NULL
+                        AND [{enumOptionIdColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                    )
+                    OR
+                    (
+                        [{attrKindColName}] = {(int)AttributeKind.Enum} AND [{enumOptionIdColName}] IS NOT NULL
+                        AND [{valueColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                    )
+                    OR
+                    (
+                        [{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupValueIdColName}] IS NOT NULL
+                        AND [{valueColName}] IS NULL AND [{enumOptionIdColName}] IS NULL
+                    )
+                    """);
             });
         });
 
@@ -113,8 +113,8 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
             p.HasCheckConstraint($"CK_Listing_{orderQtyPropName}",
                 $"""
                 ([{minOrderQtyColName}] IS NULL OR [{minOrderQtyColName}] >= 1)
-                "AND ([{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= 1)
-                "AND ([{minOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= [{minOrderQtyColName}])"
+                AND ([{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= 1)
+                AND ([{minOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] IS NULL OR [{maxOrderQtyColName}] >= [{minOrderQtyColName}])
                 """
             );
         });

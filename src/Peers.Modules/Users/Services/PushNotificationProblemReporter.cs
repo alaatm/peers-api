@@ -26,7 +26,7 @@ public class PushNotificationProblemReporter : IPushNotificationProblemReporter
     /// <param name="errors">The errors.</param>
     /// <returns></returns>
     public async Task ReportErrorsAsync(
-        ICollection<(string, ErrorCode, MessagingErrorCode?)> errors)
+        List<(string, ErrorCode, MessagingErrorCode?)> errors)
     {
         await _context.PushNotificationProblems.AddRangeAsync(errors
             .Select(p => new Domain.PushNotificationProblem
