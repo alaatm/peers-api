@@ -54,6 +54,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
         }
 
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        ConfigureProductTypeLineageFunc(builder);
     }
 
     public async Task<int> AcquireAppLockAsync(IDbContextTransaction trx, string resource, int timeoutMs, CancellationToken ct)
@@ -85,4 +86,40 @@ public sealed class PeersContext : DbContextBase<AppUser>
         var rcObj = await cmd.ExecuteScalarAsync(ct);
         return Convert.ToInt32(rcObj, CultureInfo.InvariantCulture);
     }
+
+    #region ProductTypeLineageFunc
+    private void ConfigureProductTypeLineageFunc(ModelBuilder builder)
+    {
+        builder
+            .Entity<ProductTypeLineageRow>()
+            .ToFunction(Migrations.ProductTypeLineageFunc.FullName);
+        builder
+            .HasDbFunction(typeof(PeersContext).GetMethod(nameof(ProductTypeLineage), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(int)])!)
+            .HasName(Migrations.ProductTypeLineageFunc.Name)
+            .HasSchema(Migrations.ProductTypeLineageFunc.Schema);
+    }
+
+    public IQueryable<ProductType> ProductTypeAncestors(int productTypeId)
+        => from p in ProductTypeLineage(productTypeId)
+           where p.Lvl <= 0 // root → current
+           join t in ProductTypes on p.Id equals t.Id
+           orderby p.Lvl
+           select t;
+
+    public IQueryable<ProductType> ProductTypeTree(int productTypeId)
+        => from p in ProductTypeLineage(productTypeId)
+           join t in ProductTypes on p.Id equals t.Id
+           orderby p.Lvl
+           select t;
+
+    private IQueryable<ProductTypeLineageRow> ProductTypeLineage(int startNodeId)
+        => FromExpression(() => ProductTypeLineage(startNodeId));
+
+    private sealed class ProductTypeLineageRow
+    {
+        public int Id { get; set; }
+        public int? ParentId { get; set; }
+        public int Lvl { get; set; } // 0=center, negative=ancestors, positive=descendants
+    }
+    #endregion
 }

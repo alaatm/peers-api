@@ -900,6 +900,34 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "listing_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_listing_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_listing_tr_listing_entity_id",
+                        column: x => x.entity_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "listing_variant",
                 columns: table => new
                 {
@@ -1216,6 +1244,12 @@ namespace Peers.Modules.Migrations
                 column: "lookup_value_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_listing_tr_lang_code",
+                schema: "i18n",
+                table: "listing_tr",
+                column: "lang_code");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_listing_variant_is_active",
                 table: "listing_variant",
                 column: "is_active");
@@ -1482,6 +1516,10 @@ namespace Peers.Modules.Migrations
 
             migrationBuilder.DropTable(
                 name: "listing_attribute");
+
+            migrationBuilder.DropTable(
+                name: "listing_tr",
+                schema: "i18n");
 
             migrationBuilder.DropTable(
                 name: "listing_variant_attribute");

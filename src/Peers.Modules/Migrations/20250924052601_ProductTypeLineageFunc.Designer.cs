@@ -13,8 +13,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20250923114148_Initial")]
-    partial class Initial
+    [Migration("20250924052601_ProductTypeLineageFunc")]
+    partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -492,6 +492,25 @@ namespace Peers.Modules.Migrations
                     b.ToTable("language", "i18n");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Kernel.PeersContext+ProductTypeLineageRow", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Lvl")
+                        .HasColumnType("int")
+                        .HasColumnName("lvl");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_id");
+
+                    b.ToTable((string)null);
+
+                    b.ToFunction("catalog.ufn_ProductTypeLineage");
+                });
+
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
                 {
                     b.Property<int>("Id")
@@ -630,6 +649,36 @@ namespace Peers.Modules.Migrations
                         .IsUnique();
 
                     b.ToTable("listing_variant", (string)null);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.Translations.ListingTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("title");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("listing_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
@@ -1917,6 +1966,21 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Listing");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Listings.Domain.Translations.ListingTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Listings.Domain.Listing", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
                 {
                     b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "ChildValue")
@@ -2182,6 +2246,8 @@ namespace Peers.Modules.Migrations
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
                 {
+                    b.Navigation("Translations");
+
                     b.Navigation("Variants");
                 });
 

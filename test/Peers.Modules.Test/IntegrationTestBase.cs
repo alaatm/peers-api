@@ -6,6 +6,19 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using FirebaseAdmin.Messaging;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Time.Testing;
 using Peers.Core;
 using Peers.Core.Background;
 using Peers.Core.Commands;
@@ -21,23 +34,11 @@ using Peers.Core.Localization;
 using Peers.Core.Security.Hashing;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Kernel.Pipelines;
+using Peers.Modules.Migrations;
 using Peers.Modules.Users.Commands;
 using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Domain;
 using Peers.Modules.Users.Events;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Time.Testing;
 
 namespace Peers.Modules.Test;
 
@@ -573,7 +574,9 @@ public abstract partial class IntegrationTestBase
         if (!_dbCreated)
         {
             using var scope = Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<PeersContext>().Database.EnsureCreated();
+            var context = scope.ServiceProvider.GetRequiredService<PeersContext>();
+            context.Database.EnsureCreated();
+            context.Database.ExecuteSqlRaw(ProductTypeLineageFunc.UpSql(checkExist: true));
             _dbCreated = true;
         }
 
