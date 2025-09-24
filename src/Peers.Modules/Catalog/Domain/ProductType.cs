@@ -127,7 +127,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.ChildAlreadyExists(name.Trim()));
         }
 
-        var child = new ProductType(Kind, childSlug, $"{Slug}/{childSlug}", isSelectable, version ?? Version);
+        var child = new ProductType(Kind, childSlug, $"{SlugPath}/{childSlug}", isSelectable, version ?? Version);
         Children.Add(child);
 
         if (copyAttributes)
@@ -616,24 +616,6 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         return false;
     }
 
-    // Build the full lineage tree (ancestors + self + descendants)
-    private List<ProductType> BuildLineageTree(bool reverse = false)
-    {
-        var ancestors = BuildAncestorChain(reverse: reverse);
-        var descendants = BuildDescendantsChain(reverse: reverse);
-
-        if (reverse)
-        {
-            descendants.AddRange(ancestors);
-            return descendants;
-        }
-        else
-        {
-            ancestors.AddRange(descendants);
-            return ancestors;
-        }
-    }
-
     // Build ancestor chain from root to this (self inclusive)
     private List<ProductType> BuildAncestorChain(bool reverse = false, bool includeSelf = true)
     {
@@ -657,29 +639,6 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             if (includeSelf || node != this)
             {
                 chain.Add(node);
-            }
-        }
-    }
-
-    // Build descendants chain from this to leaves (self exclusive)
-    private List<ProductType> BuildDescendantsChain(bool reverse = false)
-    {
-        var chain = new List<ProductType>();
-        CollectDescendants(this);
-
-        if (reverse)
-        {
-            chain.Reverse();
-        }
-
-        return chain;
-
-        void CollectDescendants(ProductType node)
-        {
-            foreach (var c in node.Children)
-            {
-                chain.Add(c);
-                CollectDescendants(c);
             }
         }
     }
