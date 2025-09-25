@@ -61,7 +61,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <summary>
     /// The list of allowed lookup values for lookup attributes in this product type.
     /// </summary>
-    public List<LookupAllowed> LookupAllowedList { get; private set; } = default!;
+    public List<LookupAllowed> AllowedLookups { get; private set; } = default!;
     /// <summary>
     /// The list of translations associated with this product type.
     /// </summary>
@@ -80,7 +80,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         Version = version;
         Children = [];
         Attributes = [];
-        LookupAllowedList = [];
+        AllowedLookups = [];
         Translations = [];
     }
 
@@ -164,10 +164,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         {
             AttributeSchemaCloner.CopyFrom(this, next);
 
-            // Copy LookupAllowed entries only if attributes were copied
-            foreach (var la in LookupAllowedList)
+            // Copy allowed lookup entries only if attributes were copied
+            foreach (var la in AllowedLookups)
             {
-                next.LookupAllowedList.Add(new LookupAllowed(next, la.Value));
+                next.AllowedLookups.Add(new LookupAllowed(next, la.Value));
             }
         }
 
@@ -320,10 +320,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             }
         }
 
-        // Remove associated LookupAllowed entries
+        // Remove associated allowed lookup entries
         if (attr is LookupAttributeDefinition lookupAttr)
         {
-            LookupAllowedList.RemoveAll(la => la.Value.Type == lookupAttr.LookupType);
+            AllowedLookups.RemoveAll(la => la.Value.Type == lookupAttr.LookupType);
         }
 
         Attributes.Remove(attr);
@@ -391,7 +391,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        // Ensure the value is a member of that ancestor's allow-list
+        // Ensure the value is a member of the ancestor's allow-list
 
         if (TryGetNearestAllowedSet(includeSelf: false, value.Type, out var owner, out var ancestorSet) &&
             !ancestorSet.Contains(value))
@@ -403,12 +403,12 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         // making this the topmost node.
 
         // prevent local duplicates
-        if (LookupAllowedList.Any(a => a.Value == value))
+        if (AllowedLookups.Any(a => a.Value == value))
         {
             throw new DomainException(E.DuplicateAllowedLookupValues([value.Key]));
         }
 
-        LookupAllowedList.Add(new LookupAllowed(this, value));
+        AllowedLookups.Add(new LookupAllowed(this, value));
     }
 
     public void RemoveAllowedLookup([NotNull] LookupValue value)
@@ -418,12 +418,12 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (LookupAllowedList.SingleOrDefault(a => a.Value == value) is not { } existing)
+        if (AllowedLookups.SingleOrDefault(a => a.Value == value) is not { } existing)
         {
             throw new DomainException(E.LookupValueNotFound(value.Key));
         }
 
-        LookupAllowedList.Remove(existing);
+        AllowedLookups.Remove(existing);
     }
 
     /// <summary>
@@ -507,7 +507,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
 
         // Stale types: allow-list entries whose type isn't in the schema
-        var staleLookupTypeKeys = LookupAllowedList
+        var staleLookupTypeKeys = AllowedLookups
             .Where(la => !usedLookupTypes.Contains(la.Value.Type))
             .Select(la => la.Value.Type.Key)
             .Distinct()
@@ -531,7 +531,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
 
         // Ensure no duplicate values in allow-list (same value added more than once)
-        var duplicateAllowedValues = LookupAllowedList
+        var duplicateAllowedValues = AllowedLookups
             .GroupBy(a => a.Value)
             .Where(g => g.Count() > 1)
             .Select(g => g.Key.Key)
@@ -543,12 +543,12 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
 
         // Build local map: type -> {values}
-        var localAllowedByType = LookupAllowedList
+        var localAllowedByType = AllowedLookups
             .GroupBy(a => a.Value.Type)
             .ToDictionary(g => g.Key, g => g.Select(a => a.Value).ToHashSet());
 
-        // 4) Subset-of-nearest-ancestor: if this PT declares entries for a type,
-        //    they must be a subset of the nearest ancestor's entries for that type (if any).
+        // Subset-of-nearest-ancestor: if this PT declares entries for a type,
+        // they must be a subset of the nearest ancestor's entries for that type (if any).
         foreach (var (lookupType, localSet) in localAllowedByType)
         {
             if (!TryGetNearestAllowedSet(includeSelf: false, lookupType, out var ancestor, out var ancestorSet))
@@ -559,7 +559,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
 
             if (!localSet.IsSubsetOf(ancestorSet))
             {
-                var offendingKeys = LookupAllowedList
+                var offendingKeys = AllowedLookups
                     .Where(a => a.Value.Type == lookupType && !ancestorSet.Contains(a.Value))
                     .Select(a => a.Value.Key)
                     .Distinct()
@@ -570,7 +570,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
 
         //// disallow deprecated/inactive items at publish time
-        //var invalidItems = LookupAllowedList
+        //var invalidItems = AllowedLookups
         //    .Where(la => la.Value.Status != LookupStatus.Active)
         //    .Select(p => p.Value.Type)
         //    .ToArray();
@@ -591,22 +591,21 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         allowSet = [];
 
         // Start from self -or- parent and walk up the ancestor chain
-        // Find nearest ancestor that has entries for the value's lookup type
-        foreach (var t in BuildAncestorChain(reverse: true, includeSelf: includeSelf))
+        // Find nearest node (including self, if set) that has entries for the value's lookup type
+        foreach (var t in BuildChain(reverse: true, includeSelf: includeSelf))
         {
-            if (t.LookupAllowedList.Any(a => a.Value.Type == lookupType))
+            if (t.AllowedLookups.Any(a => a.Value.Type == lookupType))
             {
                 owner = t;
                 break;
             }
         }
 
-        // If lookup type is found at an ancestor, ensure the value is a member of that ancestor's allow-list,
-        // if not found, this is the topmost node and any value is allowed.
+        // If lookup type is found, return all lookup values of that type from the owner node
 
         if (owner is not null)
         {
-            allowSet = [.. owner.LookupAllowedList
+            allowSet = [.. owner.AllowedLookups
                 .Where(a => a.Value.Type == lookupType)
                 .Select(a => a.Value)];
 
@@ -617,7 +616,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     }
 
     // Build ancestor chain from root to this (self inclusive)
-    private List<ProductType> BuildAncestorChain(bool reverse = false, bool includeSelf = true)
+    private List<ProductType> BuildChain(bool reverse = false, bool includeSelf = true)
     {
         var chain = new List<ProductType>();
         CollectAncestors(this);

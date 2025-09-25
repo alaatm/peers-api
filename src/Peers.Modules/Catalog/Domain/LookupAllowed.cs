@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Peers.Modules.Lookup.Domain;
 
 namespace Peers.Modules.Catalog.Domain;
@@ -16,6 +17,7 @@ namespace Peers.Modules.Catalog.Domain;
 /// - Rows are copied when creating a next version of the same product type; not copied to children.
 /// - When the last <c>LookupAttributeDefinition</c> of a TypeId is removed, prune corresponding rows.
 /// </remarks>
+[DebuggerDisplay("{ProductType.SlugPath,nq}: {Value,nq}")]
 public sealed class LookupAllowed
 {
     /// <summary>

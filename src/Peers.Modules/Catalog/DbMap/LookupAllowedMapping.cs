@@ -13,7 +13,7 @@ internal sealed class LookupAllowedMapping : IEntityTypeConfiguration<LookupAllo
 
         builder
             .HasOne(p => p.ProductType)
-            .WithMany(p => p.LookupAllowedList)
+            .WithMany(p => p.AllowedLookups)
             .HasForeignKey(c => c.ProductTypeId)
             .OnDelete(DeleteBehavior.Cascade);
 
