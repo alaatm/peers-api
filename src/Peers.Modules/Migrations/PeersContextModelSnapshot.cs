@@ -503,9 +503,11 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("parent_id");
 
+                    b.HasKey("Id");
+
                     b.ToTable((string)null);
 
-                    b.ToFunction("catalog.ufn_ProductTypeLineage");
+                    b.ToFunction("[catalog].[ufn_ProductTypeLineage]");
                 });
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
@@ -530,6 +532,11 @@ namespace Peers.Modules.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("description");
+
+                    b.Property<string>("Hashtag")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("hashtag");
 
                     b.Property<int>("ProductTypeId")
                         .HasColumnType("int")
@@ -580,8 +587,9 @@ namespace Peers.Modules.Migrations
 
                     b.HasIndex("ProductTypeId");
 
-                    b.HasIndex("SellerId")
-                        .IsUnique();
+                    b.HasIndex("SellerId", "Hashtag")
+                        .IsUnique()
+                        .HasFilter("[hashtag] IS NOT NULL");
 
                     b.ToTable("listing", null, t =>
                         {
@@ -1710,7 +1718,7 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
                 {
                     b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
-                        .WithMany("LookupAllowedList")
+                        .WithMany("LookupsAllowed")
                         .HasForeignKey("ProductTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2236,7 +2244,7 @@ namespace Peers.Modules.Migrations
 
                     b.Navigation("Children");
 
-                    b.Navigation("LookupAllowedList");
+                    b.Navigation("LookupsAllowed");
 
                     b.Navigation("Translations");
                 });

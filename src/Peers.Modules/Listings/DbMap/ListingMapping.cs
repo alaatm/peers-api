@@ -11,8 +11,13 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
     {
         var minOrderQtyPropName = $"{nameof(OrderQtyPolicy.Min)}{nameof(Listing.OrderQty)}";
         var maxOrderQtyPropName = $"{nameof(OrderQtyPolicy.Max)}{nameof(Listing.OrderQty)}";
+        var hashTagColName = nameof(Listing.Hashtag).Underscore();
 
-        builder.HasIndex(p => new { p.SellerId }).IsUnique();
+        builder.HasIndex(p => new { p.SellerId, p.Hashtag })
+            .HasFilter($"[{hashTagColName}] IS NOT NULL")
+            .IsUnique();
+
+        builder.Property(p => p.Hashtag).HasMaxLength(64);
         builder.Property(p => p.Title).HasMaxLength(256);
 
         // Concurrency token

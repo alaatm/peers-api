@@ -1,4 +1,5 @@
 using Humanizer;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Peers.Modules;
 using Peers.Modules.Catalog.Domain;
 
@@ -10,6 +11,11 @@ public partial class ProductTypeLineageFunc
     public const string Name = "ufn_ProductTypeLineage";
     public const string FullName = $"[{Schema}].[{Name}]";
 
+    /// <inheritdoc />
+    protected override void Up([NotNull] MigrationBuilder migrationBuilder) => migrationBuilder.Sql(UpSql());
+    /// <inheritdoc />
+    protected override void Down([NotNull] MigrationBuilder migrationBuilder) => migrationBuilder.Sql(DownSql());
+
     internal static string UpSql(bool checkExist = false)
     {
         var tbl = nameof(ProductType).Underscore();
@@ -19,7 +25,7 @@ public partial class ProductTypeLineageFunc
 
         return
             $"""
-            CREATE {existsSql}FUNCTION[{Schema}].[{Name}] (@startNodeId int)
+            CREATE {existsSql}FUNCTION [{Schema}].[{Name}] (@startNodeId int)
             RETURNS TABLE
             AS
             RETURN

@@ -690,6 +690,7 @@ namespace Peers.Modules.Migrations
                     product_type_version = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    hashtag = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -1209,10 +1210,11 @@ namespace Peers.Modules.Migrations
                 column: "product_type_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_seller_id",
+                name: "IX_listing_seller_id_hashtag",
                 table: "listing",
-                column: "seller_id",
-                unique: true);
+                columns: new[] { "seller_id", "hashtag" },
+                unique: true,
+                filter: "[hashtag] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_listing_attribute_attribute_definition_id",

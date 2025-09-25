@@ -39,6 +39,10 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
     /// <summary>
+    /// A unique hashtag for the listing, used for easy reference and sharing.
+    /// </summary>
+    public string? Hashtag { get; private set; }
+    /// <summary>
     /// The title of the listing.
     /// </summary>
     public string Title { get; private set; } = default!;
@@ -86,6 +90,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     /// <param name="productType">The product type to associate with the listing. Must be published and selectable.</param>
     /// <param name="title">The title of the listing.</param>
     /// <param name="description">An optional description of the listing.</param>
+    /// <param name="hashtag">An optional unique hashtag for the listing.</param>
     /// <param name="price">The base price for the listing.</param>
     /// <param name="minOrderQty">The minimum order quantity allowed for the listing, or null if there is no minimum.</param>
     /// <param name="maxOrderQty">The maximum order quantity allowed for the listing, or null if there is no maximum.</param>
@@ -95,6 +100,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         [NotNull] ProductType productType,
         [NotNull] string title,
         string? description,
+        string? hashtag,
         decimal price,
         int? minOrderQty,
         int? maxOrderQty,
@@ -119,6 +125,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             UpdatedAt = date,
             Title = title.Trim(),
             Description = description?.Trim(),
+            Hashtag = hashtag?.Trim(),
             BasePrice = price,
             State = ListingState.Draft,
             OrderQty = OrderQtyPolicy.Create(minOrderQty, maxOrderQty),
