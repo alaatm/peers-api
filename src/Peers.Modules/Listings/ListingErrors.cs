@@ -88,4 +88,12 @@ public static class ListingErrors
     /// Maximum order quantity must be greater than or equal to minimum order quantity.
     /// </summary>
     public static DomainError MaxOrderQtyMustBeGreaterThanOrEqualToMin => new(Titles.ValidationFailed, "listing.max-order-qty-must-be-greater-than-or-equal-to-min");
+    /// <summary>
+    /// The variant with SKU '{0}' could not be found.
+    /// </summary>
+    public static DomainError VariantNotFound(string sku) => new(Titles.NotFound, "listing.variant-not-found", sku);
+    /// <summary>
+    /// The variant with SKU '{0}' is inactive.
+    /// </summary>
+    public static DomainError VariantInactive(string sku) => new(Titles.ValidationFailed, "listing.variant-inactive", sku);
 }

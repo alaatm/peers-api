@@ -259,4 +259,36 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     //    State = ListingState.Published;
     //    UpdatedAt = DateTime.UtcNow;
     //}
+
+    /// <summary>
+    /// Updates the stock quantity for the variant identified by the specified SKU.
+    /// </summary>
+    /// <param name="sku">The SKU code of the variant whose stock quantity will be updated. Must correspond to an existing variant.</param>
+    /// <param name="newQty">The new stock quantity to set for the variant.</param>
+    public void UpdateStockQuantity(string sku, int newQty)
+    {
+        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        {
+            throw new DomainException(E.VariantNotFound(sku));
+        }
+
+        variant.UpdateStockQuantity(newQty);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the price of the variant identified by the specified SKU code.
+    /// </summary>
+    /// <param name="sku">The SKU code of the variant whose price will be updated. Must correspond to an existing variant.</param>
+    /// <param name="newPrice">The new price to assign to the variant.</param>
+    public void UpdatePrice(string sku, decimal newPrice)
+    {
+        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        {
+            throw new DomainException(E.VariantNotFound(sku));
+        }
+
+        variant.UpdatePrice(newPrice);
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
