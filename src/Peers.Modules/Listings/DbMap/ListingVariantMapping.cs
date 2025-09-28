@@ -1,6 +1,7 @@
 using Humanizer;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Peers.Modules.Listings.Domain;
+using Peers.Modules.Listings.Domain.Logistics;
 
 namespace Peers.Modules.Listings.DbMap;
 
@@ -20,10 +21,25 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
         builder.Property<byte[]>("RowVersion").IsRowVersion();
 
         // Parent (Listing)
-        builder.HasOne(p => p.Listing)
+        builder
+            .HasOne(p => p.Listing)
             .WithMany(l => l.Variants)
             .HasForeignKey(p => p.ListingId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.ComplexProperty(p => p.Logistics, nav =>
+        {
+            nav.ComplexProperty(p => p.Dimensions, nav =>
+            {
+                nav.Property(p => p.Length).HasColumnName($"logi_dim_{nameof(Dimensions.Length).Underscore()}");
+                nav.Property(p => p.Width).HasColumnName($"logi_dim_{nameof(Dimensions.Width).Underscore()}");
+                nav.Property(p => p.Height).HasColumnName($"logi_dim_{nameof(Dimensions.Height).Underscore()}");
+            });
+            nav.Property(p => p.Weight).HasColumnName($"logi_{nameof(LogisticsProfile.Weight).Underscore()}").HasColumnType("decimal(10,3)");
+            nav.Property(p => p.Fragile).HasColumnName($"logi_{nameof(LogisticsProfile.Fragile).Underscore()}");
+            nav.Property(p => p.Hazmat).HasColumnName($"logi_{nameof(LogisticsProfile.Hazmat).Underscore()}");
+            nav.Property(p => p.TemperatureControl).HasColumnName($"logi_{nameof(LogisticsProfile.TemperatureControl).Underscore()}");
+        });
 
         builder.OwnsMany(p => p.Attributes, nav =>
         {

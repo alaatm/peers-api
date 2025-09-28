@@ -74,6 +74,10 @@ public sealed class MediaFile : Entity, IAggregateRoot
     /// The customer who uploaded the media file.
     /// </summary>
     public Customer Customer { get; private set; } = default!;
+    /// <summary>
+    /// The entity id associated with the media file, such as customer id, shipment id, etc..
+    /// </summary>
+    public int EntityId { get; private set; }
 
     /// <summary>
     /// The file stream attached when performing actual upload.
@@ -90,7 +94,8 @@ public sealed class MediaFile : Entity, IAggregateRoot
         string? description,
         MediaType type,
         string contentType,
-        int customerId)
+        int customerId,
+        int entityId)
     {
         BatchId = batchId;
         MediaUrl = storage.GetBlobUri(ContainerName, Guid.NewGuid().ToString("N"));
@@ -101,6 +106,7 @@ public sealed class MediaFile : Entity, IAggregateRoot
         ContentType = contentType;
         Status = UploadStatus.Pending;
         CustomerId = customerId;
+        EntityId = entityId;
     }
 
     public static MediaFile CreateCustomerMedia(
@@ -112,7 +118,7 @@ public sealed class MediaFile : Entity, IAggregateRoot
         int customerId)
     {
         Debug.Assert(MediaMaps.MediaTypeToEntity[type] == nameof(Customer));
-        return Create(storage, batchId, date, null, type, contentType, customerId);
+        return Create(storage, batchId, date, null, type, contentType, customerId, customerId);
     }
 
     private static MediaFile Create(
@@ -122,9 +128,10 @@ public sealed class MediaFile : Entity, IAggregateRoot
         string? description,
         MediaType type,
         string contentType,
-        int customerId)
+        int customerId,
+        int entityId)
     {
-        var media = new MediaFile(storage, batchId, date, description, type, contentType, customerId);
+        var media = new MediaFile(storage, batchId, date, description, type, contentType, customerId, entityId);
 
         if (MediaMaps.MediaTypeToCategory.TryGetValue(type, out var category))
         {
@@ -180,7 +187,7 @@ public sealed class MediaFile : Entity, IAggregateRoot
         Debug.Assert(Category is MediaCategory.Image, "Only image media can have thumbnails.");
         Debug.Assert(Thumbnail is null, "Thumbnail must be null to create a new one.");
 
-        Thumbnail = new MediaFile(storage, BatchId, CreatedAt, null, Type, "image/jpeg", CustomerId)
+        Thumbnail = new MediaFile(storage, BatchId, CreatedAt, null, Type, "image/jpeg", CustomerId, EntityId)
         {
             Category = MediaCategory.Image,
             Original = this

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Peers.Modules.Kernel;
 
 #nullable disable
@@ -13,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20250925081950_Initial")]
-    partial class Initial
+    [Migration("20250928223211_ProductTypeLineageFunc")]
+    partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -573,17 +574,52 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "OrderQty", "Peers.Modules.Listings.Domain.Listing.OrderQty#OrderQtyPolicy", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "FulfillmentPreferences", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences", b1 =>
                         {
                             b1.IsRequired();
 
-                            b1.Property<int?>("Max")
-                                .HasColumnType("int")
-                                .HasColumnName("max_order_qty");
+                            b1.Property<bool>("AllowPayOnDelivery")
+                                .HasColumnType("bit")
+                                .HasColumnName("fp_allow_pay_on_delivery");
 
-                            b1.Property<int?>("Min")
+                            b1.Property<int>("Method")
                                 .HasColumnType("int")
-                                .HasColumnName("min_order_qty");
+                                .HasColumnName("fp_method");
+
+                            b1.Property<bool>("NonReturnable")
+                                .HasColumnType("bit")
+                                .HasColumnName("non_returnable");
+
+                            b1.Property<int>("ReturnPayer")
+                                .HasColumnType("int")
+                                .HasColumnName("fp_return_payer");
+
+                            b1.Property<int>("ShippingPayer")
+                                .HasColumnType("int")
+                                .HasColumnName("fp_shipping_payer");
+
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "OrderQty", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.OrderQty#OrderQtyPolicy", b2 =>
+                                {
+                                    b2.Property<int>("Max")
+                                        .HasColumnType("int")
+                                        .HasColumnName("fp_oqp_max");
+
+                                    b2.Property<int>("Min")
+                                        .HasColumnType("int")
+                                        .HasColumnName("fp_oqp_min");
+                                });
+
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "ServiceArea", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.ServiceArea#ServiceArea", b2 =>
+                                {
+                                    b2.Property<Point>("Center")
+                                        .IsRequired()
+                                        .HasColumnType("geography")
+                                        .HasColumnName("fp_sa_center");
+
+                                    b2.Property<double>("Radius")
+                                        .HasColumnType("float")
+                                        .HasColumnName("fp_sa_radius");
+                                });
                         });
 
                     b.HasKey("Id");
@@ -598,7 +634,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
 
-                            t.HasCheckConstraint("CK_Listing_OrderQty", "([min_order_qty] IS NULL OR [min_order_qty] >= 1)\r\nAND ([max_order_qty] IS NULL OR [max_order_qty] >= 1)\r\nAND ([min_order_qty] IS NULL OR [max_order_qty] IS NULL OR [max_order_qty] >= [min_order_qty])");
+                            t.HasCheckConstraint("CK_Listing_OrderQty", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
                         });
                 });
 
@@ -611,10 +647,6 @@ namespace Peers.Modules.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("InventoryQty")
-                        .HasColumnType("int")
-                        .HasColumnName("inventory_qty");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
                         .HasColumnName("is_active");
@@ -623,10 +655,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("listing_id");
 
-                    b.Property<decimal?>("PriceOverride")
+                    b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
-                        .HasColumnName("price_override");
+                        .HasColumnName("price");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -640,11 +672,51 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(128)")
                         .HasColumnName("sku_code");
 
+                    b.Property<int?>("StockQty")
+                        .HasColumnType("int")
+                        .HasColumnName("stock_qty");
+
                     b.Property<string>("VariantKey")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("variant_key");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Logistics", "Peers.Modules.Listings.Domain.ListingVariant.Logistics#LogisticsProfile", b1 =>
+                        {
+                            b1.Property<bool>("Fragile")
+                                .HasColumnType("bit")
+                                .HasColumnName("logi_fragile");
+
+                            b1.Property<bool>("Hazmat")
+                                .HasColumnType("bit")
+                                .HasColumnName("logi_hazmat");
+
+                            b1.Property<int>("TemperatureControl")
+                                .HasColumnType("int")
+                                .HasColumnName("logi_temperature_control");
+
+                            b1.Property<decimal>("Weight")
+                                .HasColumnType("decimal(10,3)")
+                                .HasColumnName("logi_weight");
+
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "Dimensions", "Peers.Modules.Listings.Domain.ListingVariant.Logistics#LogisticsProfile.Dimensions#Dimensions", b2 =>
+                                {
+                                    b2.IsRequired();
+
+                                    b2.Property<double>("Height")
+                                        .HasColumnType("float")
+                                        .HasColumnName("logi_dim_height");
+
+                                    b2.Property<double>("Length")
+                                        .HasColumnType("float")
+                                        .HasColumnName("logi_dim_length");
+
+                                    b2.Property<double>("Width")
+                                        .HasColumnType("float")
+                                        .HasColumnName("logi_dim_width");
+                                });
+                        });
 
                     b.HasKey("Id");
 
@@ -835,6 +907,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("description");
 
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
                     b.Property<string>("MediaUrl")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -866,6 +942,8 @@ namespace Peers.Modules.Migrations
                     b.HasIndex("Category");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("EntityId");
 
                     b.HasIndex("Status");
 

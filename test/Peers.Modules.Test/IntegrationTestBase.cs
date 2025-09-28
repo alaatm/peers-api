@@ -162,7 +162,7 @@ public abstract partial class IntegrationTestBase
         IdentityCheckBehaviorOptions.Enabled = false;
         var serviceCollection = new ServiceCollection()
             .AddSingleton(_configuration)
-            .AddPeers(_configuration, cfg => cfg.UseSqlServer(_configuration.GetConnectionString("Default"))/*.EnableSensitiveDataLogging(true)*/)
+            .AddPeers(_configuration, cfg => cfg.UseSqlServer(_configuration.GetConnectionString("Default"), p => p.UseNetTopologySuite())/*.EnableSensitiveDataLogging(true)*/)
             .Replace(new ServiceDescriptor(typeof(IIdentityInfo), IdentityMoq.Object))
             .Replace(new ServiceDescriptor(typeof(IHmacHash), HmacHashMoq.Object))
             .Replace(new ServiceDescriptor(typeof(ISmsService), _smsMoq.Object))

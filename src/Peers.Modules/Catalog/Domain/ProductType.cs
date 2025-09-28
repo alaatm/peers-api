@@ -431,6 +431,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// </summary>
     public void Publish()
     {
+        if (State is ProductTypeState.Published)
+        {
+            throw new DomainException(E.AlreadyPublished);
+        }
         if (State is not ProductTypeState.Draft)
         {
             throw new DomainException(E.NotDraft);

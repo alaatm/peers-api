@@ -41,7 +41,7 @@ public sealed class PeersContextTests
     {
         Skip.If(TestConfig.IsCi && RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
 
-        var options = new DbContextOptionsBuilder<PeersContext>().UseSqlServer(_connStr).Options;
+        var options = new DbContextOptionsBuilder<PeersContext>().UseSqlServer(_connStr, p => p.UseNetTopologySuite()).Options;
         using var context = new PeersContext(options);
         context.Database.EnsureDeleted();
 

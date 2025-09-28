@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
                 cfg.EnableThreadSafetyChecks(false);
 #endif
                 cfg.UseSqlServer(config.GetConnectionString("Default"), p => p
+                    .UseNetTopologySuite()
                     .EnableRetryOnFailure(5)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     .UseParameterizedCollectionMode(ParameterTranslationMode.Constant));

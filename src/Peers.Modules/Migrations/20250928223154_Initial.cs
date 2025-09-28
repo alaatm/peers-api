@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
@@ -696,14 +697,21 @@ namespace Peers.Modules.Migrations
                     base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     state = table.Column<int>(type: "int", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    max_order_qty = table.Column<int>(type: "int", nullable: true),
-                    min_order_qty = table.Column<int>(type: "int", nullable: true)
+                    fp_allow_pay_on_delivery = table.Column<bool>(type: "bit", nullable: false),
+                    fp_method = table.Column<int>(type: "int", nullable: false),
+                    non_returnable = table.Column<bool>(type: "bit", nullable: false),
+                    fp_return_payer = table.Column<int>(type: "int", nullable: false),
+                    fp_shipping_payer = table.Column<int>(type: "int", nullable: false),
+                    fp_oqp_max = table.Column<int>(type: "int", nullable: true),
+                    fp_oqp_min = table.Column<int>(type: "int", nullable: true),
+                    fp_sa_center = table.Column<Point>(type: "geography", nullable: true),
+                    fp_sa_radius = table.Column<double>(type: "float", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_listing", x => x.id);
                     table.CheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
-                    table.CheckConstraint("CK_Listing_OrderQty", "([min_order_qty] IS NULL OR [min_order_qty] >= 1)\r\nAND ([max_order_qty] IS NULL OR [max_order_qty] >= 1)\r\nAND ([min_order_qty] IS NULL OR [max_order_qty] IS NULL OR [max_order_qty] >= [min_order_qty])");
+                    table.CheckConstraint("CK_Listing_OrderQty", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
                     table.ForeignKey(
                         name: "FK_listing_customer_seller_id",
                         column: x => x.seller_id,
@@ -737,7 +745,8 @@ namespace Peers.Modules.Migrations
                     size_in_bytes = table.Column<long>(type: "bigint", nullable: true),
                     status = table.Column<int>(type: "int", nullable: false),
                     thumbnail_id = table.Column<int>(type: "int", nullable: true),
-                    customer_id = table.Column<int>(type: "int", nullable: false)
+                    customer_id = table.Column<int>(type: "int", nullable: false),
+                    entity_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -937,10 +946,17 @@ namespace Peers.Modules.Migrations
                     listing_id = table.Column<int>(type: "int", nullable: false),
                     variant_key = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     sku_code = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    price_override = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    inventory_qty = table.Column<int>(type: "int", nullable: true),
+                    price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    stock_qty = table.Column<int>(type: "int", nullable: true),
                     is_active = table.Column<bool>(type: "bit", nullable: false),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    logi_fragile = table.Column<bool>(type: "bit", nullable: true),
+                    logi_hazmat = table.Column<bool>(type: "bit", nullable: true),
+                    logi_temperature_control = table.Column<int>(type: "int", nullable: true),
+                    logi_weight = table.Column<decimal>(type: "decimal(10,3)", nullable: true),
+                    logi_dim_height = table.Column<double>(type: "float", nullable: true),
+                    logi_dim_length = table.Column<double>(type: "float", nullable: true),
+                    logi_dim_width = table.Column<double>(type: "float", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1345,6 +1361,12 @@ namespace Peers.Modules.Migrations
                 schema: "dbo",
                 table: "media_file",
                 column: "customer_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_media_file_entity_id",
+                schema: "dbo",
+                table: "media_file",
+                column: "entity_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_media_file_status",

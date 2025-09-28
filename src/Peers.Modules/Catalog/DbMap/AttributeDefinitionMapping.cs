@@ -77,8 +77,8 @@ internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguratio
             .Property(e => e.Config)
             .HasColumnName(nameof(LookupAttributeDefinition.Config).Underscore())
             .HasConversion(
-                v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.LookupAttrConfig),
-                s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.LookupAttrConfig));
+                v => JsonSerializer.Serialize(v, CatalogJsonSourceGenContext.Default.LookupAttrConfig),
+                s => JsonSerializer.Deserialize(s, CatalogJsonSourceGenContext.Default.LookupAttrConfig));
 
         builder
             .HasOne(p => p.LookupType)
@@ -95,8 +95,8 @@ internal sealed class IntAttributeDefinitionMapping : IEntityTypeConfiguration<I
             .Property(e => e.Config)
             .HasColumnName(nameof(NumericAttributeDefinition<>.Config).Underscore())
             .HasConversion(
-                v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.NumericAttrConfigInt32),
-                s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.NumericAttrConfigInt32));
+                v => JsonSerializer.Serialize(v, CatalogJsonSourceGenContext.Default.NumericAttrConfigInt32),
+                s => JsonSerializer.Deserialize(s, CatalogJsonSourceGenContext.Default.NumericAttrConfigInt32));
 }
 
 internal sealed class DecimalAttributeDefinitionMapping : IEntityTypeConfiguration<DecimalAttributeDefinition>
@@ -106,8 +106,8 @@ internal sealed class DecimalAttributeDefinitionMapping : IEntityTypeConfigurati
             .Property(e => e.Config)
             .HasColumnName(nameof(NumericAttributeDefinition<>.Config).Underscore())
             .HasConversion(
-                v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.NumericAttrConfigDecimal),
-                s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.NumericAttrConfigDecimal));
+                v => JsonSerializer.Serialize(v, CatalogJsonSourceGenContext.Default.NumericAttrConfigDecimal),
+                s => JsonSerializer.Deserialize(s, CatalogJsonSourceGenContext.Default.NumericAttrConfigDecimal));
 }
 
 internal sealed class StringAttributeDefinitionMapping : IEntityTypeConfiguration<StringAttributeDefinition>
@@ -117,6 +117,6 @@ internal sealed class StringAttributeDefinitionMapping : IEntityTypeConfiguratio
             .Property(e => e.Config)
             .HasColumnName(nameof(StringAttributeDefinition.Config).Underscore())
             .HasConversion(
-                v => JsonSerializer.Serialize(v, DomainJsonSourceGenContext.Default.StringAttrConfig),
-                s => JsonSerializer.Deserialize(s, DomainJsonSourceGenContext.Default.StringAttrConfig)!);
+                v => JsonSerializer.Serialize(v, CatalogJsonSourceGenContext.Default.StringAttrConfig),
+                s => JsonSerializer.Deserialize(s, CatalogJsonSourceGenContext.Default.StringAttrConfig)!);
 }

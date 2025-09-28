@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Customers.Domain;
+using Peers.Modules.Listings.Domain.Logistics;
 using Peers.Modules.Listings.Domain.Translations;
 using E = Peers.Modules.Listings.ListingErrors;
 
@@ -59,9 +61,9 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     /// </summary>
     public ListingState State { get; private set; }
     /// <summary>
-    /// The order quantity policy for the listing, defining minimum and maximum order quantities.
+    /// The fulfillment preferences for the listing, indicating how orders will be fulfilled.
     /// </summary>
-    public OrderQtyPolicy OrderQty { get; private set; }
+    public FulfillmentPreferences FulfillmentPreferences { get; private set; } = default!;
     /// <summary>
     /// The seller who created the listing.
     /// </summary>
@@ -92,8 +94,6 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     /// <param name="description">An optional description of the listing.</param>
     /// <param name="hashtag">An optional unique hashtag for the listing.</param>
     /// <param name="price">The base price for the listing.</param>
-    /// <param name="minOrderQty">The minimum order quantity allowed for the listing, or null if there is no minimum.</param>
-    /// <param name="maxOrderQty">The maximum order quantity allowed for the listing, or null if there is no maximum.</param>
     /// <param name="date">The creation date and time for the listing.</param>
     public static Listing Create(
         [NotNull] Customer seller,
@@ -102,8 +102,6 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         string? description,
         string? hashtag,
         decimal price,
-        int? minOrderQty,
-        int? maxOrderQty,
         DateTime date)
     {
         if (productType.State is not ProductTypeState.Published)
@@ -118,6 +116,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
 
         return new()
         {
+            FulfillmentPreferences = FulfillmentPreferences.Default(),
             Seller = seller,
             ProductType = productType,
             ProductTypeVersion = productType.Version,
@@ -128,7 +127,6 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             Hashtag = hashtag?.Trim(),
             BasePrice = price,
             State = ListingState.Draft,
-            OrderQty = OrderQtyPolicy.Create(minOrderQty, maxOrderQty),
             Attributes = [],
             Variants = [],
         };
@@ -150,6 +148,11 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         int maxVariantAxes)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxVariantAxes, 1);
+
+        if (State is not ListingState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
 
         var newAttrs = new List<ListingAttribute>(selectedAttrs.Count);
 
@@ -236,29 +239,100 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         UpdatedAt = DateTime.UtcNow;
     }
 
-    //public void Publish()
-    //{
-    //    if (State == ListingState.Published)
-    //    {
-    //        return;
-    //    }
+    public void Publish()
+    {
+        if (State is ListingState.Published)
+        {
+            throw new DomainException(E.AlreadyPublished);
+        }
+        if (State is not ListingState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
 
-    //    if (Kind == ListingKind.Physical && ShippingPreferences.Fulfillment == FulfillmentMethod.InsideApp)
-    //    {
-    //        if (Logistics is null)
-    //        {
-    //            throw new DomainException("Logistics required to publish.");
-    //        }
+        ValidateForPublish();
+        State = ListingState.Published;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    //        if (ShippingDecision is null)
-    //        {
-    //            throw new DomainException("Evaluate shipping before publish.");
-    //        }
-    //    }
+    public void SetFulfillmentPreferences([NotNull] FulfillmentPreferences prefs)
+    {
+        if (State is not ListingState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
 
-    //    State = ListingState.Published;
-    //    UpdatedAt = DateTime.UtcNow;
-    //}
+        if (prefs.Method is FulfillmentMethod.SellerManaged)
+        {
+            var offendingSkus = Variants
+                .Where(p => p.Logistics is not null)
+                .Select(p => p.SkuCode)
+                .ToArray();
+
+            if (offendingSkus.Length > 0)
+            {
+                throw new DomainException(E.CannotSetSellerManagedWhenLogisticsExist(offendingSkus));
+            }
+        }
+
+        prefs.Validate(ProductType.Kind);
+        FulfillmentPreferences = prefs;
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetLogistics(string sku, [NotNull] LogisticsProfile profile)
+    {
+        if (State is not ListingState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
+
+        if (ProductType.Kind is not ProductTypeKind.Physical)
+        {
+            throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
+        }
+
+        if (FulfillmentPreferences.Method is not FulfillmentMethod.PlatformManaged)
+        {
+            throw new DomainException(E.LogisticsRequiredOnlyForPlatformManaged);
+        }
+
+        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        {
+            throw new DomainException(E.VariantNotFound(sku));
+        }
+
+        profile.Validate();
+        variant.SetLogistics(profile);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ClearLogistics(string sku)
+    {
+        if (State is not ListingState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
+
+        if (ProductType.Kind is not ProductTypeKind.Physical)
+        {
+            throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
+        }
+
+        if (FulfillmentPreferences.Method is not FulfillmentMethod.PlatformManaged)
+        {
+            throw new DomainException(E.LogisticsRequiredOnlyForPlatformManaged);
+        }
+
+        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        {
+            throw new DomainException(E.VariantNotFound(sku));
+        }
+
+        variant.ClearLogistics();
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     /// <summary>
     /// Updates the stock quantity for the variant identified by the specified SKU.
@@ -290,5 +364,73 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
 
         variant.UpdatePrice(newPrice);
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    private void ValidateForPublish()
+    {
+        var reqAttrs = ProductType
+            .Attributes
+            .Where(p => p.IsRequired);
+
+        foreach (var reqAttr in reqAttrs)
+        {
+            if (!Attributes.Any(p => p.AttributeDefinition == reqAttr))
+            {
+                throw new DomainException(E.AttrRequired(reqAttr.Key));
+            }
+        }
+
+        var variantAxes = ProductType
+            .Attributes
+            .OfType<EnumAttributeDefinition>()
+            .Where(p => p.IsVariant);
+
+        foreach (var axis in variantAxes)
+        {
+            var usedOpts = Variants
+                .SelectMany(p => p.Attributes)
+                .Where(p => p.AttributeDefinition == axis)
+                .Select(a => a.EnumAttributeOption.Key)
+                .Distinct()
+                .ToArray();
+
+            if (usedOpts.Length == 0)
+            {
+                throw new DomainException(E.VariantAttrReqAtleastOneOption(axis.Key));
+            }
+        }
+
+        Debug.Assert(Variants.Count > 0);
+
+        if (ProductType.Kind is ProductTypeKind.Physical)
+        {
+            if (FulfillmentPreferences.Method is FulfillmentMethod.PlatformManaged &&
+                Variants.Any(v => v.Logistics is null))
+            {
+                throw new DomainException(E.LogisticsRequiredForPlatformManaged);
+            }
+            else if (FulfillmentPreferences.Method is FulfillmentMethod.SellerManaged &&
+                     Variants.Any(v => v.Logistics is not null))
+            {
+                throw new DomainException(E.LogisticsNotAllowedForSellerManaged);
+            }
+            else if (FulfillmentPreferences.Method is FulfillmentMethod.None)
+            {
+                throw new DomainException(E.FulfillmentMethodMustBeSet);
+            }
+        }
+        else
+        {
+            if (FulfillmentPreferences.Method is not FulfillmentMethod.None)
+            {
+                throw new DomainException(E.FulfillmentMethodMustBeNone);
+            }
+        }
+
+        FulfillmentPreferences.Validate(ProductType.Kind);
+        foreach (var variant in Variants)
+        {
+            variant.Logistics?.Validate();
+        }
     }
 }

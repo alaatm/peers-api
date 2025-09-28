@@ -2,6 +2,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain;
+using Peers.Modules.Listings.Domain.Logistics;
 
 namespace Peers.Modules.Listings.DbMap;
 
@@ -9,8 +10,6 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
 {
     public void Configure(EntityTypeBuilder<Listing> builder)
     {
-        var minOrderQtyPropName = $"{nameof(OrderQtyPolicy.Min)}{nameof(Listing.OrderQty)}";
-        var maxOrderQtyPropName = $"{nameof(OrderQtyPolicy.Max)}{nameof(Listing.OrderQty)}";
         var hashTagColName = nameof(Listing.Hashtag).Underscore();
 
         builder.HasIndex(p => new { p.SellerId, p.Hashtag })
@@ -23,10 +22,22 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         // Concurrency token
         builder.Property<byte[]>("RowVersion").IsRowVersion();
 
-        builder.ComplexProperty(x => x.OrderQty, ob =>
+        builder.ComplexProperty(p => p.FulfillmentPreferences, nav =>
         {
-            ob.Property(p => p.Min).HasColumnName(minOrderQtyPropName.Underscore());
-            ob.Property(p => p.Max).HasColumnName(maxOrderQtyPropName.Underscore());
+            nav.Property(p => p.Method).HasColumnName($"fp_{nameof(FulfillmentPreferences.Method).Underscore()}");
+            nav.Property(p => p.ShippingPayer).HasColumnName($"fp_{nameof(FulfillmentPreferences.ShippingPayer)}".Underscore());
+            nav.Property(p => p.ReturnPayer).HasColumnName($"fp_{nameof(FulfillmentPreferences.ReturnPayer)}".Underscore());
+            nav.Property(p => p.AllowPayOnDelivery).HasColumnName($"fp_{nameof(FulfillmentPreferences.AllowPayOnDelivery)}".Underscore());
+            nav.ComplexProperty(p => p.OrderQty, ob =>
+            {
+                ob.Property(p => p.Min).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Min)}".Underscore());
+                ob.Property(p => p.Max).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Max)}".Underscore());
+            });
+            nav.ComplexProperty(p => p.ServiceArea, nav =>
+            {
+                nav.Property(p => p.Center).HasColumnName($"fp_sa_{nameof(ServiceArea.Center)}".Underscore());
+                nav.Property(p => p.Radius).HasColumnName($"fp_sa_{nameof(ServiceArea.Radius)}".Underscore());
+            });
         });
 
         builder.OwnsMany(p => p.Attributes, nav =>
@@ -110,9 +121,9 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         {
             var basePricePropName = nameof(Listing.BasePrice);
             var basePriceColName = basePricePropName.Underscore();
-            var orderQtyPropName = nameof(Listing.OrderQty);
-            var minOrderQtyColName = minOrderQtyPropName.Underscore();
-            var maxOrderQtyColName = maxOrderQtyPropName.Underscore();
+            var orderQtyPropName = nameof(FulfillmentPreferences.OrderQty);
+            var minOrderQtyColName = $"fp_oqp_{nameof(OrderQtyPolicy.Min).Underscore()}";
+            var maxOrderQtyColName = $"fp_oqp_{nameof(OrderQtyPolicy.Max).Underscore()}";
 
             p.HasCheckConstraint($"CK_Listing_{basePricePropName}_NonNegative", $"[{basePriceColName}] >= 0");
             p.HasCheckConstraint($"CK_Listing_{orderQtyPropName}",

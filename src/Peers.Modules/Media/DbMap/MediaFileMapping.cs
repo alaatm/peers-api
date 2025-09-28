@@ -13,6 +13,7 @@ internal sealed class MediaFileMapping : IEntityTypeConfiguration<MediaFile>
         builder.HasIndex(p => p.Type);
         builder.HasIndex(p => p.Category);
         builder.HasIndex(p => p.Status);
+        builder.HasIndex(p => p.EntityId);
 
         builder
             .HasIndex(p => new { p.Type, p.ThumbnailId, p.CustomerId })

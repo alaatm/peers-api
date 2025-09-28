@@ -19,6 +19,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
 {
     public DbSet<ProductType> ProductTypes => Set<ProductType>();
     public DbSet<LookupType> LookupTypes => Set<LookupType>();
+    public DbSet<LookupLink> LookupLinks => Set<LookupLink>();
     public DbSet<Listing> Listings => Set<Listing>();
 
     public DbSet<Customer> Customers => Set<Customer>();

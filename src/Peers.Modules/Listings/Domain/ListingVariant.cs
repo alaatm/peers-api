@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Text;
 using Peers.Core.Domain.Errors;
+using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Listings.Domain.Logistics;
 using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
@@ -46,6 +48,14 @@ public sealed class ListingVariant : Entity
     /// The listing this variant belongs to.
     /// </summary>
     public Listing Listing { get; private set; } = default!;
+    /// <summary>
+    /// The logistics profile associated with this variant, if any. This includes details such as dimensions, weight, etc.
+    /// </summary>
+    /// <remarks>
+    /// This is required only when the listing fulfilment method is set to <see cref="FulfillmentMethod.PlatformManaged"/> and the
+    /// product type kind is <see cref="ProductTypeKind.Physical"/>.
+    /// </remarks>
+    public LogisticsProfile? Logistics { get; private set; }
     /// <summary>
     /// The list of attributes that define this variant, each representing a specific attribute option
     /// </summary>
@@ -120,6 +130,19 @@ public sealed class ListingVariant : Entity
 
         return IsActive && StockQty.Value >= quantity;
     }
+
+    /// <summary>
+    /// Sets the logistics profile for the current instance.
+    /// </summary>
+    /// <param name="logistics">The logistics profile to assign.</param>
+    internal void SetLogistics(LogisticsProfile logistics)
+        => Logistics = logistics;
+
+    /// <summary>
+    /// Clears the current logistics information.
+    /// </summary>
+    internal void ClearLogistics()
+        => Logistics = null;
 
     /// <summary>
     /// Updates the stock quantity for the current variant.

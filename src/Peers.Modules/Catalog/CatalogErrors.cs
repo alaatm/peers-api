@@ -15,6 +15,10 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError NotPublished => new(Titles.CannotApplyOperation, "catalog.not-published");
     /// <summary>
+    /// Product type is already in 'Published' state.
+    /// </summary>
+    public static DomainError AlreadyPublished => new(Titles.CannotApplyOperation, "catalog.already-published");
+    /// <summary>
     /// Child product type '{0}' already exists.
     /// </summary>
     public static DomainError ChildAlreadyExists(string name) => new(Titles.ResourceConflict, "catalog.child-already-exists", name);
@@ -66,7 +70,6 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError DependencyCombinationNotSupported(string childKey, AttributeKind childKind, string parentKey, AttributeKind parentKind)
         => new(Titles.ValidationFailed, "catalog.dependency-combination-not-supported", childKey, childKind.ToString(), parentKey, parentKind.ToString());
-
     /// <summary>
     /// Option '{0}' already exists.
     /// </summary>
@@ -125,7 +128,6 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError MissingLookupAllowList(string attrKey, string lookupTypeKey)
         => new(Titles.ValidationFailed, "catalog.missing-lookup-allow-list", attrKey, lookupTypeKey);
-
     /// <summary>
     /// Key '{0}' must be in lower_snake format.
     /// </summary>

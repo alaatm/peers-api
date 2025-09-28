@@ -13,6 +13,6 @@ namespace Peers.Modules.Catalog;
 [JsonSerializable(typeof(NumericAttrConfig<int>))]
 [JsonSerializable(typeof(NumericAttrConfig<decimal>))]
 [JsonSerializable(typeof(LookupAttrConfig))]
-public partial class DomainJsonSourceGenContext : JsonSerializerContext
+public partial class CatalogJsonSourceGenContext : JsonSerializerContext
 {
 }
