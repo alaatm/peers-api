@@ -1049,7 +1049,7 @@ namespace Peers.Modules.Migrations
                     b.ToTable("terms_tr", "i18n");
                 });
 
-            modelBuilder.Entity("Peers.Modules.System.Domain.ClientAppInfo", b =>
+            modelBuilder.Entity("Peers.Modules.SystemInfo.Domain.ClientAppInfo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1081,7 +1081,7 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasColumnName("package_name");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "LatestVersion", "Peers.Modules.System.Domain.ClientAppInfo.LatestVersion#ClientAppVersion", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "LatestVersion", "Peers.Modules.SystemInfo.Domain.ClientAppInfo.LatestVersion#ClientAppVersion", b1 =>
                         {
                             b1.IsRequired();
 
@@ -1386,7 +1386,7 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("exception");
 
-                    b.Property<string>("Info")
+                    b.PrimitiveCollection<string>("Info")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("info");
@@ -1409,7 +1409,7 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("source");
 
-                    b.Property<string>("StackTrace")
+                    b.PrimitiveCollection<string>("StackTrace")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("stack_trace");

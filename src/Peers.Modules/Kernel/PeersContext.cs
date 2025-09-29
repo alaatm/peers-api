@@ -116,7 +116,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
     private IQueryable<ProductTypeLineageRow> ProductTypeLineage(int startNodeId)
         => FromExpression(() => ProductTypeLineage(startNodeId));
 
-    private sealed class ProductTypeLineageRow
+    internal sealed class ProductTypeLineageRow
     {
         public int Id { get; set; }
         public int? ParentId { get; set; }
