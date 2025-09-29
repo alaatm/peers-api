@@ -2,7 +2,7 @@ using System.Data;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 
-namespace Peers.Modules.System.Queries;
+namespace Peers.Modules.SystemInfo.Queries;
 
 public static class GetSystemInfo
 {

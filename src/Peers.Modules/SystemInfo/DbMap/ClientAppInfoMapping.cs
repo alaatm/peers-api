@@ -1,9 +1,9 @@
 using Humanizer;
 using Peers.Modules;
-using Peers.Modules.System.Domain;
+using Peers.Modules.SystemInfo.Domain;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Peers.Modules.System.DbMap;
+namespace Peers.Modules.SystemInfo.DbMap;
 
 internal sealed class ClientAppInfoMapping : IEntityTypeConfiguration<ClientAppInfo>
 {

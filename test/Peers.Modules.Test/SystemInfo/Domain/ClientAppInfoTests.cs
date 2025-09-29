@@ -1,6 +1,6 @@
-using Peers.Modules.System.Domain;
+using Peers.Modules.SystemInfo.Domain;
 
-namespace Peers.Modules.Test.System.Domain;
+namespace Peers.Modules.Test.SystemInfo.Domain;
 
 public class ClientAppInfoTests
 {

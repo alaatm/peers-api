@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Peers.Core.Background;
 using Peers.Core.Communication.Push;
 using Peers.Core.Cqrs.Pipeline;
-using Peers.Modules.System.Queries;
+using Peers.Modules.SystemInfo.Queries;
 using Peers.Modules.Users.Events;
 using Microsoft.Extensions.Caching.Memory;
 

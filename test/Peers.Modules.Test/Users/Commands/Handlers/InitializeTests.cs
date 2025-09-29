@@ -1,6 +1,6 @@
 using Peers.Core.Commands;
 using Peers.Core.Http;
-using Peers.Modules.System.Domain;
+using Peers.Modules.SystemInfo.Domain;
 using Peers.Modules.Users.Commands;
 using Peers.Modules.Users.Events;
 using Microsoft.AspNetCore.Http;

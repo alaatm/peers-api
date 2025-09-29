@@ -1,6 +1,6 @@
 using Peers.Modules.I18n.Domain;
 
-namespace Peers.Modules.System.Queries;
+namespace Peers.Modules.SystemInfo.Queries;
 
 public static class ListSupportedLanguages
 {

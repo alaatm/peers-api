@@ -1,6 +1,6 @@
-using Peers.Modules.System.Queries;
+using Peers.Modules.SystemInfo.Queries;
 
-namespace Peers.Modules.System.Endpoints;
+namespace Peers.Modules.SystemInfo.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {

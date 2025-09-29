@@ -10,7 +10,7 @@ using Peers.Modules.Listings.Domain;
 using Peers.Modules.Lookup.Domain;
 using Peers.Modules.Media.Domain;
 using Peers.Modules.Settings.Domain;
-using Peers.Modules.System.Domain;
+using Peers.Modules.SystemInfo.Domain;
 using Peers.Modules.Users.Domain;
 
 namespace Peers.Modules.Kernel;
@@ -62,10 +62,10 @@ public sealed class PeersContext : DbContextBase<AppUser>
     {
         const string Sql = """
             DECLARE @rc int;
-            EXEC @rc = sp_getapplock 
-                @Resource = @p_resource, 
-                @LockMode = 'Exclusive', 
-                @LockOwner = 'Transaction', 
+            EXEC @rc = sp_getapplock
+                @Resource = @p_resource,
+                @LockMode = 'Exclusive',
+                @LockOwner = 'Transaction',
                 @LockTimeout = @p_timeout;
             SELECT @rc;
             """;

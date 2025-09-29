@@ -1,4 +1,4 @@
-namespace Peers.Modules.System.Domain;
+namespace Peers.Modules.SystemInfo.Domain;
 
 /// <summary>
 /// Represents a client application information.

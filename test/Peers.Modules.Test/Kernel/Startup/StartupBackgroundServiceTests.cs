@@ -41,7 +41,7 @@ public class StartupBackgroundServiceTests
         services
             .AddSingleton(_configuration)
             .AddLocalization()
-            .AddDbContext<PeersContext>(cfg => cfg.UseSqlServer(_connStr))
+            .AddDbContext<PeersContext>(cfg => cfg.UseSqlServer(_connStr, p => p.UseNetTopologySuite()))
             .AddEfIdentity<PeersContext, AppUser>();
 
         var serviceProvider = services.BuildServiceProvider();

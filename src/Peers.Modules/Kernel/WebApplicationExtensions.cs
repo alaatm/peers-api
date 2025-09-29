@@ -5,7 +5,7 @@ using Peers.Core.RateLimiting;
 using Peers.Modules.Customers.Endpoints;
 using Peers.Modules.I18n.Endpoints;
 using Peers.Modules.Media.Endpoints;
-using Peers.Modules.System.Endpoints;
+using Peers.Modules.SystemInfo.Endpoints;
 using Peers.Modules.Users.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
 using Scalar.AspNetCore;

@@ -5,7 +5,7 @@ using Peers.Core.Domain.Rules;
 using Peers.Core.Localization;
 using Peers.Modules.I18n.Domain;
 using Peers.Modules.Settings.Domain;
-using Peers.Modules.System.Domain;
+using Peers.Modules.SystemInfo.Domain;
 using Peers.Modules.Users.Domain;
 
 namespace Peers.Modules.Kernel.Startup;

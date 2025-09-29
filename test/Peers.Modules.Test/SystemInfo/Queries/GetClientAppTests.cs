@@ -1,8 +1,8 @@
-using Peers.Modules.System.Domain;
-using Peers.Modules.System.Queries;
+using Peers.Modules.SystemInfo.Domain;
+using Peers.Modules.SystemInfo.Queries;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Peers.Modules.Test.System.Queries;
+namespace Peers.Modules.Test.SystemInfo.Queries;
 
 [Collection(nameof(IntegrationTestBaseCollection))]
 public class GetClientAppTests : IntegrationTestBase
