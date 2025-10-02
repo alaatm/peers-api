@@ -25,10 +25,25 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         builder.ComplexProperty(p => p.FulfillmentPreferences, nav =>
         {
             nav.Property(p => p.Method).HasColumnName($"fp_{nameof(FulfillmentPreferences.Method).Underscore()}");
-            nav.Property(p => p.ShippingPayer).HasColumnName($"fp_{nameof(FulfillmentPreferences.ShippingPayer)}".Underscore());
-            nav.Property(p => p.ReturnPayer).HasColumnName($"fp_{nameof(FulfillmentPreferences.ReturnPayer)}".Underscore());
-            nav.Property(p => p.AllowPayOnDelivery).HasColumnName($"fp_{nameof(FulfillmentPreferences.AllowPayOnDelivery)}".Underscore());
-            nav.ComplexProperty(p => p.OrderQty, ob =>
+            nav.Property(p => p.OutboundPaidBy).HasColumnName($"fp_{nameof(FulfillmentPreferences.OutboundPaidBy)}".Underscore());
+            nav.Property(p => p.ReturnPaidBy).HasColumnName($"fp_{nameof(FulfillmentPreferences.ReturnPaidBy)}".Underscore());
+            nav.Property(p => p.NonReturnable).HasColumnName($"fp_{nameof(FulfillmentPreferences.NonReturnable)}".Underscore());
+            nav.Property(p => p.OriginLocation).HasColumnName($"fp_{nameof(FulfillmentPreferences.OriginLocation)}".Underscore());
+            nav.ComplexProperty(p => p.FreeShippingPolicy, ob =>
+            {
+                ob.Property(p => p.MinOrder).HasColumnName($"fp_fsp_{nameof(FreeShippingPolicy.MinOrder)}".Underscore());
+                ob.Property(p => p.MaxDistance).HasColumnName($"fp_fsp_{nameof(FreeShippingPolicy.MaxDistance)}".Underscore());
+            });
+            nav.ComplexProperty(p => p.SellerRate, ob =>
+            {
+                ob.Property(p => p.Kind).HasColumnName($"fp_sr_{nameof(SellerManagedRate.Kind)}".Underscore());
+                ob.Property(p => p.FlatAmount).HasColumnName($"fp_sr_{nameof(SellerManagedRate.FlatAmount)}".Underscore());
+                ob.Property(p => p.BaseFee).HasColumnName($"fp_sr_{nameof(SellerManagedRate.BaseFee)}".Underscore());
+                ob.Property(p => p.RatePerKg).HasColumnName($"fp_sr_{nameof(SellerManagedRate.RatePerKg)}".Underscore());
+                ob.Property(p => p.RatePerKm).HasColumnName($"fp_sr_{nameof(SellerManagedRate.RatePerKm)}".Underscore());
+                ob.Property(p => p.MinFee).HasColumnName($"fp_sr_{nameof(SellerManagedRate.MinFee)}".Underscore());
+            });
+            nav.ComplexProperty(p => p.OrderQtyPolicy, ob =>
             {
                 ob.Property(p => p.Min).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Min)}".Underscore());
                 ob.Property(p => p.Max).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Max)}".Underscore());
@@ -121,7 +136,7 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         {
             var basePricePropName = nameof(Listing.BasePrice);
             var basePriceColName = basePricePropName.Underscore();
-            var orderQtyPropName = nameof(FulfillmentPreferences.OrderQty);
+            var orderQtyPropName = nameof(FulfillmentPreferences.OrderQtyPolicy);
             var minOrderQtyColName = $"fp_oqp_{nameof(OrderQtyPolicy.Min).Underscore()}";
             var maxOrderQtyColName = $"fp_oqp_{nameof(OrderQtyPolicy.Max).Underscore()}";
 

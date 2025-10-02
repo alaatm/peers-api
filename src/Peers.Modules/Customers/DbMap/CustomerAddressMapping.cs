@@ -11,8 +11,10 @@ internal sealed class CustomerAddressMapping : IEntityTypeConfiguration<Customer
         var isDefaultColName = nameof(CustomerAddress.IsDefault).Underscore();
 
         builder.HasIndex(p => new { p.CustomerId, p.Name }).IsUnique();
-        builder.HasIndex(p => p.CustomerId).HasFilter($"[{isDefaultColName}] = 1").IncludeProperties(p => new { p.Name, p.Address }).IsUnique();
+        builder.HasIndex(p => p.CustomerId).HasFilter($"[{isDefaultColName}] = 1").IsUnique();
         builder.Property(p => p.Name).HasMaxLength(128);
+
+        builder.ComplexProperty(p => p.Address);
 
         builder
             .HasOne(p => p.Customer)

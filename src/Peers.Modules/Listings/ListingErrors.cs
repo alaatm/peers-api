@@ -24,6 +24,10 @@ public static class ListingErrors
     /// </summary>
     public static DomainError ProductTypeNotSelectable(string slugPath) => new(Titles.CannotApplyOperation, "listing.product-type-not-selectable", slugPath);
     /// <summary>
+    /// A default shipping address is required to create a listing for a product that requires physical shipping or delivery.
+    /// </summary>
+    public static DomainError SellerMustHaveAddress => new(Titles.CannotApplyOperation, "listing.seller-must-have-address");
+    /// <summary>
     /// Attribute '{0}' is not defined for product type '{1}'.
     /// </summary>
     public static DomainError AttrNotDefined(string key, string slugPath) => new(Titles.CannotApplyOperation, "listing.attribute-not-defined", key, slugPath);
@@ -122,6 +126,26 @@ public static class ListingErrors
     /// Logistics information is required only for platform-managed listings.
     /// </summary>
     public static DomainError LogisticsRequiredOnlyForPlatformManaged => new(Titles.ValidationFailed, "listing.logistics-required-only-for-platform-managed");
+    /// <summary>
+    /// At least one variant is required.
+    /// </summary>
+    public static DomainError AtLeastOneVariantRequired => new(Titles.CannotApplyOperation, "listing.at-least-one-variant-required");
+    /// <summary>
+    /// Variant must specify a value for variant axis '{0}'.
+    /// </summary>
+    public static DomainError VariantMissingAxis(string key) => new(Titles.CannotApplyOperation, "listing.variant-missing-axis", key);
+    /// <summary>
+    /// A variant with the same option combination already exists.
+    /// </summary>
+    public static DomainError DuplicateVariantCombination => new(Titles.CannotApplyOperation, "listing.duplicate-variant-combination");
+    /// <summary>
+    /// Exactly one default variant is required when no variant axes are defined.
+    /// </summary>
+    public static DomainError SingleDefaultVariantExpected => new(Titles.CannotApplyOperation, "listing.single-default-variant-expected");
+    /// <summary>
+    /// Logistics profile is required for physical products.
+    /// </summary>
+    public static DomainError LogisticsRequiredForPhysicalProducts => new(Titles.CannotApplyOperation, "listing.logistics-required-for-physical-products");
 
     public static class Logistics
     {
@@ -169,5 +193,129 @@ public static class ListingErrors
         /// Service area radius must be a non-negative value.
         /// </summary>
         public static DomainError ServiceAreaRadiusMustBeNonNegative => new(Titles.ValidationFailed, "listing.logistics.service-area-radius-must-be-non-negative");
+        /// <summary>
+        /// Free shipping policy is not allowed for listings that do not require physical shipping or delivery.
+        /// </summary>
+        public static DomainError FreeShippingPolicyNotAllowed => new(Titles.ValidationFailed, "listing.logistics.free-shipping-policy-not-allowed");
+        /// <summary>
+        /// The minimum order amount for free shipping must be a non-negative value.
+        /// </summary>
+        public static DomainError FreeShippingMinOrderMustBeNonNegative => new(Titles.ValidationFailed, "listing.logistics.free-shipping-min-order-must-be-non-negative");
+        /// <summary>
+        /// The maximum delivery distance for free shipping must be a non-negative value.
+        /// </summary>
+        public static DomainError FreeShippingMaxDistanceMetersMustBeNonNegative => new(Titles.ValidationFailed, "listing.logistics.free-shipping-within-meters-must-be-non-negative");
+        /// <summary>
+        /// Quote-based shipping rates cannot be computed automatically.
+        /// </summary>
+        public static DomainError CannotComputeQuoteRate => new(Titles.CannotApplyOperation, "listing.logistics.cannot-compute-quote-rate");
+        /// <summary>
+        /// Flat based rate requires a valid flat amount value.
+        /// </summary>
+        public static DomainError InvalidFlatRate => new(Titles.ValidationFailed, "listing.logistics.invalid-flat-rate");
+        /// <summary>
+        /// Weight based rate requires a valid weight rate and base fee values.
+        /// </summary>
+        public static DomainError InvalidWeightRate => new(Titles.ValidationFailed, "listing.logistics.invalid-weight-rate");
+        /// <summary>
+        /// Distance based rate requires a valid distance rate and base fee values.
+        /// </summary>
+        public static DomainError InvalidDistanceRate => new(Titles.ValidationFailed, "listing.logistics.invalid-distance-rate");
+        /// <summary>
+        /// Invalid seller rate kind.
+        /// </summary>
+        public static DomainError InvalidSellerRateKind => new(Titles.ValidationFailed, "listing.logistics.invalid-seller-rate-kind");
+        /// <summary>
+        /// The minimum fee must be a non-negative value.
+        /// </summary>
+        public static DomainError InvalidMinFee => new(Titles.ValidationFailed, "listing.logistics.invalid-min-fee");
+        /// <summary>
+        /// Seller shipping rate configuration is required for listings with seller-managed fulfillment method.
+        /// </summary>
+        public static DomainError SellerRateRequired => new(Titles.ValidationFailed, "listing.logistics.seller-rate-required");
+        /// <summary>
+        /// Seller shipping rate configuration is not allowed for listings with non seller-managed fulfillment method.
+        /// </summary>
+        public static DomainError SellerRateNotAllowed => new(Titles.ValidationFailed, "listing.logistics.seller-rate-not-allowed");
+        /// <summary>
+        /// A shipping location is required for listings that require physical shipping or delivery.
+        /// </summary>
+        public static DomainError OriginLocationRequired => new(Titles.ValidationFailed, "listing.logistics.shipping-location-required");
+        /// <summary>
+        /// Fulfillment method is required for physical products.
+        /// </summary>
+        public static DomainError MethodRequiredForPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.method-required-for-physical-products");
+        /// <summary>
+        /// Non-returnable flag must be specified for physical products.
+        /// </summary>
+        public static DomainError NonReturnableRequired => new(Titles.ValidationFailed, "listing.logistics.nonreturnable-required");
+        /// <summary>
+        /// Return shipping payer must be specified when the product is returnable.
+        /// </summary>
+        public static DomainError ReturnPayerRequiredWhenReturnable => new(Titles.ValidationFailed, "listing.logistics.return-payer-required-when-returnable");
+        /// <summary>
+        /// Return shipping payer is not allowed when the product is non-returnable.
+        /// </summary>
+        public static DomainError ReturnPayerNotAllowedWhenNonReturnable => new(Titles.ValidationFailed, "listing.logistics.return-payer-not-allowed-when-nonreturnable");
+        /// <summary>
+        /// Seller-managed rate is not allowed for platform-managed fulfillment.
+        /// </summary>
+        public static DomainError SellerRateNotAllowedForPlatformManagedShipping => new(Titles.ValidationFailed, "listing.logistics.seller-rate-not-allowed-for-platform-managed");
+        /// <summary>
+        /// Seller-managed fulfillment requires the buyer to pay shipping.
+        /// </summary>
+        public static DomainError SellerManagedRequiresBuyerAsPayer => new(Titles.ValidationFailed, "listing.logistics.seller-managed-requires-buyer-payer");
+        /// <summary>
+        /// Free-shipping policy is not allowed with quote-based seller-managed shipping.
+        /// </summary>
+        public static DomainError FreeShippingPolicyNotAllowedForQuoteBasedShipping => new(Titles.ValidationFailed, "listing.logistics.free-shipping-policy-not-allowed-for-quote");
+        /// <summary>
+        /// Seller-managed rate must not be provided when the seller pays shipping.
+        /// </summary>
+        public static DomainError SellerRateNotAllowedWhenSellerPays => new(Titles.ValidationFailed, "listing.logistics.seller-rate-not-allowed-when-seller-pays");
+        /// <summary>
+        /// Fulfillment method must be 'None' for non-physical products.
+        /// </summary>
+        public static DomainError MethodMustBeNoneForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.method-must-be-none-for-nonphysical");
+        /// <summary>
+        /// Shipping payer is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError ShippingPayerNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.shipping-payer-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Return shipping payer is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError ReturnPayerNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.return-payer-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Non-returnable flag is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError NonReturnableNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.nonreturnable-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Origin location is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError OriginLocationNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.origin-location-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Free-shipping policy is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError FreeShippingPolicyNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.free-shipping-policy-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Seller-managed rate is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError SellerRateNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.seller-rate-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Order quantity policy is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError OrderQtyNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.order-qty-not-allowed-for-nonphysical");
+        /// <summary>
+        /// Service area is required for service products.
+        /// </summary>
+        public static DomainError ServiceAreaRequiredForServices => new(Titles.ValidationFailed, "listing.logistics.service-area-required-for-services");
+        /// <summary>
+        /// Service area is not allowed for digital products.
+        /// </summary>
+        public static DomainError ServiceAreaNotAllowedForDigitalProducts => new(Titles.ValidationFailed, "listing.logistics.service-area-not-allowed-for-digital");
+        /// <summary>
+        /// Quote-based seller-managed rate must not specify pricing fields.
+        /// </summary>
+        public static DomainError QuoteRateMustNotSpecifyPricingFields => new(Titles.ValidationFailed, "listing.logistics.quote-rate-must-not-specify-pricing-fields");
     }
 }

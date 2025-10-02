@@ -471,6 +471,98 @@ namespace Peers.Modules.Migrations
                     b.ToTable("customer", (string)null);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.CustomerAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("name");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Address", "Peers.Modules.Customers.Domain.CustomerAddress.Address#Address", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<string>("ApartmentNumber")
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("apartment_number");
+
+                            b1.Property<string>("BuildingNumber")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("building_number");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("city");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("country");
+
+                            b1.Property<string>("District")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("district");
+
+                            b1.Property<string>("FormattedAddress")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("formatted_address");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("governorate");
+
+                            b1.Property<Point>("Location")
+                                .IsRequired()
+                                .HasColumnType("geography")
+                                .HasColumnName("location");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar(256)")
+                                .HasColumnName("street");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique()
+                        .HasFilter("[is_default] = 1");
+
+                    b.HasIndex("CustomerId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("customer_address", (string)null);
+                });
+
             modelBuilder.Entity("Peers.Modules.I18n.Domain.Language", b =>
                 {
                     b.Property<string>("Id")
@@ -575,27 +667,39 @@ namespace Peers.Modules.Migrations
                         {
                             b1.IsRequired();
 
-                            b1.Property<bool>("AllowPayOnDelivery")
-                                .HasColumnType("bit")
-                                .HasColumnName("fp_allow_pay_on_delivery");
-
                             b1.Property<int>("Method")
                                 .HasColumnType("int")
                                 .HasColumnName("fp_method");
 
-                            b1.Property<bool>("NonReturnable")
+                            b1.Property<bool?>("NonReturnable")
                                 .HasColumnType("bit")
-                                .HasColumnName("non_returnable");
+                                .HasColumnName("fp_non_returnable");
 
-                            b1.Property<int>("ReturnPayer")
+                            b1.Property<Point>("OriginLocation")
+                                .HasColumnType("geography")
+                                .HasColumnName("fp_origin_location");
+
+                            b1.Property<int?>("OutboundPaidBy")
                                 .HasColumnType("int")
-                                .HasColumnName("fp_return_payer");
+                                .HasColumnName("fp_outbound_paid_by");
 
-                            b1.Property<int>("ShippingPayer")
+                            b1.Property<int?>("ReturnPaidBy")
                                 .HasColumnType("int")
-                                .HasColumnName("fp_shipping_payer");
+                                .HasColumnName("fp_return_paid_by");
 
-                            b1.ComplexProperty(typeof(Dictionary<string, object>), "OrderQty", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.OrderQty#OrderQtyPolicy", b2 =>
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "FreeShippingPolicy", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.FreeShippingPolicy#FreeShippingPolicy", b2 =>
+                                {
+                                    b2.Property<double>("MaxDistance")
+                                        .HasColumnType("float")
+                                        .HasColumnName("fp_fsp_max_distance");
+
+                                    b2.Property<decimal>("MinOrder")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_fsp_min_order");
+                                });
+
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "OrderQtyPolicy", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.OrderQtyPolicy#OrderQtyPolicy", b2 =>
                                 {
                                     b2.Property<int>("Max")
                                         .HasColumnType("int")
@@ -604,6 +708,38 @@ namespace Peers.Modules.Migrations
                                     b2.Property<int>("Min")
                                         .HasColumnType("int")
                                         .HasColumnName("fp_oqp_min");
+                                });
+
+                            b1.ComplexProperty(typeof(Dictionary<string, object>), "SellerRate", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.SellerRate#SellerManagedRate", b2 =>
+                                {
+                                    b2.Property<decimal?>("BaseFee")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_sr_base_fee");
+
+                                    b2.Property<decimal?>("FlatAmount")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_sr_flat_amount");
+
+                                    b2.Property<int>("Kind")
+                                        .HasColumnType("int")
+                                        .HasColumnName("fp_sr_kind");
+
+                                    b2.Property<decimal?>("MinFee")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_sr_min_fee");
+
+                                    b2.Property<decimal?>("RatePerKg")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_sr_rate_per_kg");
+
+                                    b2.Property<decimal?>("RatePerKm")
+                                        .HasPrecision(18, 2)
+                                        .HasColumnType("decimal(18,2)")
+                                        .HasColumnName("fp_sr_rate_per_km");
                                 });
 
                             b1.ComplexProperty(typeof(Dictionary<string, object>), "ServiceArea", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.ServiceArea#ServiceArea", b2 =>
@@ -631,7 +767,7 @@ namespace Peers.Modules.Migrations
                         {
                             t.HasCheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
 
-                            t.HasCheckConstraint("CK_Listing_OrderQty", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
+                            t.HasCheckConstraint("CK_Listing_OrderQtyPolicy", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
                         });
                 });
 
@@ -1879,6 +2015,17 @@ namespace Peers.Modules.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.CustomerAddress", b =>
+                {
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Customer")
+                        .WithMany("AddressList")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
                 {
                     b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
@@ -2325,6 +2472,11 @@ namespace Peers.Modules.Migrations
                     b.Navigation("LookupsAllowed");
 
                     b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.Customer", b =>
+                {
+                    b.Navigation("AddressList");
                 });
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>

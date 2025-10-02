@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
 using Peers.Modules.Catalog.Domain;
@@ -114,9 +114,20 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             throw new DomainException(E.ProductTypeNotSelectable(productType.SlugPath));
         }
 
+        Point? originLocation = null;
+        if (productType.Kind is ProductTypeKind.Physical)
+        {
+            if (seller.GetDefaultAddress() is not { } address)
+            {
+                throw new DomainException(E.SellerMustHaveAddress);
+            }
+
+            originLocation = address.Location;
+        }
+
         return new()
         {
-            FulfillmentPreferences = FulfillmentPreferences.Default(),
+            FulfillmentPreferences = FulfillmentPreferences.Default(originLocation),
             Seller = seller,
             ProductType = productType,
             ProductTypeVersion = productType.Version,
@@ -293,11 +304,6 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
         }
 
-        if (FulfillmentPreferences.Method is not FulfillmentMethod.PlatformManaged)
-        {
-            throw new DomainException(E.LogisticsRequiredOnlyForPlatformManaged);
-        }
-
         if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
         {
             throw new DomainException(E.VariantNotFound(sku));
@@ -305,32 +311,6 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
 
         profile.Validate();
         variant.SetLogistics(profile);
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void ClearLogistics(string sku)
-    {
-        if (State is not ListingState.Draft)
-        {
-            throw new DomainException(E.NotDraft);
-        }
-
-        if (ProductType.Kind is not ProductTypeKind.Physical)
-        {
-            throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
-        }
-
-        if (FulfillmentPreferences.Method is not FulfillmentMethod.PlatformManaged)
-        {
-            throw new DomainException(E.LogisticsRequiredOnlyForPlatformManaged);
-        }
-
-        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
-        {
-            throw new DomainException(E.VariantNotFound(sku));
-        }
-
-        variant.ClearLogistics();
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -383,8 +363,10 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         var variantAxes = ProductType
             .Attributes
             .OfType<EnumAttributeDefinition>()
-            .Where(p => p.IsVariant);
+            .Where(p => p.IsVariant)
+            .ToArray();
 
+        // Ensure at least one option is used for each axis across all variants
         foreach (var axis in variantAxes)
         {
             var usedOpts = Variants
@@ -400,23 +382,52 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             }
         }
 
-        Debug.Assert(Variants.Count > 0);
+        if (Variants.Count == 0)
+        {
+            throw new DomainException(E.AtLeastOneVariantRequired);
+        }
+
+        // Ensure each variant sets a value for every axis, and no duplicate combinations
+        var comboKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var v in Variants)
+        {
+            var parts = new List<string>(variantAxes.Length);
+            foreach (var axis in variantAxes)
+            {
+                if (v.Attributes.FirstOrDefault(av => av.AttributeDefinition == axis) is not { } choice)
+                {
+                    throw new DomainException(E.VariantMissingAxis(axis.Key));
+                }
+
+                parts.Add(choice.EnumAttributeOption.Key);
+            }
+
+            // If there are no variant axes (simple/default variant), we still want one variant max.
+            var key = parts.Count == 0 ? "default" : string.Join("|", parts);
+            if (!comboKeys.Add(key))
+            {
+                throw new DomainException(E.DuplicateVariantCombination);
+            }
+        }
+
+        // If no axes defined, enforce exactly one "default" variant
+        if (variantAxes.Length == 0 && Variants.Count != 1)
+        {
+            throw new DomainException(E.SingleDefaultVariantExpected);
+        }
+
+        // Fulfillment branch
 
         if (ProductType.Kind is ProductTypeKind.Physical)
         {
-            if (FulfillmentPreferences.Method is FulfillmentMethod.PlatformManaged &&
-                Variants.Any(v => v.Logistics is null))
-            {
-                throw new DomainException(E.LogisticsRequiredForPlatformManaged);
-            }
-            else if (FulfillmentPreferences.Method is FulfillmentMethod.SellerManaged &&
-                     Variants.Any(v => v.Logistics is not null))
-            {
-                throw new DomainException(E.LogisticsNotAllowedForSellerManaged);
-            }
-            else if (FulfillmentPreferences.Method is FulfillmentMethod.None)
+            if (FulfillmentPreferences.Method is FulfillmentMethod.None)
             {
                 throw new DomainException(E.FulfillmentMethodMustBeSet);
+            }
+
+            if (Variants.Any(v => v.Logistics is null))
+            {
+                throw new DomainException(E.LogisticsRequiredForPhysicalProducts);
             }
         }
         else

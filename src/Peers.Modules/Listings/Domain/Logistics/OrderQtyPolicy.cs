@@ -6,8 +6,8 @@ namespace Peers.Modules.Listings.Domain.Logistics;
 /// <summary>
 /// Represents a policy that defines minimum and maximum order quantity constraints.
 /// </summary>
-/// <param name="Min">The minimum order quantity.</param>
-/// <param name="Max">The maximum order quantity.</param>
+/// <param name="Min">The minimum order quantity (must be ≥ 1).</param>
+/// <param name="Max">The maximum order quantity (must be ≥ 1 and ≥ <paramref name="Min"/>).</param>
 public record OrderQtyPolicy(int Min, int Max)
 {
     /// <summary>
@@ -18,7 +18,7 @@ public record OrderQtyPolicy(int Min, int Max)
         => qty >= Min && qty <= Max;
 
     /// <summary>
-    /// Ensures that the minimum and maximum order quantity values are valid according to defined business rules.
+    /// Ensures that the minimum and maximum order quantity values are valid.
     /// </summary>
     internal void Validate()
     {

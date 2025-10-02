@@ -30,15 +30,14 @@ public sealed record ServiceArea(Point Center, double Radius)
     /// </summary>
     internal void Validate()
     {
+        if (Center is null)
+        {
+            throw new DomainException(E.Logistics.ServiceAreaCenterRequired);
+        }
         // Generated server-side. Sanity check.
         if (Center.SRID != 4326)
         {
             throw new ArgumentException("Center point must use WGS 84 coordinate system (SRID 4326).", nameof(Center));
-        }
-
-        if (Center is null)
-        {
-            throw new DomainException(E.Logistics.ServiceAreaCenterRequired);
         }
         if (Center.Y is < (-90) or > 90)
         {

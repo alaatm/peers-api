@@ -682,6 +682,36 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "customer_address",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    customer_id = table.Column<int>(type: "int", nullable: false),
+                    is_default = table.Column<bool>(type: "bit", nullable: false),
+                    apartment_number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    building_number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    city = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    country = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    district = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    formatted_address = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    governorate = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    location = table.Column<Point>(type: "geography", nullable: false),
+                    street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_customer_address", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_customer_address_customer_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "listing",
                 columns: table => new
                 {
@@ -697,13 +727,21 @@ namespace Peers.Modules.Migrations
                     base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     state = table.Column<int>(type: "int", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    fp_allow_pay_on_delivery = table.Column<bool>(type: "bit", nullable: false),
                     fp_method = table.Column<int>(type: "int", nullable: false),
-                    non_returnable = table.Column<bool>(type: "bit", nullable: false),
-                    fp_return_payer = table.Column<int>(type: "int", nullable: false),
-                    fp_shipping_payer = table.Column<int>(type: "int", nullable: false),
+                    fp_non_returnable = table.Column<bool>(type: "bit", nullable: true),
+                    fp_origin_location = table.Column<Point>(type: "geography", nullable: true),
+                    fp_outbound_paid_by = table.Column<int>(type: "int", nullable: true),
+                    fp_return_paid_by = table.Column<int>(type: "int", nullable: true),
+                    fp_fsp_max_distance = table.Column<double>(type: "float", nullable: true),
+                    fp_fsp_min_order = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
                     fp_oqp_max = table.Column<int>(type: "int", nullable: true),
                     fp_oqp_min = table.Column<int>(type: "int", nullable: true),
+                    fp_sr_base_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    fp_sr_flat_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    fp_sr_kind = table.Column<int>(type: "int", nullable: true),
+                    fp_sr_min_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    fp_sr_rate_per_kg = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    fp_sr_rate_per_km = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
                     fp_sa_center = table.Column<Point>(type: "geography", nullable: true),
                     fp_sa_radius = table.Column<double>(type: "float", nullable: true)
                 },
@@ -711,7 +749,7 @@ namespace Peers.Modules.Migrations
                 {
                     table.PrimaryKey("PK_listing", x => x.id);
                     table.CheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
-                    table.CheckConstraint("CK_Listing_OrderQty", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
+                    table.CheckConstraint("CK_Listing_OrderQtyPolicy", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
                     table.ForeignKey(
                         name: "FK_listing_customer_seller_id",
                         column: x => x.seller_id,
@@ -1177,6 +1215,19 @@ namespace Peers.Modules.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_customer_address_customer_id",
+                table: "customer_address",
+                column: "customer_id",
+                unique: true,
+                filter: "[is_default] = 1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_customer_address_customer_id_name",
+                table: "customer_address",
+                columns: new[] { "customer_id", "name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_device_device_id",
                 schema: "dbo",
                 table: "device",
@@ -1525,6 +1576,9 @@ namespace Peers.Modules.Migrations
 
             migrationBuilder.DropTable(
                 name: "client_app_info");
+
+            migrationBuilder.DropTable(
+                name: "customer_address");
 
             migrationBuilder.DropTable(
                 name: "device",
