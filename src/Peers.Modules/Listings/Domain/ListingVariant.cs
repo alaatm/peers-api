@@ -18,6 +18,8 @@ namespace Peers.Modules.Listings.Domain;
 /// come in multiple forms (for example, a shirt available in different sizes and colors).</remarks>
 public sealed class ListingVariant : Entity
 {
+    public const string DefaultVariantKey = "default";
+
     /// <summary>
     /// The identifier of the listing this variant belongs to.
     /// </summary>
@@ -70,7 +72,7 @@ public sealed class ListingVariant : Entity
     internal static ListingVariant CreateDefault(Listing listing) => new()
     {
         Listing = listing,
-        VariantKey = "default",
+        VariantKey = DefaultVariantKey,
         SkuCode = GenerateSku(listing.Id, []),
         Price = listing.BasePrice,
         IsActive = true,
