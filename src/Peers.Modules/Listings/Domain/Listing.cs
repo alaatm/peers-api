@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
@@ -340,6 +341,12 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
         {
             throw new DomainException(E.VariantNotFound(sku));
+        }
+
+        if (variant.VariantKey is ListingVariant.DefaultVariantKey)
+        {
+            Debug.Assert(Variants.Count == 1);
+            BasePrice = newPrice;
         }
 
         variant.UpdatePrice(newPrice);
