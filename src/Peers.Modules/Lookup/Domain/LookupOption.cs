@@ -9,17 +9,17 @@ namespace Peers.Modules.Lookup.Domain;
 /// A concrete item within a <see cref="LookupType"/> (e.g., "samsung" under "brand" type).
 /// </summary>
 /// <remarks>
-/// - Uniqueness: (<see cref="TypeId"/>, <see cref="Key"/>) must be unique and stable.
+/// - Uniqueness: (<see cref="TypeId"/>, <see cref="Code"/>) must be unique and stable.
 /// - Used by listings and product type allow-lists
 /// - If you support aliases/translations, they hang off this value.
 /// </remarks>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class LookupValue : Entity, ILocalizable<LookupValue, LookupValueTr>
+public sealed class LookupOption : Entity, ILocalizable<LookupOption, LookupOptionTr>
 {
     /// <summary>
-    /// Stable ASCII key/slug for this value (e.g., "samsung", "galaxy_a5").
+    /// Stable ASCII code for this value (e.g., "samsung", "galaxy_a5").
     /// </summary>
-    public string Key { get; set; } = default!;
+    public string Code { get; set; } = default!;
     /// <summary>
     /// The unique identifier for the type.
     /// </summary>
@@ -29,9 +29,9 @@ public sealed class LookupValue : Entity, ILocalizable<LookupValue, LookupValueT
     /// </summary>
     public LookupType Type { get; set; } = default!;
     /// <summary>
-    /// The list of translations associated with this lookup value.
+    /// The list of translations associated with this lookup option.
     /// </summary>
-    public List<LookupValueTr> Translations { get; private set; } = default!;
+    public List<LookupOptionTr> Translations { get; private set; } = default!;
 
-    private string DebuggerDisplay => $"{Key} → {Type?.Key ?? TypeId.ToString(CultureInfo.InvariantCulture)}";
+    private string DebuggerDisplay => $"{Code} → {Type?.Key ?? TypeId.ToString(CultureInfo.InvariantCulture)}";
 }

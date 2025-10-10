@@ -29,38 +29,38 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         => Options = [];
 
     internal EnumAttributeOption AddOption(
-        string key,
+        string code,
         int position,
-        string? parentOptKey)
+        string? parentCode)
     {
-        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(key))
+        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(code))
         {
-            throw new DomainException(E.KeyFormatInvalid(key));
+            throw new DomainException(E.KeyFormatInvalid(code));
         }
 
-        if (Options.Any(p => p.Key == key))
+        if (Options.Any(p => p.Code == code))
         {
-            throw new DomainException(E.EnumOptAlreadyExists(key));
+            throw new DomainException(E.EnumOptAlreadyExists(code));
         }
 
         if (DependsOn is null &&
-            parentOptKey is not null)
+            parentCode is not null)
         {
             throw new DomainException(E.ScopeOptReqDep);
         }
 
-        var opt = new EnumAttributeOption(this, key, position);
+        var opt = new EnumAttributeOption(this, code, position);
 
         if (DependsOn is EnumAttributeDefinition parentAttr)
         {
-            if (parentOptKey is null)
+            if (parentCode is null)
             {
                 throw new DomainException(E.DepReqScopeOtp);
             }
 
-            if (parentAttr.Options.SingleOrDefault(p => p.Key == parentOptKey) is not { } parentOption)
+            if (parentAttr.Options.SingleOrDefault(p => p.Code == parentCode) is not { } parentOption)
             {
-                throw new DomainException(E.EnumOptNotFound(parentOptKey));
+                throw new DomainException(E.EnumOptNotFound(parentCode));
             }
 
             opt.ScopeTo(parentOption);
@@ -105,7 +105,7 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
             throw new DomainException(E.EnumAttrNoOptions(Key));
         }
 
-        var optKeySet = new HashSet<string>(StringComparer.Ordinal);
+        var optCodeSet = new HashSet<string>(StringComparer.Ordinal);
         var optPosSet = new HashSet<int>();
         var hasDependency = DependsOn is not null;
 
@@ -118,31 +118,31 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
 
                 if (opt.ParentOption is null)
                 {
-                    throw new DomainException(E.EnumOptNotScopedButDep(Key, DependsOn.Key, opt.Key));
+                    throw new DomainException(E.EnumOptNotScopedButDep(Key, DependsOn.Key, opt.Code));
                 }
                 if (opt.ParentOption.EnumAttributeDefinition != DependsOn)
                 {
-                    throw new DomainException(E.InvalidScopeParent(Key, DependsOn.Key, opt.Key, opt.ParentOption.EnumAttributeDefinition.Key));
+                    throw new DomainException(E.InvalidScopeParent(Key, DependsOn.Key, opt.Code, opt.ParentOption.EnumAttributeDefinition.Key));
                 }
             }
             else
             {
                 if (opt.ParentOption is not null)
                 {
-                    throw new DomainException(E.OptScopedButNoDep(Key, opt.Key));
+                    throw new DomainException(E.OptScopedButNoDep(Key, opt.Code));
                 }
             }
 
-            // All options must have unique keys
-            if (!optKeySet.Add(opt.Key))
+            // All options must have unique codes
+            if (!optCodeSet.Add(opt.Code))
             {
-                throw new DomainException(E.DuplicateEnumOptionKey(Key, opt.Key));
+                throw new DomainException(E.DuplicateEnumOptCode(Key, opt.Code));
             }
 
             // All options must have unique positions
             if (!optPosSet.Add(opt.Position))
             {
-                throw new DomainException(E.DuplicateEnumOptionPosition(Key, opt.Key));
+                throw new DomainException(E.DuplicateEnumOptPosition(Key, opt.Code));
             }
         }
     }

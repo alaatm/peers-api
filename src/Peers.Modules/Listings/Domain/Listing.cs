@@ -296,7 +296,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         // Enfore atleast one value per single axis and all values are unique
                         enumOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
-                        var available = enumDef.Options.ToDictionary(o => o.Key, StringComparer.Ordinal);
+                        var available = enumDef.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
                         var picked = new List<ListingVariantsFactory.AxisValue>(enumOptAxis.Value.Count);
 
                         foreach (var code in enumOptAxis.Value)
@@ -323,7 +323,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         // Enfore atleast one value per single axis and all values are unique
                         lookupOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
-                        var available = lookupDef.LookupType.Values.ToDictionary(o => o.Key, StringComparer.Ordinal);
+                        var available = lookupDef.LookupType.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
                         var picked = new List<ListingVariantsFactory.AxisValue>(lookupOptAxis.Value.Count);
 
                         foreach (var code in lookupOptAxis.Value)
@@ -341,7 +341,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                             picked.Add(new(LookupOption: opt));
                         }
 
-                        picked.Sort((a, b) => string.Compare(a.LookupOption!.Key, b.LookupOption!.Key, StringComparison.Ordinal));
+                        picked.Sort((a, b) => string.Compare(a.LookupOption!.Code, b.LookupOption!.Code, StringComparison.Ordinal));
                         axes.Add(new(lookupDef, picked));
                     }
                     else
@@ -627,7 +627,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
             var usedOpts = Variants
                 .SelectMany(p => p.Attributes)
                 .Where(p => p.AttributeDefinition == axis)
-                .Select(a => a.EnumAttributeOption.Key)
+                .Select(a => a.EnumAttributeOption.Code)
                 .Distinct()
                 .ToArray();
 
@@ -654,7 +654,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                     throw new DomainException(E.VariantMissingAxis(axis.Key));
                 }
 
-                parts.Add(choice.EnumAttributeOption.Key);
+                parts.Add(choice.EnumAttributeOption.Code);
             }
 
             // If there are no variant axes (simple/default variant), we still want one variant max.

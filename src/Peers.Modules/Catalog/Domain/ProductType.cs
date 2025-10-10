@@ -59,7 +59,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// </summary>
     public List<AttributeDefinition> Attributes { get; private set; } = default!;
     /// <summary>
-    /// The list of allowed lookup values for lookup attributes in this product type.
+    /// The list of allowed lookup options for lookup attributes in this product type.
     /// </summary>
     public List<LookupAllowed> LookupsAllowed { get; private set; } = default!;
     /// <summary>
@@ -167,7 +167,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             // Copy allowed lookup entries only if attributes were copied
             foreach (var la in LookupsAllowed)
             {
-                next.LookupsAllowed.Add(new LookupAllowed(next, la.Value));
+                next.LookupsAllowed.Add(new LookupAllowed(next, la.Option));
             }
         }
 
@@ -334,7 +334,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         // Remove associated allowed lookup entries
         if (attr is LookupAttributeDefinition lookupAttr)
         {
-            LookupsAllowed.RemoveAll(la => la.Value.Type == lookupAttr.LookupType);
+            LookupsAllowed.RemoveAll(la => la.Option.Type == lookupAttr.LookupType);
         }
 
         Attributes.Remove(attr);
@@ -362,96 +362,96 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <summary>
     /// Adds a new option to the specified enum attribute definition.
     /// </summary>
-    /// <param name="attributeKey">The unique key identifying the attribute to which the option will be added. Must correspond to an existing enum
+    /// <param name="key">The unique key identifying the attribute to which the option will be added. Must correspond to an existing enum
     /// attribute definition.</param>
-    /// <param name="optionKey">The unique key for the new option to add.</param>
+    /// <param name="optionCode">The unique code for the new option to add.</param>
     /// <param name="position">The zero-based position at which to insert the new option within the attribute's option list.</param>
-    /// <param name="parentOptionKey">The key of the parent option under which to nest the new option, or null to add the option at the root level.</param>
+    /// <param name="parentOptionCode">The code of the parent option under which to nest the new option, or null to add the option at the root level.</param>
     public EnumAttributeOption AddAttributeOption(
-        string attributeKey,
-        string optionKey,
+        string key,
+        string optionCode,
         int position,
-        string? parentOptionKey = null)
+        string? parentOptionCode = null)
     {
         if (State is not ProductTypeState.Draft)
         {
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == attributeKey) is not EnumAttributeDefinition attr)
+        if (Attributes.SingleOrDefault(a => a.Key == key) is not EnumAttributeDefinition attr)
         {
-            throw new DomainException(E.EnumAttrNotFound(attributeKey));
+            throw new DomainException(E.EnumAttrNotFound(key));
         }
 
-        return attr.AddOption(optionKey, position, parentOptionKey);
+        return attr.AddOption(optionCode, position, parentOptionCode);
     }
 
     public void AddGroupAttributeMember(
-        string groupAttrKey,
-        string numericAttrKey)
+        string groupKey,
+        string memberKey)
     {
         if (State is not ProductTypeState.Draft)
         {
             throw new DomainException(E.NotDraft);
         }
-        if (Attributes.SingleOrDefault(a => a.Key == groupAttrKey) is not GroupAttributeDefinition groupAttr)
+        if (Attributes.SingleOrDefault(a => a.Key == groupKey) is not GroupAttributeDefinition groupAttr)
         {
-            throw new DomainException(E.GroupAttrNotFound(groupAttrKey));
+            throw new DomainException(E.GroupAttrNotFound(groupKey));
         }
-        if (Attributes.SingleOrDefault(a => a.Key == numericAttrKey) is not NumericAttributeDefinition numericAttr)
+        if (Attributes.SingleOrDefault(a => a.Key == memberKey) is not NumericAttributeDefinition numericAttr)
         {
-            throw new DomainException(E.NumericAttrNotFound(numericAttrKey));
+            throw new DomainException(E.NumericAttrNotFound(memberKey));
         }
 
         groupAttr.AddMember(numericAttr);
     }
 
     /// <summary>
-    /// Adds the specified lookup value to the list of allowed lookups for this product type, enforcing ancestor
+    /// Adds the specified lookup option to the list of allowed lookups for this product type, enforcing ancestor
     /// allow-list constraints.
     /// </summary>
     /// <remarks>This method ensures that the allow-list for a child product type is always a subset of its
-    /// nearest ancestor's allow-list for the same lookup type. Attempting to add a value not allowed by an ancestor
+    /// nearest ancestor's allow-list for the same lookup type. Attempting to add an option not allowed by an ancestor
     /// will result in an exception.</remarks>
-    /// <param name="value">The lookup value to add to the allow-list. The value's type must be permitted by the nearest
+    /// <param name="option">The lookup option to add to the allow-list. The option's type must be permitted by the nearest
     /// ancestor's allow-list, if one exists.</param>
-    public void AddAllowedLookup([NotNull] LookupValue value)
+    public void AddAllowedLookup([NotNull] LookupOption option)
     {
         if (State is not ProductTypeState.Draft)
         {
             throw new DomainException(E.NotDraft);
         }
 
-        // Ensure the value is a member of the ancestor's allow-list
+        // Ensure the option is a member of the ancestor's allow-list
 
-        if (TryGetNearestAllowedSet(includeSelf: false, value.Type, out var owner, out var ancestorSet) &&
-            !ancestorSet.Contains(value))
+        if (TryGetNearestAllowedSet(includeSelf: false, option.Type, out var owner, out var ancestorSet) &&
+            !ancestorSet.Contains(option))
         {
-            throw new DomainException(E.LookupValuesNotAllowedByAncestor([value.Key], value.Type.Key, owner.SlugPath));
+            throw new DomainException(E.LookupOptsNotAllowedByAncestor([option.Code], option.Type.Key, owner.SlugPath));
         }
 
-        // The lookup value is either a subset of the ancestor's allow-list or there is no ancestor with entries for this type
+        // The lookup option is either a subset of the ancestor's allow-list or there is no ancestor with entries for this type
         // making this the topmost node.
 
         // prevent local duplicates
-        if (LookupsAllowed.Any(a => a.Value == value))
+        if (LookupsAllowed.Any(a => a.Option == option))
         {
-            throw new DomainException(E.DuplicateAllowedLookupValues([value.Key]));
+            throw new DomainException(E.DuplicateAllowedLookupOpts([option.Code]));
         }
 
-        LookupsAllowed.Add(new LookupAllowed(this, value));
+        LookupsAllowed.Add(new LookupAllowed(this, option));
     }
 
-    public void RemoveAllowedLookup([NotNull] LookupValue value)
+    public void RemoveAllowedLookup([NotNull] LookupOption value)
     {
         if (State is not ProductTypeState.Draft)
         {
             throw new DomainException(E.NotDraft);
         }
 
-        if (LookupsAllowed.SingleOrDefault(a => a.Value == value) is not { } existing)
+        if (LookupsAllowed.SingleOrDefault(a => a.Option == value) is not { } existing)
         {
-            throw new DomainException(E.LookupValueNotFound(value.Key));
+            throw new DomainException(E.LookupOptNotFound(value.Code));
         }
 
         LookupsAllowed.Remove(existing);
@@ -477,20 +477,20 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     }
 
     /// <summary>
-    /// Returns true if the speicifed lookup value is permitted by this product type or any ancestor that declares an allow-list
+    /// Returns true if the speicifed lookup option is permitted by this product type or any ancestor that declares an allow-list
     /// for that value's type. Nearest ancestor with entries wins. If no ancestor declares entries for that value, the fallback policy
     /// applies as set in noEntriesMeansAllowAll.
     /// </summary>
-    /// <param name="value">The lookup value to check.</param>
-    /// <param name="noEntriesMeansAllowAll">If true, the absence of any allow-list entries for the value's type in the product type lineage means all values of that type are allowed.</param>
+    /// <param name="option">The lookup option to check.</param>
+    /// <param name="noEntriesMeansAllowAll">If true, the absence of any allow-list entries for the option's type in the product type lineage means all options of that type are allowed.</param>
     /// <returns></returns>
     public bool IsLookupOptionAllowed(
-        [NotNull] LookupValue value,
+        [NotNull] LookupOption option,
         bool noEntriesMeansAllowAll)
     {
-        if (TryGetNearestAllowedSet(includeSelf: true, value.Type, out _, out var allowedSet))
+        if (TryGetNearestAllowedSet(includeSelf: true, option.Type, out _, out var allowedSet))
         {
-            return allowedSet.Contains(value);
+            return allowedSet.Contains(option);
         }
 
         // No node declared entries for this type
@@ -503,10 +503,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         AttributeSchemaUtils.EnsureAcyclic(Attributes);
 
         // All attribute definitions must have unique positions to ensure deterministic ordering
-        var positionSet = new HashSet<int>();
+        var posSet = new HashSet<int>();
         foreach (var attr in Attributes)
         {
-            if (!positionSet.Add(attr.Position))
+            if (!posSet.Add(attr.Position))
                     {
                 throw new DomainException(E.DuplicateAttrPosition(attr.Key));
                     }
@@ -529,8 +529,8 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
 
         // Stale types: allow-list entries whose type isn't in the schema
         var staleLookupTypeKeys = LookupsAllowed
-            .Where(la => !usedLookupTypes.Contains(la.Value.Type))
-            .Select(la => la.Value.Type.Key)
+            .Where(la => !usedLookupTypes.Contains(la.Option.Type))
+            .Select(la => la.Option.Type.Key)
             .Distinct()
             .ToArray();
 
@@ -551,22 +551,22 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.DuplicateLookupTypeOnProductType(duplicateLookupTypeKeys));
         }
 
-        // Ensure no duplicate values in allow-list (same value added more than once)
-        var duplicateAllowedValues = LookupsAllowed
-            .GroupBy(a => a.Value)
+        // Ensure no duplicate options in allow-list (same option added more than once)
+        var duplicateAllowedOptions = LookupsAllowed
+            .GroupBy(a => a.Option)
             .Where(g => g.Count() > 1)
-            .Select(g => g.Key.Key)
+            .Select(g => g.Key.Code)
             .ToArray();
 
-        if (duplicateAllowedValues.Length > 0)
+        if (duplicateAllowedOptions.Length > 0)
         {
-            throw new DomainException(E.DuplicateAllowedLookupValues(duplicateAllowedValues));
+            throw new DomainException(E.DuplicateAllowedLookupOpts(duplicateAllowedOptions));
         }
 
         // Build local map: type -> {values}
         var localAllowedByType = LookupsAllowed
-            .GroupBy(a => a.Value.Type)
-            .ToDictionary(g => g.Key, g => g.Select(a => a.Value).ToHashSet());
+            .GroupBy(a => a.Option.Type)
+            .ToDictionary(g => g.Key, g => g.Select(a => a.Option).ToHashSet());
 
         // Subset-of-nearest-ancestor: if this PT declares entries for a type,
         // they must be a subset of the nearest ancestor's entries for that type (if any).
@@ -581,12 +581,12 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             if (!localSet.IsSubsetOf(ancestorSet))
             {
                 var offendingKeys = LookupsAllowed
-                    .Where(a => a.Value.Type == lookupType && !ancestorSet.Contains(a.Value))
-                    .Select(a => a.Value.Key)
+                    .Where(a => a.Option.Type == lookupType && !ancestorSet.Contains(a.Option))
+                    .Select(a => a.Option.Code)
                     .Distinct()
                     .ToArray();
 
-                throw new DomainException(E.LookupValuesNotAllowedByAncestor(offendingKeys, lookupType.Key, ancestor.SlugPath));
+                throw new DomainException(E.LookupOptsNotAllowedByAncestor(offendingKeys, lookupType.Key, ancestor.SlugPath));
             }
         }
 
@@ -606,7 +606,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         bool includeSelf,
         LookupType lookupType,
         [NotNullWhen(true)] out ProductType? owner,
-        out HashSet<LookupValue> allowSet)
+        out HashSet<LookupOption> allowSet)
     {
         owner = null;
         allowSet = [];
@@ -615,20 +615,20 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         // Find nearest node (including self, if set) that has entries for the value's lookup type
         foreach (var t in BuildChain(reverse: true, includeSelf: includeSelf))
         {
-            if (t.LookupsAllowed.Any(a => a.Value.Type == lookupType))
+            if (t.LookupsAllowed.Any(a => a.Option.Type == lookupType))
             {
                 owner = t;
                 break;
             }
         }
 
-        // If lookup type is found, return all lookup values of that type from the owner node
+        // If lookup type is found, return all options of that type from the owner node
 
         if (owner is not null)
         {
             allowSet = [.. owner.LookupsAllowed
-                .Where(a => a.Value.Type == lookupType)
-                .Select(a => a.Value)];
+                .Where(a => a.Option.Type == lookupType)
+                .Select(a => a.Option)];
 
             return true;
         }

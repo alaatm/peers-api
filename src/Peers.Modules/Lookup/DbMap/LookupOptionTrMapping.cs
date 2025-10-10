@@ -7,8 +7,8 @@ using Peers.Modules.Lookup.Domain.Translations;
 
 namespace Peers.Modules.Lookup.DbMap;
 
-internal sealed class LookupValueTrMapping : TranslationBaseMapping<LookupValue, LookupValueTr>
+internal sealed class LookupOptionTrMapping : TranslationBaseMapping<LookupOption, LookupOptionTr>
 {
-    protected override void ConfigureCore(EntityTypeBuilder<LookupValueTr> builder)
-        => builder.ToTable(nameof(LookupValueTr).Underscore(), "i18n");
+    protected override void ConfigureCore(EntityTypeBuilder<LookupOptionTr> builder)
+        => builder.ToTable(nameof(LookupOptionTr).Underscore(), "i18n");
 }

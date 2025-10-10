@@ -451,21 +451,21 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "lookup_value",
+                name: "lookup_option",
                 schema: "lookup",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
+                    code = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
                     type_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_lookup_value", x => x.id);
-                    table.UniqueConstraint("AK_lookup_value_type_id_id", x => new { x.type_id, x.id });
+                    table.PrimaryKey("PK_lookup_option", x => x.id);
+                    table.UniqueConstraint("AK_lookup_option_type_id_id", x => new { x.type_id, x.id });
                     table.ForeignKey(
-                        name: "FK_lookup_value_lookup_type_type_id",
+                        name: "FK_lookup_option_lookup_type_type_id",
                         column: x => x.type_id,
                         principalSchema: "lookup",
                         principalTable: "lookup_type",
@@ -821,16 +821,16 @@ namespace Peers.Modules.Migrations
                 {
                     product_type_id = table.Column<int>(type: "int", nullable: false),
                     type_id = table.Column<int>(type: "int", nullable: false),
-                    value_id = table.Column<int>(type: "int", nullable: false)
+                    option_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_lookup_allowed", x => new { x.product_type_id, x.type_id, x.value_id });
+                    table.PrimaryKey("PK_lookup_allowed", x => new { x.product_type_id, x.type_id, x.option_id });
                     table.ForeignKey(
-                        name: "FK_lookup_allowed_lookup_value_type_id_value_id",
-                        columns: x => new { x.type_id, x.value_id },
+                        name: "FK_lookup_allowed_lookup_option_type_id_option_id",
+                        columns: x => new { x.type_id, x.option_id },
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumns: new[] { "type_id", "id" },
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -848,31 +848,31 @@ namespace Peers.Modules.Migrations
                 columns: table => new
                 {
                     parent_type_id = table.Column<int>(type: "int", nullable: false),
-                    parent_value_id = table.Column<int>(type: "int", nullable: false),
+                    parent_option_id = table.Column<int>(type: "int", nullable: false),
                     child_type_id = table.Column<int>(type: "int", nullable: false),
-                    child_value_id = table.Column<int>(type: "int", nullable: false)
+                    child_option_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_lookup_link", x => new { x.parent_type_id, x.parent_value_id, x.child_type_id, x.child_value_id });
+                    table.PrimaryKey("PK_lookup_link", x => new { x.parent_type_id, x.parent_option_id, x.child_type_id, x.child_option_id });
                     table.ForeignKey(
-                        name: "FK_lookup_link_lookup_value_child_type_id_child_value_id",
-                        columns: x => new { x.child_type_id, x.child_value_id },
+                        name: "FK_lookup_link_lookup_option_child_type_id_child_option_id",
+                        columns: x => new { x.child_type_id, x.child_option_id },
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumns: new[] { "type_id", "id" },
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_lookup_link_lookup_value_parent_type_id_parent_value_id",
-                        columns: x => new { x.parent_type_id, x.parent_value_id },
+                        name: "FK_lookup_link_lookup_option_parent_type_id_parent_option_id",
+                        columns: x => new { x.parent_type_id, x.parent_option_id },
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumns: new[] { "type_id", "id" },
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "lookup_value_tr",
+                name: "lookup_option_tr",
                 schema: "i18n",
                 columns: table => new
                 {
@@ -882,19 +882,19 @@ namespace Peers.Modules.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_lookup_value_tr", x => new { x.entity_id, x.lang_code });
+                    table.PrimaryKey("PK_lookup_option_tr", x => new { x.entity_id, x.lang_code });
                     table.ForeignKey(
-                        name: "FK_lookup_value_tr_language_lang_code",
+                        name: "FK_lookup_option_tr_language_lang_code",
                         column: x => x.lang_code,
                         principalSchema: "i18n",
                         principalTable: "language",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_lookup_value_tr_lookup_value_entity_id",
+                        name: "FK_lookup_option_tr_lookup_option_entity_id",
                         column: x => x.entity_id,
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -934,7 +934,7 @@ namespace Peers.Modules.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    key = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    code = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     position = table.Column<int>(type: "int", nullable: false),
                     enum_attribute_definition_id = table.Column<int>(type: "int", nullable: false),
                     parent_option_id = table.Column<int>(type: "int", nullable: true)
@@ -1051,7 +1051,7 @@ namespace Peers.Modules.Migrations
                     listing_id = table.Column<int>(type: "int", nullable: false),
                     attribute_definition_id = table.Column<int>(type: "int", nullable: false),
                     enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
-                    lookup_value_id = table.Column<int>(type: "int", nullable: true),
+                    lookup_option_id = table.Column<int>(type: "int", nullable: true),
                     attribute_kind = table.Column<int>(type: "int", nullable: false),
                     value = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     position = table.Column<int>(type: "int", nullable: false)
@@ -1059,7 +1059,7 @@ namespace Peers.Modules.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_listing_attribute", x => new { x.listing_id, x.attribute_definition_id });
-                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
                     table.CheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
                     table.ForeignKey(
                         name: "FK_listing_attribute_attribute_definition_attribute_definition_id",
@@ -1081,10 +1081,10 @@ namespace Peers.Modules.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_listing_attribute_lookup_value_lookup_value_id",
-                        column: x => x.lookup_value_id,
+                        name: "FK_listing_attribute_lookup_option_lookup_option_id",
+                        column: x => x.lookup_option_id,
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1097,7 +1097,7 @@ namespace Peers.Modules.Migrations
                     attribute_definition_id = table.Column<int>(type: "int", nullable: false),
                     attribute_kind = table.Column<int>(type: "int", nullable: false),
                     enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
-                    lookup_value_id = table.Column<int>(type: "int", nullable: true),
+                    lookup_option_id = table.Column<int>(type: "int", nullable: true),
                     numeric_value = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
                     position = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1105,7 +1105,7 @@ namespace Peers.Modules.Migrations
                 {
                     table.PrimaryKey("PK_listing_variant_attribute", x => new { x.listing_variant_id, x.attribute_definition_id });
                     table.CheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
-                    table.CheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
+                    table.CheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_option_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
                     table.ForeignKey(
                         name: "FK_listing_variant_attribute_attribute_definition_attribute_definition_id",
                         column: x => x.attribute_definition_id,
@@ -1126,10 +1126,10 @@ namespace Peers.Modules.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_listing_variant_attribute_lookup_value_lookup_value_id",
-                        column: x => x.lookup_value_id,
+                        name: "FK_listing_variant_attribute_lookup_option_lookup_option_id",
+                        column: x => x.lookup_option_id,
                         principalSchema: "lookup",
-                        principalTable: "lookup_value",
+                        principalTable: "lookup_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1276,9 +1276,9 @@ namespace Peers.Modules.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_enum_attribute_option_enum_attribute_definition_id_key",
+                name: "IX_enum_attribute_option_enum_attribute_definition_id_code",
                 table: "enum_attribute_option",
-                columns: new[] { "enum_attribute_definition_id", "key" },
+                columns: new[] { "enum_attribute_definition_id", "code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1328,16 +1328,16 @@ namespace Peers.Modules.Migrations
                 filter: "[enum_attribute_option_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_attribute_listing_id_lookup_value_id",
+                name: "IX_listing_attribute_listing_id_lookup_option_id",
                 table: "listing_attribute",
-                columns: new[] { "listing_id", "lookup_value_id" },
+                columns: new[] { "listing_id", "lookup_option_id" },
                 unique: true,
-                filter: "[lookup_value_id] IS NOT NULL");
+                filter: "[lookup_option_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_attribute_lookup_value_id",
+                name: "IX_listing_attribute_lookup_option_id",
                 table: "listing_attribute",
-                column: "lookup_value_id");
+                column: "lookup_option_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_listing_tr_lang_code",
@@ -1368,9 +1368,9 @@ namespace Peers.Modules.Migrations
                 column: "enum_attribute_option_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_variant_attribute_lookup_value_id",
+                name: "IX_listing_variant_attribute_lookup_option_id",
                 table: "listing_variant_attribute",
-                column: "lookup_value_id");
+                column: "lookup_option_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LVA_Enum",
@@ -1381,8 +1381,8 @@ namespace Peers.Modules.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_LVA_Lookup",
                 table: "listing_variant_attribute",
-                columns: new[] { "attribute_definition_id", "lookup_value_id" },
-                filter: "[lookup_value_id] IS NOT NULL");
+                columns: new[] { "attribute_definition_id", "lookup_option_id" },
+                filter: "[lookup_option_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LVA_Num",
@@ -1397,16 +1397,29 @@ namespace Peers.Modules.Migrations
                 columns: new[] { "product_type_id", "type_id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_lookup_allowed_type_id_value_id",
+                name: "IX_lookup_allowed_type_id_option_id",
                 schema: "catalog",
                 table: "lookup_allowed",
-                columns: new[] { "type_id", "value_id" });
+                columns: new[] { "type_id", "option_id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_lookup_link_child_type_id_child_value_id",
+                name: "IX_lookup_link_child_type_id_child_option_id",
                 schema: "lookup",
                 table: "lookup_link",
-                columns: new[] { "child_type_id", "child_value_id" });
+                columns: new[] { "child_type_id", "child_option_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_option_type_id_code",
+                schema: "lookup",
+                table: "lookup_option",
+                columns: new[] { "type_id", "code" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_option_tr_lang_code",
+                schema: "i18n",
+                table: "lookup_option_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_lookup_type_key",
@@ -1414,19 +1427,6 @@ namespace Peers.Modules.Migrations
                 table: "lookup_type",
                 column: "key",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_lookup_value_type_id_key",
-                schema: "lookup",
-                table: "lookup_value",
-                columns: new[] { "type_id", "key" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_lookup_value_tr_lang_code",
-                schema: "i18n",
-                table: "lookup_value_tr",
-                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_media_file_approved",
@@ -1650,7 +1650,7 @@ namespace Peers.Modules.Migrations
                 schema: "lookup");
 
             migrationBuilder.DropTable(
-                name: "lookup_value_tr",
+                name: "lookup_option_tr",
                 schema: "i18n");
 
             migrationBuilder.DropTable(
@@ -1710,7 +1710,7 @@ namespace Peers.Modules.Migrations
                 name: "listing_variant");
 
             migrationBuilder.DropTable(
-                name: "lookup_value",
+                name: "lookup_option",
                 schema: "lookup");
 
             migrationBuilder.DropTable(

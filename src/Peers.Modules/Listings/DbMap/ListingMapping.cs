@@ -59,10 +59,10 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         {
             // one value per listing per def
             nav.HasKey(p => new { p.ListingId, p.AttributeDefinitionId });
-            // Per-listing uniqueness for chosen option
+            // Per-listing uniqueness for chosen enum option
             nav.HasIndex(p => new { p.ListingId, p.EnumAttributeOptionId }).IsUnique();
-            // Per-listing uniqueness for chosen lookup value
-            nav.HasIndex(p => new { p.ListingId, p.LookupValueId }).IsUnique();
+            // Per-listing uniqueness for chosen lookup option
+            nav.HasIndex(p => new { p.ListingId, p.LookupOptionId }).IsUnique();
 
             nav.WithOwner(p => p.Listing)
                .HasForeignKey(p => p.ListingId);
@@ -79,7 +79,7 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
 
             nav.HasOne(p => p.LookupOption)
                .WithMany()
-               .HasForeignKey(p => p.LookupValueId)
+               .HasForeignKey(p => p.LookupOptionId)
                .OnDelete(DeleteBehavior.Restrict);
 
             nav.ToTable(nameof(ListingAttribute).Underscore(), p =>
@@ -89,7 +89,7 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
                 var attrKindColName = nameof(ListingAttribute.AttributeKind).Underscore();
                 var valueColName = nameof(ListingAttribute.Value).Underscore();
                 var enumOptionIdColName = nameof(ListingAttribute.EnumAttributeOptionId).Underscore();
-                var lookupValueIdColName = nameof(ListingAttribute.LookupValueId).Underscore();
+                var lookupOptionIdColName = nameof(ListingAttribute.LookupOptionId).Underscore();
                 var primitiveAttrKinds = string.Join(',',
                 [
                     (int)AttributeKind.Int,
@@ -104,16 +104,16 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
                     $"""
                     (
                         [{attrKindColName}] IN ({primitiveAttrKinds}) AND [{valueColName}] IS NOT NULL
-                        AND [{enumOptionIdColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                        AND [{enumOptionIdColName}] IS NULL AND [{lookupOptionIdColName}] IS NULL
                     )
                     OR
                     (
                         [{attrKindColName}] = {(int)AttributeKind.Enum} AND [{enumOptionIdColName}] IS NOT NULL
-                        AND [{valueColName}] IS NULL AND [{lookupValueIdColName}] IS NULL
+                        AND [{valueColName}] IS NULL AND [{lookupOptionIdColName}] IS NULL
                     )
                     OR
                     (
-                        [{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupValueIdColName}] IS NOT NULL
+                        [{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupOptionIdColName}] IS NOT NULL
                         AND [{valueColName}] IS NULL AND [{enumOptionIdColName}] IS NULL
                     )
                     """);

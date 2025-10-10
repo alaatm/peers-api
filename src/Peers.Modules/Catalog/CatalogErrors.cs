@@ -61,27 +61,27 @@ public static class CatalogErrors
     /// <summary>
     /// Option '{2}' of attribute '{0}' is not scoped, but attribute '{0}' depends on '{1}'; every option must be scoped to a parent option of '{1}'.
     /// </summary>
-    public static DomainError EnumOptNotScopedButDep(string attrKey, string parentAttrKey, string optKey)
-        => new(Titles.ValidationFailed, "catalog.opt-not-scoped-but-dep", attrKey, parentAttrKey, optKey);
+    public static DomainError EnumOptNotScopedButDep(string attrKey, string parentAttrKey, string optCode)
+        => new(Titles.ValidationFailed, "catalog.opt-not-scoped-but-dep", attrKey, parentAttrKey, optCode);
     /// <summary>
     /// Option '{1}' of attribute '{0}' is scoped, but the attribute has no dependency.
     /// </summary>
-    public static DomainError OptScopedButNoDep(string attrKey, string optKey) => new(Titles.ValidationFailed, "catalog.opt-scoped-but-no-dep", attrKey, optKey);
+    public static DomainError OptScopedButNoDep(string attrKey, string optCode) => new(Titles.ValidationFailed, "catalog.opt-scoped-but-no-dep", attrKey, optCode);
     /// <summary>
-    /// Option '{1}' of attribute '{0}' has a duplicate key with another option.
+    /// Option '{1}' of attribute '{0}' has a duplicate code with another option.
     /// </summary>
-    public static DomainError DuplicateEnumOptionKey(string attrKey, string optKey)
-        => new(Titles.ResourceConflict, "catalog.duplicate-enum-option-key", attrKey, optKey);
+    public static DomainError DuplicateEnumOptCode(string attrKey, string optCode)
+        => new(Titles.ResourceConflict, "catalog.duplicate-enum-opt-code", attrKey, optCode);
     /// <summary>
     /// Option '{1}' of attribute '{0}' has a duplicate position with another option.
     /// </summary>
-    public static DomainError DuplicateEnumOptionPosition(string attrKey, string optKey)
-        => new(Titles.ResourceConflict, "catalog.duplicate-enum-option-position", attrKey, optKey);
+    public static DomainError DuplicateEnumOptPosition(string attrKey, string optCode)
+        => new(Titles.ResourceConflict, "catalog.duplicate-enum-opt-position", attrKey, optCode);
     /// <summary>
     /// Attribute '{0}' depends on '{1}', but option '{2}' is scoped to an option of '{3}'.
     /// </summary>
-    public static DomainError InvalidScopeParent(string attrKey, string expectedParentAttrKey, string optionKey, string actualParentAttrKey)
-        => new(Titles.ValidationFailed, "catalog.invalid-scope-parent", attrKey, expectedParentAttrKey, optionKey, actualParentAttrKey);
+    public static DomainError InvalidScopeParent(string attrKey, string expectedParentAttrKey, string optCode, string actualParentAttrKey)
+        => new(Titles.ValidationFailed, "catalog.invalid-scope-parent", attrKey, expectedParentAttrKey, optCode, actualParentAttrKey);
     /// <summary>
     /// Attribute '{0}' depends on '{1}', which belongs to a different product type.
     /// </summary>
@@ -181,7 +181,7 @@ public static class CatalogErrors
     /// <summary>
     /// Option '{0}' already exists.
     /// </summary>
-    public static DomainError EnumOptAlreadyExists(string key) => new(Titles.ResourceConflict, "catalog.opt-already-exists", key);
+    public static DomainError EnumOptAlreadyExists(string code) => new(Titles.ResourceConflict, "catalog.opt-already-exists", code);
     /// <summary>
     /// Attribute has no dependency; scoped option is not allowed.
     /// </summary>
@@ -193,7 +193,7 @@ public static class CatalogErrors
     /// <summary>
     /// Option '{0}' does not exist.
     /// </summary>
-    public static DomainError EnumOptNotFound(string key) => new(Titles.NotFound, "catalog.opt-not-found", key);
+    public static DomainError EnumOptNotFound(string code) => new(Titles.NotFound, "catalog.opt-not-found", code);
     /// <summary>
     /// Scope parent option belongs to a different attribute than the declared dependency.
     /// </summary>
@@ -222,19 +222,19 @@ public static class CatalogErrors
     public static DomainError DuplicateLookupTypeOnProductType(string[] lookupTypeKeys)
         => new(Titles.ResourceConflict, "catalog.duplicate-lookup-types-on-product-type", LocalizationHelper.FormatList(lookupTypeKeys));
     /// <summary>
-    /// The lookup value '{0}' was not found.
+    /// The lookup option '{0}' was not found.
     /// </summary>
-    public static DomainError LookupValueNotFound(string key) => new(Titles.NotFound, "catalog.lookup-value-not-found", key);
+    public static DomainError LookupOptNotFound(string key) => new(Titles.NotFound, "catalog.lookup-opt-not-found", key);
     /// <summary>
-    /// The lookup value(s) {0} of type '{1}' is not in the allowed set declared by nearest ancestor '{2}'.
+    /// The lookup option(s) {0} of type '{1}' is not in the allowed set declared by nearest ancestor '{2}'.
     /// </summary>
-    public static DomainError LookupValuesNotAllowedByAncestor(string[] valueKeys, string typeKey, string ancestorSlugPath)
-        => new(Titles.ValidationFailed, "catalog.lookup-values-not-allowed-by-ancestor", LocalizationHelper.FormatList(valueKeys), typeKey, ancestorSlugPath);
+    public static DomainError LookupOptsNotAllowedByAncestor(string[] codes, string typeKey, string ancestorSlugPath)
+        => new(Titles.ValidationFailed, "catalog.lookup-opts-not-allowed-by-ancestor", LocalizationHelper.FormatList(codes), typeKey, ancestorSlugPath);
     /// <summary>
-    /// Duplicate allow-list entry(s) detected for lookup value(s): {0}. Each value may appear at most once.
+    /// Duplicate allow-list entry(s) detected for lookup option(s): {0}. Each option may appear at most once.
     /// </summary>
-    public static DomainError DuplicateAllowedLookupValues(string[] valueKeys)
-        => new(Titles.ResourceConflict, "catalog.duplicate-allowed-lookup-values", LocalizationHelper.FormatList(valueKeys));
+    public static DomainError DuplicateAllowedLookupOpts(string[] codes)
+        => new(Titles.ResourceConflict, "catalog.duplicate-allowed-lookup-opts", LocalizationHelper.FormatList(codes));
     /// <summary>
     /// The lookup type '{1}' used by attribute '{0}' requires an allow-list of permitted values on the product type, but none was provided.
     /// </summary>

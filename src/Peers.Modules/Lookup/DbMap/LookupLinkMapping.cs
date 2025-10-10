@@ -8,19 +8,19 @@ internal sealed class LookupLinkMapping : IEntityTypeConfiguration<LookupLink>
 {
     public void Configure(EntityTypeBuilder<LookupLink> builder)
     {
-        builder.HasKey(p => new { p.ParentTypeId, p.ParentValueId, p.ChildTypeId, p.ChildValueId });
+        builder.HasKey(p => new { p.ParentTypeId, p.ParentOptionId, p.ChildTypeId, p.ChildOptionId });
 
         builder
-            .HasOne(p => p.ParentValue)
+            .HasOne(p => p.ParentOption)
             .WithMany()
-            .HasForeignKey(p => new { p.ParentTypeId, p.ParentValueId })
+            .HasForeignKey(p => new { p.ParentTypeId, p.ParentOptionId })
             .HasPrincipalKey(p => new { p.TypeId, p.Id })
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(p => p.ChildValue)
+            .HasOne(p => p.ChildOption)
             .WithMany()
-            .HasForeignKey(p => new { p.ChildTypeId, p.ChildValueId })
+            .HasForeignKey(p => new { p.ChildTypeId, p.ChildOptionId })
             .HasPrincipalKey(p => new { p.TypeId, p.Id })
             .OnDelete(DeleteBehavior.Restrict);
 

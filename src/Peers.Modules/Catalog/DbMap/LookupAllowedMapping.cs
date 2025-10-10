@@ -8,7 +8,7 @@ internal sealed class LookupAllowedMapping : IEntityTypeConfiguration<LookupAllo
 {
     public void Configure(EntityTypeBuilder<LookupAllowed> builder)
     {
-        builder.HasKey(p => new { p.ProductTypeId, p.TypeId, p.ValueId });
+        builder.HasKey(p => new { p.ProductTypeId, p.TypeId, p.OptionId });
         builder.HasIndex(p => new { p.ProductTypeId, p.TypeId });
 
         builder
@@ -18,9 +18,9 @@ internal sealed class LookupAllowedMapping : IEntityTypeConfiguration<LookupAllo
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(p => p.Value)
+            .HasOne(p => p.Option)
             .WithMany()
-            .HasForeignKey(p => new { p.TypeId, p.ValueId })
+            .HasForeignKey(p => new { p.TypeId, p.OptionId })
             .HasPrincipalKey(p => new { p.TypeId, p.Id })
             .OnDelete(DeleteBehavior.Restrict);
 

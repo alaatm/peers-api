@@ -85,7 +85,7 @@ public sealed class ListingVariant : Entity
     /// <param name="axis">
     /// One entry per variant axis (never a Group), ordered by the attribute definition's <c>Position</c> then <c>Key</c>.
     /// For each entry, set exactly one value matching the definition type:
-    /// enum → <c>opt</c>; lookup → <c>lookupValue</c>; numeric (int/decimal) → <c>numericValue</c>.
+    /// enum → <c>enumOption</c>; lookup → <c>lookupOption</c>; numeric (int/decimal) → <c>numericValue</c>.
     /// </param>
     /// <remarks>
     /// Builds a canonical <c>VariantKey</c> from ordered <c>def.Key:value</c> tokens and a SKU code from the same tokens.
@@ -103,7 +103,7 @@ public sealed class ListingVariant : Entity
         // Debug check: ensure caller sent no duplicate attribute definitions
         Debug.Assert(axis.Select(x => x.Def).Distinct().Count() == axis.Count);
 
-        var keySegments = axis.Select(x => $"{x.Def.Key}:{x.Value.EnumOption?.Key ?? x.Value.LookupOption?.Key ?? NormalizeNumericValue(x.Def, x.Value.Numeric!.Value)}");
+        var keySegments = axis.Select(x => $"{x.Def.Key}:{x.Value.EnumOption?.Code ?? x.Value.LookupOption?.Code ?? NormalizeNumericValue(x.Def, x.Value.Numeric!.Value)}");
         var variantKey = string.Join("|", keySegments);
         var skuCode = GenerateSku(listing.Id, axis);
 
@@ -139,7 +139,7 @@ public sealed class ListingVariant : Entity
         }
 
         var valueSegments = axis is not null
-            ? axis.Select(p => Sanitize(p.Value.EnumOption?.Key ?? p.Value.LookupOption?.Key ?? NormalizeNumericValue(p.Def, p.Value.Numeric!.Value)))
+            ? axis.Select(p => Sanitize(p.Value.EnumOption?.Code ?? p.Value.LookupOption?.Code ?? NormalizeNumericValue(p.Def, p.Value.Numeric!.Value)))
             : [];
         var tail = string.Join("-", valueSegments);
         var prefix = listingId.EncodeBase36().ToUpperInvariant();

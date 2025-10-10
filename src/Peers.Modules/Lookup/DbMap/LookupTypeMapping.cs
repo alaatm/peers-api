@@ -12,7 +12,7 @@ internal sealed class LookupTypeMapping : IEntityTypeConfiguration<LookupType>
         builder.Property(p => p.Key).HasMaxLength(64).IsUnicode(false);
 
         builder
-            .HasMany(p => p.Values)
+            .HasMany(p => p.Options)
             .WithOne(p => p.Type)
             .HasForeignKey(p => p.TypeId)
             .OnDelete(DeleteBehavior.Restrict);

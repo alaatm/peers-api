@@ -30,15 +30,15 @@ public sealed class ListingAttribute
     /// </summary>
     public int? EnumAttributeOptionId { get; private set; }
     /// <summary>
-    /// The identifier of the selected lookup value, if this attribute is of lookup type.
+    /// The identifier of the selected lookup option, if this attribute is of lookup type.
     /// </summary>
-    public int? LookupValueId { get; private set; }
+    public int? LookupOptionId { get; private set; }
     /// <summary>
     /// The kind of attribute (e.g., int, decimal, string, bool, date, enum, lookup).
     /// </summary>
     public AttributeKind AttributeKind { get; private set; }
     /// <summary>
-    /// The value of the attribute as a string. For enum and lookup types, this is null and the selected option/value is stored
+    /// The value of the attribute as a string. For enum and lookup types, this is null and the selected option is stored
     /// in the respective navigation properties.
     /// </summary>
     public string? Value { get; private set; } = default!;
@@ -59,9 +59,9 @@ public sealed class ListingAttribute
     /// </summary>
     public EnumAttributeOption? EnumAttributeOption { get; internal set; }
     /// <summary>
-    /// The selected lookup value if this attribute is of lookup type; otherwise, null.
+    /// The selected lookup option if this attribute is of lookup type; otherwise, null.
     /// </summary>
-    public LookupValue? LookupOption { get; private set; }
+    public LookupOption? LookupOption { get; private set; }
 
     private ListingAttribute() { }
 
@@ -69,7 +69,7 @@ public sealed class ListingAttribute
         Listing listing,
         AttributeDefinition def,
         EnumAttributeOption? option = null,
-        LookupValue? lookupOption = null,
+        LookupOption? lookupOption = null,
         string? value = null)
     {
         Listing = listing;
@@ -146,7 +146,7 @@ public sealed class ListingAttribute
     {
         if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            if (def.Options.FirstOrDefault(p => p.Key == value) is not EnumAttributeOption option)
+            if (def.Options.FirstOrDefault(p => p.Code == value) is not EnumAttributeOption option)
             {
                 throw new DomainException(E.UnknownEnumAttrOpt(def.Key, value));
             }
@@ -161,7 +161,7 @@ public sealed class ListingAttribute
     {
         if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            if (def.LookupType.Values.FirstOrDefault(p => p.Key == value) is not LookupValue option)
+            if (def.LookupType.Options.FirstOrDefault(p => p.Code == value) is not LookupOption option)
             {
                 throw new DomainException(E.UnknownLookupAttrOpt(def.Key, value));
             }

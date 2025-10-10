@@ -67,11 +67,11 @@ public static class ListingErrors
     /// <summary>
     /// Unknown option '{1}' for enum attribute '{0}'.
     /// </summary>
-    public static DomainError UnknownEnumAttrOpt(string attrKey, string optionKey) => new(Titles.ValidationFailed, "listing.unknown-enum-attr-opt", attrKey, optionKey);
+    public static DomainError UnknownEnumAttrOpt(string attrKey, string optCode) => new(Titles.ValidationFailed, "listing.unknown-enum-attr-opt", attrKey, optCode);
     /// <summary>
     /// Unknown option '{1}' for lookup attribute '{0}'.
     /// </summary>
-    public static DomainError UnknownLookupAttrOpt(string attrKey, string optionKey) => new(Titles.ValidationFailed, "listing.unknown-lookup-attr-opt", attrKey, optionKey);
+    public static DomainError UnknownLookupAttrOpt(string attrKey, string optCode) => new(Titles.ValidationFailed, "listing.unknown-lookup-attr-opt", attrKey, optCode);
     /// <summary>
     /// Attribute axis '{0}' requires one or more enum option codes.
     /// </summary>

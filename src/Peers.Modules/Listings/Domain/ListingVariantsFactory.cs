@@ -123,12 +123,12 @@ internal static class ListingVariantsFactory
 
     public record SingleAxisValue(
         EnumAttributeOption? EnumOption = null,
-        LookupValue? LookupOption = null,
+        LookupOption? LookupOption = null,
         decimal? Numeric = null);
 
     public sealed record AxisValue(
         EnumAttributeOption? EnumOption = null,
-        LookupValue? LookupOption = null,
+        LookupOption? LookupOption = null,
         decimal? Numeric = null,
         List<MemberAxis>? Group = null) : SingleAxisValue(EnumOption, LookupOption, Numeric);
 

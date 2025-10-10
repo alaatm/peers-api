@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251010145307_Initial")]
-    partial class Initial
+    [Migration("20251010161520_ProductTypeLineageFunc")]
+    partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -257,16 +257,16 @@ namespace Peers.Modules.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("EnumAttributeDefinitionId")
-                        .HasColumnType("int")
-                        .HasColumnName("enum_attribute_definition_id");
-
-                    b.Property<string>("Key")
+                    b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(64)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(64)")
-                        .HasColumnName("key");
+                        .HasColumnName("code");
+
+                    b.Property<int>("EnumAttributeDefinitionId")
+                        .HasColumnType("int")
+                        .HasColumnName("enum_attribute_definition_id");
 
                     b.Property<int?>("ParentOptionId")
                         .HasColumnType("int")
@@ -280,7 +280,7 @@ namespace Peers.Modules.Migrations
 
                     b.HasIndex("ParentOptionId");
 
-                    b.HasIndex("EnumAttributeDefinitionId", "Key")
+                    b.HasIndex("EnumAttributeDefinitionId", "Code")
                         .IsUnique();
 
                     b.HasIndex("EnumAttributeDefinitionId", "Position")
@@ -299,15 +299,15 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("type_id");
 
-                    b.Property<int>("ValueId")
+                    b.Property<int>("OptionId")
                         .HasColumnType("int")
-                        .HasColumnName("value_id");
+                        .HasColumnName("option_id");
 
-                    b.HasKey("ProductTypeId", "TypeId", "ValueId");
+                    b.HasKey("ProductTypeId", "TypeId", "OptionId");
 
                     b.HasIndex("ProductTypeId", "TypeId");
 
-                    b.HasIndex("TypeId", "ValueId");
+                    b.HasIndex("TypeId", "OptionId");
 
                     b.ToTable("lookup_allowed", "catalog");
                 });
@@ -909,23 +909,51 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("parent_type_id");
 
-                    b.Property<int>("ParentValueId")
+                    b.Property<int>("ParentOptionId")
                         .HasColumnType("int")
-                        .HasColumnName("parent_value_id");
+                        .HasColumnName("parent_option_id");
 
                     b.Property<int>("ChildTypeId")
                         .HasColumnType("int")
                         .HasColumnName("child_type_id");
 
-                    b.Property<int>("ChildValueId")
+                    b.Property<int>("ChildOptionId")
                         .HasColumnType("int")
-                        .HasColumnName("child_value_id");
+                        .HasColumnName("child_option_id");
 
-                    b.HasKey("ParentTypeId", "ParentValueId", "ChildTypeId", "ChildValueId");
+                    b.HasKey("ParentTypeId", "ParentOptionId", "ChildTypeId", "ChildOptionId");
 
-                    b.HasIndex("ChildTypeId", "ChildValueId");
+                    b.HasIndex("ChildTypeId", "ChildOptionId");
 
                     b.ToTable("lookup_link", "lookup");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("code");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("type_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TypeId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("lookup_option", "lookup");
                 });
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
@@ -960,35 +988,7 @@ namespace Peers.Modules.Migrations
                     b.ToTable("lookup_type", "lookup");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(64)")
-                        .HasColumnName("key");
-
-                    b.Property<int>("TypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("type_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TypeId", "Key")
-                        .IsUnique();
-
-                    b.ToTable("lookup_value", "lookup");
-                });
-
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupValueTr", b =>
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupOptionTr", b =>
                 {
                     b.Property<int>("EntityId")
                         .HasColumnType("int")
@@ -1010,7 +1010,7 @@ namespace Peers.Modules.Migrations
 
                     b.HasIndex("LangCode");
 
-                    b.ToTable("lookup_value_tr", "i18n");
+                    b.ToTable("lookup_option_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
@@ -1998,16 +1998,16 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "Value")
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "Option")
                         .WithMany()
-                        .HasForeignKey("TypeId", "ValueId")
+                        .HasForeignKey("TypeId", "OptionId")
                         .HasPrincipalKey("TypeId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ProductType");
+                    b.Navigation("Option");
 
-                    b.Navigation("Value");
+                    b.Navigation("ProductType");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
@@ -2119,9 +2119,9 @@ namespace Peers.Modules.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("enum_attribute_option_id");
 
-                            b1.Property<int?>("LookupValueId")
+                            b1.Property<int?>("LookupOptionId")
                                 .HasColumnType("int")
-                                .HasColumnName("lookup_value_id");
+                                .HasColumnName("lookup_option_id");
 
                             b1.Property<int>("Position")
                                 .HasColumnType("int")
@@ -2138,19 +2138,19 @@ namespace Peers.Modules.Migrations
 
                             b1.HasIndex("EnumAttributeOptionId");
 
-                            b1.HasIndex("LookupValueId");
+                            b1.HasIndex("LookupOptionId");
 
                             b1.HasIndex("ListingId", "EnumAttributeOptionId")
                                 .IsUnique()
                                 .HasFilter("[enum_attribute_option_id] IS NOT NULL");
 
-                            b1.HasIndex("ListingId", "LookupValueId")
+                            b1.HasIndex("ListingId", "LookupOptionId")
                                 .IsUnique()
-                                .HasFilter("[lookup_value_id] IS NOT NULL");
+                                .HasFilter("[lookup_option_id] IS NOT NULL");
 
                             b1.ToTable("listing_attribute", null, t =>
                                 {
-                                    t.HasCheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                                    t.HasCheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
 
                                     t.HasCheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
                                 });
@@ -2169,9 +2169,9 @@ namespace Peers.Modules.Migrations
                             b1.WithOwner("Listing")
                                 .HasForeignKey("ListingId");
 
-                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupOption")
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "LookupOption")
                                 .WithMany()
-                                .HasForeignKey("LookupValueId")
+                                .HasForeignKey("LookupOptionId")
                                 .OnDelete(DeleteBehavior.Restrict);
 
                             b1.Navigation("AttributeDefinition");
@@ -2216,9 +2216,9 @@ namespace Peers.Modules.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("enum_attribute_option_id");
 
-                            b1.Property<int?>("LookupValueId")
+                            b1.Property<int?>("LookupOptionId")
                                 .HasColumnType("int")
-                                .HasColumnName("lookup_value_id");
+                                .HasColumnName("lookup_option_id");
 
                             b1.Property<decimal?>("NumericValue")
                                 .HasPrecision(18, 2)
@@ -2233,15 +2233,15 @@ namespace Peers.Modules.Migrations
 
                             b1.HasIndex("EnumAttributeOptionId");
 
-                            b1.HasIndex("LookupValueId");
+                            b1.HasIndex("LookupOptionId");
 
                             b1.HasIndex("AttributeDefinitionId", "EnumAttributeOptionId")
                                 .HasDatabaseName("IX_LVA_Enum")
                                 .HasFilter("[enum_attribute_option_id] IS NOT NULL");
 
-                            b1.HasIndex("AttributeDefinitionId", "LookupValueId")
+                            b1.HasIndex("AttributeDefinitionId", "LookupOptionId")
                                 .HasDatabaseName("IX_LVA_Lookup")
-                                .HasFilter("[lookup_value_id] IS NOT NULL");
+                                .HasFilter("[lookup_option_id] IS NOT NULL");
 
                             b1.HasIndex("AttributeDefinitionId", "NumericValue")
                                 .HasDatabaseName("IX_LVA_Num")
@@ -2251,7 +2251,7 @@ namespace Peers.Modules.Migrations
                                 {
                                     t.HasCheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
 
-                                    t.HasCheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
+                                    t.HasCheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_option_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
                                 });
 
                             b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", "AttributeDefinition")
@@ -2268,9 +2268,9 @@ namespace Peers.Modules.Migrations
                             b1.WithOwner("ListingVariant")
                                 .HasForeignKey("ListingVariantId");
 
-                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupValue")
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "LookupOption")
                                 .WithMany()
-                                .HasForeignKey("LookupValueId")
+                                .HasForeignKey("LookupOptionId")
                                 .OnDelete(DeleteBehavior.Restrict);
 
                             b1.Navigation("AttributeDefinition");
@@ -2279,7 +2279,7 @@ namespace Peers.Modules.Migrations
 
                             b1.Navigation("ListingVariant");
 
-                            b1.Navigation("LookupValue");
+                            b1.Navigation("LookupOption");
                         });
 
                     b.Navigation("Attributes");
@@ -2304,29 +2304,29 @@ namespace Peers.Modules.Migrations
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
                 {
-                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "ChildValue")
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "ChildOption")
                         .WithMany()
-                        .HasForeignKey("ChildTypeId", "ChildValueId")
+                        .HasForeignKey("ChildTypeId", "ChildOptionId")
                         .HasPrincipalKey("TypeId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "ParentValue")
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "ParentOption")
                         .WithMany()
-                        .HasForeignKey("ParentTypeId", "ParentValueId")
+                        .HasForeignKey("ParentTypeId", "ParentOptionId")
                         .HasPrincipalKey("TypeId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ChildValue");
+                    b.Navigation("ChildOption");
 
-                    b.Navigation("ParentValue");
+                    b.Navigation("ParentOption");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupOption", b =>
                 {
                     b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "Type")
-                        .WithMany("Values")
+                        .WithMany("Options")
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2334,9 +2334,9 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Type");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupValueTr", b =>
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupOptionTr", b =>
                 {
-                    b.HasOne("Peers.Modules.Lookup.Domain.LookupValue", null)
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", null)
                         .WithMany("Translations")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2587,14 +2587,14 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Variants");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
-                {
-                    b.Navigation("Values");
-                });
-
-            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupValue", b =>
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupOption", b =>
                 {
                     b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>

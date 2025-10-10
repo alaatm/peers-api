@@ -25,9 +25,9 @@ public sealed class ListingVariantAttribute
     /// </summary>
     public int? EnumAttributeOptionId { get; private set; }
     /// <summary>
-    /// The identifier of the selected lookup value when this variant attribute is lookup; otherwise, null.
+    /// The identifier of the selected lookup option when this variant attribute is lookup; otherwise, null.
     /// </summary>
-    public int? LookupValueId { get; private set; }
+    public int? LookupOptionId { get; private set; }
     /// <summary>
     /// The numeric payload when this variant attribute is numeric; otherwise null.
     /// </summary>
@@ -43,7 +43,7 @@ public sealed class ListingVariantAttribute
     /// <see cref="ListingVariantAttribute"/> row with its numeric value.
     /// </para>
     /// <para><strong>Invariants:</strong> exactly one of <see cref="NumericValue"/>,
-    /// <see cref="EnumAttributeOptionId"/>, or <see cref="LookupValueId"/> is non-null, according to
+    /// <see cref="EnumAttributeOptionId"/>, or <see cref="LookupOptionId"/> is non-null, according to
     /// <see cref="AttributeKind"/>; <see cref="AttributeKind.Group"/> is not permitted here.</para>
     /// </remarks>
     public decimal? NumericValue { get; private set; }
@@ -64,9 +64,9 @@ public sealed class ListingVariantAttribute
     /// </summary>
     public EnumAttributeOption? EnumAttributeOption { get; private set; } = default!;
     /// <summary>
-    /// The selected lookup value when the variant attribute is lookup; otherwise, null.
+    /// The selected lookup option when the variant attribute is lookup; otherwise, null.
     /// </summary>
-    public LookupValue? LookupValue { get; private set; }
+    public LookupOption? LookupOption { get; private set; }
 
     private ListingVariantAttribute() { }
 
@@ -97,17 +97,17 @@ public sealed class ListingVariantAttribute
     internal ListingVariantAttribute(
         ListingVariant variant,
         LookupAttributeDefinition def,
-        LookupValue lookupValue)
+        LookupOption lookupOption)
     {
-        if (def.LookupType != lookupValue.Type)
+        if (def.LookupType != lookupOption.Type)
         {
-            throw new ArgumentException("The provided lookup value does not belong to the lookup type associated with the specified attribute definition.", nameof(lookupValue));
+            throw new ArgumentException("The provided lookup option does not belong to the lookup type associated with the specified attribute definition.", nameof(lookupOption));
         }
 
         AttributeKind = def.Kind;
         ListingVariant = variant;
         AttributeDefinition = def;
-        LookupValue = lookupValue;
+        LookupOption = lookupOption;
         Position = def.Position;
     }
 

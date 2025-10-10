@@ -6,12 +6,12 @@ using Peers.Modules.Catalog.Domain.Translations;
 namespace Peers.Modules.Catalog.Domain.Attributes;
 
 /// <summary>
-/// Represents an option within an enum attribute definition, including its unique key, and hierarchical
+/// Represents an option within an enum attribute definition, including its unique code, and hierarchical
 /// relationships.
 /// </summary>
 /// <remarks>
 /// This class is used to define selectable options for an attribute, such as color options ("Red",
-/// "Green") or other enumerated values. Each option is uniquely identified by its <see cref="Key"/> and can be ordered
+/// "Green") or other enumerated values. Each option is uniquely identified by its <see cref="Code"/> and can be ordered
 /// using the <see cref="Position"/> property. Options may also have a parent-child relationship, defined by <see
 /// cref="ParentOption"/>.
 /// </remarks>
@@ -21,7 +21,7 @@ public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOpti
     /// <summary>
     /// The unique, non-localizable identifier (e.g., "red", "green")
     /// </summary>
-    public string Key { get; private set; } = default!;
+    public string Code { get; private set; } = default!;
     /// <summary>
     /// The position of the option; used for stable ordering.
     /// </summary>
@@ -53,11 +53,11 @@ public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOpti
 
     internal EnumAttributeOption(
         EnumAttributeDefinition owner,
-        string key,
+        string code,
         int position)
     {
         EnumAttributeDefinition = owner;
-        Key = key;
+        Code = code;
         Position = position;
         Translations = [];
     }
@@ -72,5 +72,5 @@ public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOpti
     }
 
     private string DebuggerDisplay
-        => $"{Key} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Key ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
+        => $"{Code} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Code ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
 }

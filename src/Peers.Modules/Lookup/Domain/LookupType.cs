@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Peers.Modules.Lookup.Domain;
 
 /// <summary>
-/// Logical catalog for a family of lookup values (e.g., "brand", "device_model").
+/// Logical catalog for a family of lookup types (e.g., "brand", "device_model").
 /// </summary>
 /// <remarks>
 /// - Keys are global and stable; one <see cref="LookupType"/> is reused across many product types.
@@ -22,10 +22,10 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// by a <see cref="Catalog.Domain.Attributes.LookupAttributeDefinition"/> and no explicit override is set.
     /// </summary>
     /// <remarks>
-    /// - If <see cref="LookupConstraintMode.Open"/>, listings may use any value of this lookup type
+    /// - If <see cref="LookupConstraintMode.Open"/>, listings may use any option of this lookup type
     ///   unless a product type (or its nearest ancestor) declares an allow-list.
     /// - If <see cref="LookupConstraintMode.RequireAllowList"/>, a product type must provide an
-    ///   allow-list in its lineage for values of this type to be considered valid.
+    ///   allow-list in its lineage for options of this type to be considered valid.
     /// </remarks>
     public LookupConstraintMode ConstraintMode { get; set; }
     /// <summary>
@@ -33,9 +33,9 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// </summary>
     public bool AllowVariant { get; set; }
     /// <summary>
-    /// The list of lookup values associated with this type.
+    /// The list of lookup options associated with this type.
     /// </summary>
-    public List<LookupValue> Values { get; set; } = default!;
+    public List<LookupOption> Options { get; set; } = default!;
 
     private string DebuggerDisplay => $"{Key}";
 }

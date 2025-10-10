@@ -44,8 +44,8 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
 
         builder.OwnsMany(p => p.Attributes, nav =>
         {
-            var optionIdColName = nameof(ListingVariantAttribute.EnumAttributeOptionId).Underscore();
-            var lookupIdColName = nameof(ListingVariantAttribute.LookupValueId).Underscore();
+            var enumOptIdColName = nameof(ListingVariantAttribute.EnumAttributeOptionId).Underscore();
+            var lookupOptIdColName = nameof(ListingVariantAttribute.LookupOptionId).Underscore();
             var numericColName = nameof(ListingVariantAttribute.NumericValue).Underscore();
 
             // One row per (variant, attribute definition) - prevents multiple options for the same axis on a single variant
@@ -59,11 +59,11 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
             nav
                 .HasIndex(p => new { p.AttributeDefinitionId, p.EnumAttributeOptionId })
                 .HasDatabaseName("IX_LVA_Enum")
-                .HasFilter($"[{optionIdColName}] IS NOT NULL");
+                .HasFilter($"[{enumOptIdColName}] IS NOT NULL");
             nav
-                .HasIndex(p => new { p.AttributeDefinitionId, p.LookupValueId })
+                .HasIndex(p => new { p.AttributeDefinitionId, p.LookupOptionId })
                 .HasDatabaseName("IX_LVA_Lookup")
-                .HasFilter($"[{lookupIdColName}] IS NOT NULL");
+                .HasFilter($"[{lookupOptIdColName}] IS NOT NULL");
 
             nav
                 .WithOwner(p => p.ListingVariant)
@@ -82,9 +82,9 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
                 .OnDelete(DeleteBehavior.Restrict);
 
             nav
-                .HasOne(p => p.LookupValue)
+                .HasOne(p => p.LookupOption)
                 .WithMany()
-                .HasForeignKey(p => p.LookupValueId)
+                .HasForeignKey(p => p.LookupOptionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             nav.ToTable(nameof(ListingVariantAttribute).Underscore(), p =>
@@ -111,9 +111,9 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
                 $"""
                 ([{attrKindColName}] IN ({allowedAttrKinds}))
                 AND (
-                    ([{attrKindColName}] IN ({allowedNumericKinds}) AND [{numericColName}] IS NOT NULL AND [{optionIdColName}] IS NULL AND [{lookupIdColName}] IS NULL)
-                 OR ([{attrKindColName}] = {(int)AttributeKind.Enum} AND [{optionIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{lookupIdColName}] IS NULL)
-                 OR ([{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{optionIdColName}] IS NULL)
+                    ([{attrKindColName}] IN ({allowedNumericKinds}) AND [{numericColName}] IS NOT NULL AND [{enumOptIdColName}] IS NULL AND [{lookupOptIdColName}] IS NULL)
+                 OR ([{attrKindColName}] = {(int)AttributeKind.Enum} AND [{enumOptIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{lookupOptIdColName}] IS NULL)
+                 OR ([{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupOptIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{enumOptIdColName}] IS NULL)
                 )                
                 """);
             });
