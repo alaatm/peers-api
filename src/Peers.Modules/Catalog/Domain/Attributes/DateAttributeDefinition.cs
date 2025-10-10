@@ -11,7 +11,7 @@ public sealed class DateAttributeDefinition : AttributeDefinition
         ProductType owner,
         string key,
         bool isRequired,
-        int position) : base(owner, key, AttributeKind.Date, isRequired, position)
+        int position) : base(owner, key, AttributeKind.Date, isRequired, false, position)
     {
     }
 }

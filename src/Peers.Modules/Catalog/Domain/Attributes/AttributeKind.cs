@@ -26,6 +26,14 @@ public enum AttributeKind
     /// </summary>
     Date,
     /// <summary>
+    /// Composite (virtual) variant axis that references multiple numeric attributes (its members) to form allowed tuples.
+    /// </summary>
+    /// <remarks>
+    /// Used only to define and present combinations such as “100×300”; it has no scalar value and must not appear in
+    /// listing- or SKU-level attribute value tables. Per-SKU values are stored on the member attributes.
+    /// </remarks>
+    Group,
+    /// <summary>
     /// A small, fixed set of choices modeled as inline options.
     /// </summary>
     /// <remarks>

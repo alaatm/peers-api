@@ -71,5 +71,6 @@ public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOpti
         ParentOptionId = null;
     }
 
-    private string DebuggerDisplay => $"{Key} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Key ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
+    private string DebuggerDisplay
+        => $"{Key} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Key ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
 }

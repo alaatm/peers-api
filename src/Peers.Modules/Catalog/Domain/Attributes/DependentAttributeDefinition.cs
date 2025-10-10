@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using Peers.Core.Domain.Errors;
 using E = Peers.Modules.Catalog.CatalogErrors;
@@ -29,14 +28,42 @@ public abstract class DependentAttributeDefinition : AttributeDefinition
         string key,
         AttributeKind kind,
         bool isRequired,
-        int position) : base(owner, key, kind, isRequired, position)
+        bool isVariant,
+        int position) : base(owner, key, kind, isRequired, isVariant, position)
     {
     }
 
     internal virtual void SetDependency(DependentAttributeDefinition parent)
     {
-        Debug.Assert(ReferenceEquals(parent.ProductType, ProductType));
-        Debug.Assert(parent != this);
+        ValidateDependency(parent);
+        DependsOn = parent;
+    }
+
+    internal virtual void ClearDependency()
+    {
+        DependsOn = null;
+        DependsOnId = null;
+    }
+
+    internal override void Validate()
+    {
+        base.Validate();
+        if (DependsOn is not null)
+        {
+            ValidateDependency(DependsOn);
+        }
+    }
+
+    private void ValidateDependency(DependentAttributeDefinition parent)
+    {
+        if (parent.ProductType != ProductType)
+        {
+            throw new DomainException(E.DepDiffProductType(childKey: Key, parentKey: parent.Key));
+        }
+        if (parent == this)
+        {
+            throw new DomainException(E.SelfDep(Key));
+        }
 
         // Allowed matrix:
         // Enum(child)   -> Enum(parent)     OK
@@ -49,7 +76,7 @@ public abstract class DependentAttributeDefinition : AttributeDefinition
 
         if (!allowed)
         {
-            throw new DomainException(E.DependencyCombinationNotSupported(
+            throw new DomainException(E.DepComboNotSupported(
                 childKey: Key, childKind: Kind, parentKey: parent.Key, parentKind: parent.Kind));
         }
 
@@ -61,14 +88,6 @@ public abstract class DependentAttributeDefinition : AttributeDefinition
                 throw new DomainException(E.CyclicDependency);
             }
         }
-
-        DependsOn = parent;
-    }
-
-    internal virtual void ClearDependency()
-    {
-        DependsOn = null;
-        DependsOnId = null;
     }
 
     protected override string DebuggerDisplay

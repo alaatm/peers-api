@@ -138,7 +138,8 @@ namespace Peers.Modules.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     key = table.Column<string>(type: "varchar(64)", unicode: false, maxLength: 64, nullable: false),
-                    constraint_mode = table.Column<int>(type: "int", nullable: false)
+                    constraint_mode = table.Column<int>(type: "int", nullable: false),
+                    allow_variant = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -539,21 +540,30 @@ namespace Peers.Modules.Migrations
                     key = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     kind = table.Column<int>(type: "int", nullable: false),
                     is_required = table.Column<bool>(type: "bit", nullable: false),
+                    is_variant = table.Column<bool>(type: "bit", nullable: false),
                     position = table.Column<int>(type: "int", nullable: false),
                     product_type_id = table.Column<int>(type: "int", nullable: false),
-                    config = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     depends_on_id = table.Column<int>(type: "int", nullable: true),
-                    is_variant = table.Column<bool>(type: "bit", nullable: true),
-                    lookup_type_id = table.Column<int>(type: "int", nullable: true)
+                    lookup_type_id = table.Column<int>(type: "int", nullable: true),
+                    config = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    group_definition_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_attribute_definition", x => x.id);
-                    table.CheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
-                    table.CheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                    table.CheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
+                    table.CheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+                    table.CheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                     table.ForeignKey(
                         name: "FK_attribute_definition_attribute_definition_depends_on_id",
                         column: x => x.depends_on_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_attribute_definition_attribute_definition_group_definition_id",
+                        column: x => x.group_definition_id,
                         principalSchema: "catalog",
                         principalTable: "attribute_definition",
                         principalColumn: "id",
@@ -1049,7 +1059,7 @@ namespace Peers.Modules.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_listing_attribute", x => new { x.listing_id, x.attribute_definition_id });
-                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 5 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
                     table.CheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
                     table.ForeignKey(
                         name: "FK_listing_attribute_attribute_definition_attribute_definition_id",
@@ -1085,13 +1095,17 @@ namespace Peers.Modules.Migrations
                 {
                     listing_variant_id = table.Column<int>(type: "int", nullable: false),
                     attribute_definition_id = table.Column<int>(type: "int", nullable: false),
-                    attribute_option_id = table.Column<int>(type: "int", nullable: false),
+                    attribute_kind = table.Column<int>(type: "int", nullable: false),
+                    enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
+                    lookup_value_id = table.Column<int>(type: "int", nullable: true),
+                    numeric_value = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
                     position = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_listing_variant_attribute", x => new { x.listing_variant_id, x.attribute_definition_id });
                     table.CheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
+                    table.CheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
                     table.ForeignKey(
                         name: "FK_listing_variant_attribute_attribute_definition_attribute_definition_id",
                         column: x => x.attribute_definition_id,
@@ -1100,8 +1114,8 @@ namespace Peers.Modules.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_listing_variant_attribute_enum_attribute_option_attribute_option_id",
-                        column: x => x.attribute_option_id,
+                        name: "FK_listing_variant_attribute_enum_attribute_option_enum_attribute_option_id",
+                        column: x => x.enum_attribute_option_id,
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
@@ -1111,6 +1125,13 @@ namespace Peers.Modules.Migrations
                         principalTable: "listing_variant",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_listing_variant_attribute_lookup_value_lookup_value_id",
+                        column: x => x.lookup_value_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_value",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1158,6 +1179,12 @@ namespace Peers.Modules.Migrations
                 schema: "catalog",
                 table: "attribute_definition",
                 column: "depends_on_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_attribute_definition_group_definition_id",
+                schema: "catalog",
+                table: "attribute_definition",
+                column: "group_definition_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_attribute_definition_lookup_type_id",
@@ -1336,20 +1363,32 @@ namespace Peers.Modules.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_variant_attribute_attribute_definition_id",
+                name: "IX_listing_variant_attribute_enum_attribute_option_id",
                 table: "listing_variant_attribute",
-                column: "attribute_definition_id");
+                column: "enum_attribute_option_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_variant_attribute_attribute_option_id",
+                name: "IX_listing_variant_attribute_lookup_value_id",
                 table: "listing_variant_attribute",
-                column: "attribute_option_id");
+                column: "lookup_value_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_listing_variant_attribute_listing_variant_id_attribute_option_id",
+                name: "IX_LVA_Enum",
                 table: "listing_variant_attribute",
-                columns: new[] { "listing_variant_id", "attribute_option_id" },
-                unique: true);
+                columns: new[] { "attribute_definition_id", "enum_attribute_option_id" },
+                filter: "[enum_attribute_option_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LVA_Lookup",
+                table: "listing_variant_attribute",
+                columns: new[] { "attribute_definition_id", "lookup_value_id" },
+                filter: "[lookup_value_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LVA_Num",
+                table: "listing_variant_attribute",
+                columns: new[] { "attribute_definition_id", "numeric_value" },
+                filter: "[numeric_value] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_lookup_allowed_product_type_id_type_id",

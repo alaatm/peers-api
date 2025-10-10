@@ -22,6 +22,7 @@ internal sealed class AttributeDefinitionMapping : IEntityTypeConfiguration<Attr
             .HasValue<StringAttributeDefinition>(AttributeKind.String)
             .HasValue<BoolAttributeDefinition>(AttributeKind.Bool)
             .HasValue<DateAttributeDefinition>(AttributeKind.Date)
+            .HasValue<GroupAttributeDefinition>(AttributeKind.Group)
             .HasValue<EnumAttributeDefinition>(AttributeKind.Enum)
             .HasValue<LookupAttributeDefinition>(AttributeKind.Lookup);
 
@@ -33,8 +34,20 @@ internal sealed class AttributeDefinitionMapping : IEntityTypeConfiguration<Attr
             var isVariantCol = isVariantProp.Underscore();
             var lookupTypeIdCol = lookupTypeIdProp.Underscore();
 
-            p.HasCheckConstraint($"CK_AD_{isVariantProp}_EnumOnly",
-                $"[{isVariantCol}] = 0 OR [{kindCol}] = {(int)AttributeKind.Enum}");
+            var allowedVariantAttributeKinds = string.Join(',',
+            [
+                (int)AttributeKind.Int,
+                (int)AttributeKind.Decimal,
+                (int)AttributeKind.Group,
+                (int)AttributeKind.Enum,
+                (int)AttributeKind.Lookup,
+            ]);
+
+            p.HasCheckConstraint($"CK_AD_Group_VariantOnly",
+                $"[{kindCol}] <> {(int)AttributeKind.Group} OR {isVariantCol} = 1");
+
+            p.HasCheckConstraint($"CK_AD_{isVariantProp}_NumericGroupEnumLookupOnly",
+                $"[{isVariantCol}] = 0 OR [{kindCol}] IN ({allowedVariantAttributeKinds})");
 
             p.HasCheckConstraint($"CK_AD_{lookupTypeIdProp}_LookupOnly",
                 $"""
@@ -86,6 +99,16 @@ internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguratio
             .HasForeignKey(p => p.LookupTypeId)
             .OnDelete(DeleteBehavior.Restrict);
     }
+}
+
+internal sealed class GroupAttributeDefinitionMapping : IEntityTypeConfiguration<GroupAttributeDefinition>
+{
+    public void Configure(EntityTypeBuilder<GroupAttributeDefinition> builder) =>
+        builder
+            .HasMany(p => p.Members)
+            .WithOne(p => p.GroupDefinition)
+            .HasForeignKey(p => p.GroupDefinitionId)
+            .OnDelete(DeleteBehavior.Restrict);
 }
 
 internal sealed class IntAttributeDefinitionMapping : IEntityTypeConfiguration<IntAttributeDefinition>

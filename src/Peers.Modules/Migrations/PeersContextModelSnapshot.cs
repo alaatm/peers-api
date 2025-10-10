@@ -201,6 +201,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_required");
 
+                    b.Property<bool>("IsVariant")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_variant");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -229,9 +233,11 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable("attribute_definition", "catalog", t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator<int>("Kind");
@@ -927,6 +933,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowVariant")
+                        .HasColumnType("bit")
+                        .HasColumnName("allow_variant");
 
                     b.Property<int>("ConstraintMode")
                         .HasColumnType("int")
@@ -1705,9 +1715,11 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(3);
@@ -1719,32 +1731,14 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(4);
-                });
-
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
-                {
-                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
-
-                    b.Property<string>("Config")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("config");
-
-                    b.ToTable(t =>
-                        {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
-
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
-                        });
-
-                    b.HasDiscriminator().HasValue(1);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", b =>
@@ -1759,30 +1753,48 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.IntAttributeDefinition", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
 
-                    b.Property<string>("Config")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("config");
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
+
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
+                        });
+
+                    b.HasDiscriminator().HasValue(5);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<int?>("GroupDefinitionId")
+                        .HasColumnType("int")
+                        .HasColumnName("group_definition_id");
+
+                    b.HasIndex("GroupDefinitionId");
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
-
-                    b.HasDiscriminator().HasValue(0);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.StringAttributeDefinition", b =>
@@ -1797,9 +1809,11 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
                     b.HasDiscriminator().HasValue(2);
@@ -1809,18 +1823,16 @@ namespace Peers.Modules.Migrations
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
 
-                    b.Property<bool>("IsVariant")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_variant");
-
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
-                    b.HasDiscriminator().HasValue(5);
+                    b.HasDiscriminator().HasValue(6);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
@@ -1841,12 +1853,58 @@ namespace Peers.Modules.Migrations
 
                     b.ToTable(t =>
                         {
-                            t.HasCheckConstraint("CK_AD_IsVariant_EnumOnly", "[is_variant] = 0 OR [kind] = 5");
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
 
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 6 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 6 AND [lookup_type_id] IS NULL)\r\n)");
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
 
-                    b.HasDiscriminator().HasValue(6);
+                    b.HasDiscriminator().HasValue(7);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
+
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
+                        });
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.IntAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
+
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
+                        });
+
+                    b.HasDiscriminator().HasValue(0);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -2089,7 +2147,7 @@ namespace Peers.Modules.Migrations
 
                             b1.ToTable("listing_attribute", null, t =>
                                 {
-                                    t.HasCheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 5 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                                    t.HasCheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_value_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
 
                                     t.HasCheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
                                 });
@@ -2108,7 +2166,7 @@ namespace Peers.Modules.Migrations
                             b1.WithOwner("Listing")
                                 .HasForeignKey("ListingId");
 
-                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupValue")
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupOption")
                                 .WithMany()
                                 .HasForeignKey("LookupValueId")
                                 .OnDelete(DeleteBehavior.Restrict);
@@ -2119,7 +2177,7 @@ namespace Peers.Modules.Migrations
 
                             b1.Navigation("Listing");
 
-                            b1.Navigation("LookupValue");
+                            b1.Navigation("LookupOption");
                         });
 
                     b.Navigation("Attributes");
@@ -2147,9 +2205,22 @@ namespace Peers.Modules.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("attribute_definition_id");
 
-                            b1.Property<int>("AttributeOptionId")
+                            b1.Property<int>("AttributeKind")
                                 .HasColumnType("int")
-                                .HasColumnName("attribute_option_id");
+                                .HasColumnName("attribute_kind");
+
+                            b1.Property<int?>("EnumAttributeOptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("enum_attribute_option_id");
+
+                            b1.Property<int?>("LookupValueId")
+                                .HasColumnType("int")
+                                .HasColumnName("lookup_value_id");
+
+                            b1.Property<decimal?>("NumericValue")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("numeric_value");
 
                             b1.Property<int>("Position")
                                 .HasColumnType("int")
@@ -2157,16 +2228,27 @@ namespace Peers.Modules.Migrations
 
                             b1.HasKey("ListingVariantId", "AttributeDefinitionId");
 
-                            b1.HasIndex("AttributeDefinitionId");
+                            b1.HasIndex("EnumAttributeOptionId");
 
-                            b1.HasIndex("AttributeOptionId");
+                            b1.HasIndex("LookupValueId");
 
-                            b1.HasIndex("ListingVariantId", "AttributeOptionId")
-                                .IsUnique();
+                            b1.HasIndex("AttributeDefinitionId", "EnumAttributeOptionId")
+                                .HasDatabaseName("IX_LVA_Enum")
+                                .HasFilter("[enum_attribute_option_id] IS NOT NULL");
+
+                            b1.HasIndex("AttributeDefinitionId", "LookupValueId")
+                                .HasDatabaseName("IX_LVA_Lookup")
+                                .HasFilter("[lookup_value_id] IS NOT NULL");
+
+                            b1.HasIndex("AttributeDefinitionId", "NumericValue")
+                                .HasDatabaseName("IX_LVA_Num")
+                                .HasFilter("[numeric_value] IS NOT NULL");
 
                             b1.ToTable("listing_variant_attribute", null, t =>
                                 {
                                     t.HasCheckConstraint("CK_LVA_Position_NonNegative", "[position] >= 0");
+
+                                    t.HasCheckConstraint("CK_LVA_ValidValueCombination", "([attribute_kind] IN (0,1,6,7))\r\nAND (\r\n    ([attribute_kind] IN (0,1) AND [numeric_value] IS NOT NULL AND [enum_attribute_option_id] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL AND [numeric_value] IS NULL AND [lookup_value_id] IS NULL)\r\n OR ([attribute_kind] = 7 AND [lookup_value_id] IS NOT NULL AND [numeric_value] IS NULL AND [enum_attribute_option_id] IS NULL)\r\n)                ");
                                 });
 
                             b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", "AttributeDefinition")
@@ -2177,18 +2259,24 @@ namespace Peers.Modules.Migrations
 
                             b1.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeOption", "EnumAttributeOption")
                                 .WithMany()
-                                .HasForeignKey("AttributeOptionId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
+                                .HasForeignKey("EnumAttributeOptionId")
+                                .OnDelete(DeleteBehavior.Restrict);
 
                             b1.WithOwner("ListingVariant")
                                 .HasForeignKey("ListingVariantId");
+
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupValue", "LookupValue")
+                                .WithMany()
+                                .HasForeignKey("LookupValueId")
+                                .OnDelete(DeleteBehavior.Restrict);
 
                             b1.Navigation("AttributeDefinition");
 
                             b1.Navigation("EnumAttributeOption");
 
                             b1.Navigation("ListingVariant");
+
+                            b1.Navigation("LookupValue");
                         });
 
                     b.Navigation("Attributes");
@@ -2442,6 +2530,16 @@ namespace Peers.Modules.Migrations
                     b.Navigation("DependsOn");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", "GroupDefinition")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("GroupDefinition");
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
                 {
                     b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "LookupType")
@@ -2518,6 +2616,11 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("StatusChangeHistory");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>

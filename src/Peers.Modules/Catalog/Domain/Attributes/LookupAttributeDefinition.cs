@@ -1,5 +1,7 @@
 using System.Globalization;
+using Peers.Core.Domain.Errors;
 using Peers.Modules.Lookup.Domain;
+using E = Peers.Modules.Catalog.CatalogErrors;
 
 namespace Peers.Modules.Catalog.Domain.Attributes;
 
@@ -27,13 +29,30 @@ public sealed class LookupAttributeDefinition : DependentAttributeDefinition
         ProductType owner,
         string key,
         bool isRequired,
+        bool isVariant,
         int position,
-        LookupType? lookupType) : base(owner, key, AttributeKind.Lookup, isRequired, position)
+        LookupType? lookupType) : base(owner, key, AttributeKind.Lookup, isRequired, isVariant, position)
     {
         ArgumentNullException.ThrowIfNull(lookupType);
+
+        if (!lookupType.AllowVariant && isVariant)
+        {
+            throw new DomainException(E.LookupTypeDoesNotAllowVariants(lookupType.Key));
+        }
+
         LookupType = lookupType;
         // TODO: Allow override
         Config = new LookupAttrConfig { ConstraintMode = lookupType.ConstraintMode };
+    }
+
+    internal override void Validate()
+    {
+        base.Validate();
+
+        if (!LookupType.AllowVariant && IsVariant)
+        {
+            throw new DomainException(E.LookupTypeDoesNotAllowVariants(LookupType.Key));
+        }
     }
 
     protected override string DebuggerDisplay

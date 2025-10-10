@@ -11,7 +11,7 @@ public sealed class BoolAttributeDefinition : AttributeDefinition
         ProductType owner,
         string key,
         bool isRequired,
-        int position) : base(owner, key, AttributeKind.Bool, isRequired, position)
+        int position) : base(owner, key, AttributeKind.Bool, isRequired, false, position)
     {
     }
 }

@@ -38,7 +38,7 @@ internal static class AttributeSchemaCloner
         {
             AttributeDefinition dstDef;
 
-            // Enum with dependency
+            // Enum/Lookup with dependency
             if (srcDef is DependentAttributeDefinition srcDepDef &&
                 srcDepDef.DependsOn is { } srcParentDepDef)
             {
@@ -49,20 +49,18 @@ internal static class AttributeSchemaCloner
                     key: srcDepDef.Key,
                     kind: srcDepDef.Kind,
                     isRequired: srcDepDef.IsRequired,
+                    isVariant: (srcDef as DependentAttributeDefinition)?.IsVariant ?? false,
                     position: srcDepDef.Position,
-                    isVariant: (srcDef as EnumAttributeDefinition)?.IsVariant ?? false,
                     lookupType: (srcDef as LookupAttributeDefinition)?.LookupType);
             }
-            // Everything else including Enum without dependency
+            // Everything else including Enum/Lookup without dependency
             else
             {
                 ExtractAttrDefConfig(srcDef,
-                    out var isVariant,
                     out var unit,
-                    out var minInt,
-                    out var maxInt,
-                    out var minDecimal,
-                    out var maxDecimal,
+                    out var min,
+                    out var max,
+                    out var step,
                     out var regex,
                     out var lookupType);
 
@@ -70,13 +68,12 @@ internal static class AttributeSchemaCloner
                     key: srcDef.Key,
                     kind: srcDef.Kind,
                     isRequired: srcDef.IsRequired,
+                    isVariant: srcDef.IsVariant,
                     position: srcDef.Position,
-                    isVariant: isVariant,
                     unit: unit,
-                    minInt: minInt,
-                    maxInt: maxInt,
-                    minDecimal: minDecimal,
-                    maxDecimal: maxDecimal,
+                    min: min,
+                    max: max,
+                    step: step,
                     regex: regex,
                     lookupType: lookupType);
             }
@@ -112,18 +109,14 @@ internal static class AttributeSchemaCloner
 
     private static void ExtractAttrDefConfig(
         AttributeDefinition def,
-        out bool isVariant,
         out string? unit,
-        out int? minInt,
-        out int? maxInt,
-        out decimal? minDecimal,
-        out decimal? maxDecimal,
+        out decimal? min,
+        out decimal? max,
+        out decimal? step,
         out string? regex,
         out LookupType? lookupType)
     {
-        isVariant = false;
-        minInt = maxInt = null;
-        minDecimal = maxDecimal = null;
+        min = max = step = null;
         unit = regex = null;
         lookupType = null;
 
@@ -131,19 +124,20 @@ internal static class AttributeSchemaCloner
         {
             case NumericAttributeDefinition<int> i:
                 unit = i.Config.Unit;
-                minInt = i.Config.Min;
-                maxInt = i.Config.Max;
+                min = i.Config.Min;
+                max = i.Config.Max;
+                step = i.Config.Step;
                 break;
             case NumericAttributeDefinition<decimal> d:
                 unit = d.Config.Unit;
-                minDecimal = d.Config.Min;
-                maxDecimal = d.Config.Max;
+                min = d.Config.Min;
+                max = d.Config.Max;
+                step = d.Config.Step;
                 break;
             case StringAttributeDefinition s:
                 regex = s.Config.Regex;
                 break;
-            case EnumAttributeDefinition e:
-                isVariant = e.IsVariant;
+            case EnumAttributeDefinition:
                 break;
             case LookupAttributeDefinition l:
                 lookupType = l.LookupType;

@@ -29,6 +29,10 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// </remarks>
     public LookupConstraintMode ConstraintMode { get; set; }
     /// <summary>
+    /// Indicates whether variant-level attributes of this type are allowed.
+    /// </summary>
+    public bool AllowVariant { get; set; }
+    /// <summary>
     /// The list of lookup values associated with this type.
     /// </summary>
     public List<LookupValue> Values { get; set; } = default!;

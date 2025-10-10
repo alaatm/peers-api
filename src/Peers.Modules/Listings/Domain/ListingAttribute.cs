@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Peers.Core.Domain.Errors;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Lookup.Domain;
+using static Peers.Modules.Listings.Commands.SetAttributes.Command;
 using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
@@ -61,7 +61,7 @@ public sealed class ListingAttribute
     /// <summary>
     /// The selected lookup value if this attribute is of lookup type; otherwise, null.
     /// </summary>
-    public LookupValue? LookupValue { get; private set; }
+    public LookupValue? LookupOption { get; private set; }
 
     private ListingAttribute() { }
 
@@ -69,114 +69,111 @@ public sealed class ListingAttribute
         Listing listing,
         AttributeDefinition def,
         EnumAttributeOption? option = null,
-        LookupValue? lookupValue = null,
+        LookupValue? lookupOption = null,
         string? value = null)
     {
         Listing = listing;
         AttributeDefinition = def;
         EnumAttributeOption = option;
-        LookupValue = lookupValue;
+        LookupOption = lookupOption;
         AttributeKind = def.Kind;
         Value = value;
         Position = def.Position;
     }
 
     /// <summary>
-    /// Creates a new ListingAttribute instance for the specified listing and attribute definition using the provided
-    /// value.
+    /// Creates a new ListingAttribute instance for the specified listing using the provided attribute definition and input value.
     /// </summary>
     /// <param name="listing">The listing to which the attribute will be associated.</param>
     /// <param name="def">The attribute definition that determines the type and constraints of the attribute to create.</param>
-    /// <param name="value">The value to assign to the attribute. The format and constraints depend on the type of the attribute definition.</param>
-    internal static ListingAttribute Create(Listing listing, AttributeDefinition def, string value) => def switch
+    /// <param name="input">The input value to assign to the attribute. The format and constraints depend on the type of the attribute definition.</param>
+    internal static ListingAttribute Create(Listing listing, AttributeDefinition def, AttributeInputDto input) => def switch
     {
-        IntAttributeDefinition i => OfNumeric(listing, i, value),
-        DecimalAttributeDefinition d => OfNumeric(listing, d, value),
-        StringAttributeDefinition s => OfString(listing, s, value),
-        BoolAttributeDefinition b => OfBool(listing, b, value),
-        DateAttributeDefinition dt => OfDate(listing, dt, value),
-        EnumAttributeDefinition e => OfEnum(listing, e, value),
-        LookupAttributeDefinition l => OfLookup(listing, l, value),
+        IntAttributeDefinition i => OfNumeric(listing, i, input),
+        DecimalAttributeDefinition d => OfNumeric(listing, d, input),
+        StringAttributeDefinition s => OfString(listing, s, input),
+        BoolAttributeDefinition b => OfBool(listing, b, input),
+        DateAttributeDefinition dt => OfDate(listing, dt, input),
+        EnumAttributeDefinition e => OfEnum(listing, e, input),
+        LookupAttributeDefinition l => OfLookup(listing, l, input),
         _ => throw new UnreachableException(),
     };
 
-    private static ListingAttribute OfNumeric<T>(Listing listing, NumericAttributeDefinition<T> def, string value)
+    private static ListingAttribute OfNumeric<T>(Listing listing, NumericAttributeDefinition<T> def, AttributeInputDto input)
         where T : struct, INumber<T>
     {
-        if (!T.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var iv))
+        if (input is AttributeInputDto.Numeric(var value))
         {
-            throw new DomainException(E.AttrValueMustBeNumeric<T>(def.Key, value));
+            def.ValidateValue(value);
+            return new(listing, def, value: value.ToString(CultureInfo.InvariantCulture));
         }
 
-        ValidateNumericRange(def.Key, iv, def.Config.Min, def.Config.Max);
-        return new(listing, def, value: iv.ToString(null, CultureInfo.InvariantCulture));
+        throw new DomainException(E.AttrReqSingleNumValue(def.Key));
     }
 
-    private static ListingAttribute OfString(Listing listing, StringAttributeDefinition def, string value)
+    private static ListingAttribute OfString(Listing listing, StringAttributeDefinition def, AttributeInputDto input)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            (def.Config.Regex is string r && !Regex.IsMatch(value, r)))
+        if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            throw new DomainException(E.AttrValueMustBeValidString(def.Key, value, def.Config.Regex));
+            def.ValidateValue(value);
+            return new(listing, def, value: value);
         }
 
-        return new(listing, def, value: value);
+        throw new DomainException(E.AttrReqSingleStrValue(def.Key));
     }
 
-    private static ListingAttribute OfBool(Listing listing, BoolAttributeDefinition def, string value)
+    private static ListingAttribute OfBool(Listing listing, BoolAttributeDefinition def, AttributeInputDto input)
     {
-        if (!bool.TryParse(value, out var bv))
+        if (input is AttributeInputDto.Bool(var value))
         {
-            throw new DomainException(E.AttrValueMustBeBool(def.Key, value));
+            return new(listing, def, value: value ? "true" : "false");
         }
 
-        return new(listing, def, value: bv ? "true" : "false");
+        throw new DomainException(E.AttrReqSingleBoolValue(def.Key));
     }
 
-    private static ListingAttribute OfDate(Listing listing, DateAttributeDefinition def, string value)
+    private static ListingAttribute OfDate(Listing listing, DateAttributeDefinition def, AttributeInputDto input)
     {
-        if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+        if (input is AttributeInputDto.Date(var value))
         {
-            throw new DomainException(E.AttrValueMustBeDate(def.Key, value));
+            return new(listing, def, value: value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
-        return new(listing, def, value: value);
+        throw new DomainException(E.AttrReqSingleDateValue(def.Key));
     }
 
-    private static ListingAttribute OfEnum(Listing listing, EnumAttributeDefinition def, string value)
+    private static ListingAttribute OfEnum(Listing listing, EnumAttributeDefinition def, AttributeInputDto input)
     {
-        if (def.Options.FirstOrDefault(p => p.Key == value) is not EnumAttributeOption option)
+        if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            throw new DomainException(E.UnknownAttrOption(def.Key, value));
+            if (def.Options.FirstOrDefault(p => p.Key == value) is not EnumAttributeOption option)
+            {
+                throw new DomainException(E.UnknownEnumAttrOpt(def.Key, value));
+            }
+
+            return new(listing, def, option: option);
         }
 
-        return new(listing, def, option: option);
+        throw new DomainException(E.AttrReqSingleEnumOptCodeValue(def.Key));
     }
 
-    private static ListingAttribute OfLookup(Listing listing, LookupAttributeDefinition def, string value)
+    private static ListingAttribute OfLookup(Listing listing, LookupAttributeDefinition def, AttributeInputDto input)
     {
-        if (def.LookupType.Values.FirstOrDefault(p => p.Key == value) is not LookupValue lookupValue)
+        if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            throw new DomainException(E.UnknownAttrOption(def.Key, value));
+            if (def.LookupType.Values.FirstOrDefault(p => p.Key == value) is not LookupValue option)
+            {
+                throw new DomainException(E.UnknownLookupAttrOpt(def.Key, value));
+            }
+
+            if (!listing.ProductType.IsLookupOptionAllowed(option, noEntriesMeansAllowAll: true))
+            {
+                throw new DomainException(E.LookupOptNotAllowedByProductType(value, def.Key, listing.ProductType.SlugPath));
+            }
+
+            return new(listing, def, lookupOption: option);
         }
 
-        if (!listing.ProductType.IsLookupValueAllowed(lookupValue, noEntriesMeansAllowAll: true))
-        {
-            throw new DomainException(E.LookupValueNotAllowedForProductType(value, def.Key, listing.ProductType.SlugPath));
-        }
-
-        return new(listing, def, lookupValue: lookupValue);
-    }
-
-    private static void ValidateNumericRange<T>(string key, T value, T? min, T? max) where T : struct, INumber<T>
-    {
-        if (min.HasValue && value.CompareTo(min.Value) < 0)
-        {
-            throw new DomainException(E.AttrValueMustBeAtLeast(key, value, min.Value));
-        }
-        if (max.HasValue && value.CompareTo(max.Value) > 0)
-        {
-            throw new DomainException(E.AttrValueMustBeAtMost(key, value, max.Value));
-        }
+        throw new DomainException(E.AttrReqSingleLookupOptCodeValue(def.Key));
     }
 }

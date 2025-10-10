@@ -44,14 +44,14 @@ public static class ChangePinCode
         private readonly IStrLoc _l;
 
         public Handler(
-            PeersContext userManager,
+            PeersContext context,
             TimeProvider timeProvider,
             IIdentityInfo identity,
             IPasswordHasher<AppUser> passwordHasher,
             IMemoryCache cache,
             IStrLoc l)
         {
-            _context = userManager;
+            _context = context;
             _timeProvider = timeProvider;
             _identity = identity;
             _passwordHasher = passwordHasher;

@@ -14,11 +14,6 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 public sealed class EnumAttributeDefinition : DependentAttributeDefinition
 {
     /// <summary>
-    /// Indicates whether this attribute's value creates a unique, sellable variant of a listing.
-    /// </summary>
-    public bool IsVariant { get; private set; }
-
-    /// <summary>
     /// The list of options associated with this attribute definition.
     /// </summary>
     public List<EnumAttributeOption> Options { get; private set; } = default!;
@@ -29,46 +24,43 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         ProductType owner,
         string key,
         bool isRequired,
-        int position,
-        bool isVariant) : base(owner, key, AttributeKind.Enum, isRequired, position)
-    {
-        IsVariant = isVariant;
-        Options = [];
-    }
+        bool isVariant,
+        int position) : base(owner, key, AttributeKind.Enum, isRequired, isVariant, position)
+        => Options = [];
 
     internal EnumAttributeOption AddOption(
         string key,
         int position,
-        string? parentOptionKey)
+        string? parentOptKey)
     {
         if (!RegexStatic.IsSnakeCaseRegex().IsMatch(key))
         {
             throw new DomainException(E.KeyFormatInvalid(key));
         }
 
-        if (Options.Any(o => o.Key == key))
+        if (Options.Any(p => p.Key == key))
         {
-            throw new DomainException(E.OptAlreadyExists(key));
+            throw new DomainException(E.EnumOptAlreadyExists(key));
         }
 
         if (DependsOn is null &&
-            parentOptionKey is not null)
+            parentOptKey is not null)
         {
             throw new DomainException(E.ScopeOptReqDep);
         }
 
         var opt = new EnumAttributeOption(this, key, position);
 
-        if (DependsOn is EnumAttributeDefinition dependsOnEnum)
+        if (DependsOn is EnumAttributeDefinition parentAttr)
         {
-            if (parentOptionKey is null)
+            if (parentOptKey is null)
             {
                 throw new DomainException(E.DepReqScopeOtp);
             }
 
-            if (dependsOnEnum.Options.SingleOrDefault(o => o.Key == parentOptionKey) is not { } parentOption)
+            if (parentAttr.Options.SingleOrDefault(p => p.Key == parentOptKey) is not { } parentOption)
             {
-                throw new DomainException(E.OptNotFound(parentOptionKey));
+                throw new DomainException(E.EnumOptNotFound(parentOptKey));
             }
 
             opt.ScopeTo(parentOption);
@@ -85,7 +77,11 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
 
     internal override void SetDependency(DependentAttributeDefinition parent)
     {
-        Debug.Assert(Options.Count == 0);
+        if (Options.Count != 0)
+        {
+            throw new DomainException(E.EnumAttrDepSetOnlyIfNoOpts(Key));
+        }
+
         base.SetDependency(parent);
     }
 
@@ -99,6 +95,58 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         base.ClearDependency();
     }
 
+    internal override void Validate()
+    {
+        base.Validate();
+
+        // Must have at least one option
+        if (Options.Count == 0)
+        {
+            throw new DomainException(E.EnumAttrNoOptions(Key));
+        }
+
+        var optKeySet = new HashSet<string>(StringComparer.Ordinal);
+        var optPosSet = new HashSet<int>();
+        var hasDependency = DependsOn is not null;
+
+        foreach (var opt in Options)
+        {
+            // Consistency: if DependsOn set => all options must be scoped; if null => none may be scoped
+            if (hasDependency)
+            {
+                Debug.Assert(DependsOn is not null);
+
+                if (opt.ParentOption is null)
+                {
+                    throw new DomainException(E.EnumOptNotScopedButDep(Key, DependsOn.Key, opt.Key));
+                }
+                if (opt.ParentOption.EnumAttributeDefinition != DependsOn)
+                {
+                    throw new DomainException(E.InvalidScopeParent(Key, DependsOn.Key, opt.Key, opt.ParentOption.EnumAttributeDefinition.Key));
+                }
+            }
+            else
+            {
+                if (opt.ParentOption is not null)
+                {
+                    throw new DomainException(E.OptScopedButNoDep(Key, opt.Key));
+                }
+            }
+
+            // All options must have unique keys
+            if (!optKeySet.Add(opt.Key))
+            {
+                throw new DomainException(E.DuplicateEnumOptionKey(Key, opt.Key));
+            }
+
+            // All options must have unique positions
+            if (!optPosSet.Add(opt.Position))
+            {
+                throw new DomainException(E.DuplicateEnumOptionPosition(Key, opt.Key));
+            }
+        }
+    }
+
     protected override string DebuggerDisplay
-        => $"{base.DebuggerDisplay} | {(IsVariant ? "Variant" : "Non-variant")}";
+        => base.DebuggerDisplay;
 }

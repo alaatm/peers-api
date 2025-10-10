@@ -1,6 +1,7 @@
 using System.Numerics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization;
+using Peers.Modules.Catalog.Domain.Attributes;
 using static Peers.Modules.Catalog.CatalogErrors;
 
 namespace Peers.Modules.Listings;
@@ -32,9 +33,17 @@ public static class ListingErrors
     /// </summary>
     public static DomainError AttrNotDefined(string key, string slugPath) => new(Titles.CannotApplyOperation, "listing.attribute-not-defined", key, slugPath);
     /// <summary>
+    /// Attribute '{0}' value cannot be null.
+    /// </summary>
+    public static DomainError AttrValueCannotBeNull(string key) => new(Titles.ValidationFailed, "listing.attribute-value-cannot-be-null", key);
+    /// <summary>
     /// Maximum number of variant axes exceeded. The maximum allowed is {0}.
     /// </summary>
-    public static DomainError TooManyVariantAxes(int maxVariantAxes) => new(Titles.CannotApplyOperation, "listing.too-many-variant-axes", maxVariantAxes);
+    public static DomainError VariantAxesCapExceeded(int variantAxesCap) => new(Titles.CannotApplyOperation, "listing.variant-axes-cap-exceeded", variantAxesCap);
+    /// <summary>
+    /// Maximum SKU cap of {0} exceeded. The computed number of SKUs is {1}.
+    /// </summary>
+    public static DomainError SkuCapExceeded(int maxSkus, long computedSkus) => new(Titles.CannotApplyOperation, "listing.sku-cap-exceeded", maxSkus, computedSkus);
     /// <summary>
     /// Attribute '{0}' requires exactly one value.
     /// </summary>
@@ -42,15 +51,65 @@ public static class ListingErrors
     /// <summary>
     /// Missing required attribute '{0}'.
     /// </summary>
-    public static DomainError AttrRequired(string key) => new(Titles.ValidationFailed, "listing.attribute-required", key);
+    public static DomainError AttrReq(string key) => new(Titles.ValidationFailed, "listing.attribute-required", key);
     /// <summary>
     /// Attribute '{0}' requires at least one option to be selected.
     /// </summary>
     public static DomainError VariantAttrReqAtleastOneOption(string key) => new(Titles.ValidationFailed, "listing.variant-attr-req-atleast-one-option", key);
     /// <summary>
-    /// Unknown option '{1}' for attribute '{0}'.
+    /// Member attribute '{0}' of group '{1}' cannot be set directly. Set the group attribute instead.
     /// </summary>
-    public static DomainError UnknownAttrOption(string attrKey, string optionKey) => new(Titles.ValidationFailed, "listing.unknown-attr-option", attrKey, optionKey);
+    public static DomainError GroupMemberCannotBeHeader(string memberKey, string groupKey) => new(Titles.ValidationFailed, "listing.group-member-cannot-be-header", memberKey, groupKey);
+    /// <summary>
+    /// Non-variant attribute '{0}' cannot be used as a variant axis.
+    /// </summary>
+    public static DomainError NonVariantAttrDoesNotAcceptAxis(string key) => new(Titles.ValidationFailed, "listing.non-variant-attr-does-not-accept-axis", key);
+    /// <summary>
+    /// Unknown option '{1}' for enum attribute '{0}'.
+    /// </summary>
+    public static DomainError UnknownEnumAttrOpt(string attrKey, string optionKey) => new(Titles.ValidationFailed, "listing.unknown-enum-attr-opt", attrKey, optionKey);
+    /// <summary>
+    /// Unknown option '{1}' for lookup attribute '{0}'.
+    /// </summary>
+    public static DomainError UnknownLookupAttrOpt(string attrKey, string optionKey) => new(Titles.ValidationFailed, "listing.unknown-lookup-attr-opt", attrKey, optionKey);
+    /// <summary>
+    /// Attribute axis '{0}' requires one or more enum option codes.
+    /// </summary>
+    public static DomainError AxisReqEnumOptAxis(string attrKey) => new(Titles.ValidationFailed, "listing.axis-req-enum-opt-axis", attrKey);
+    /// <summary>
+    /// Attribute axis '{0}' requires one or more lookup option codes.
+    /// </summary>
+    public static DomainError AxisReqLookupOptAxis(string attrKey) => new(Titles.ValidationFailed, "listing.axis-req-lookup-opt-axis", attrKey);
+    /// <summary>
+    /// Attribute axis '{0}' requires one or more numeric values.
+    /// </summary>
+    public static DomainError AxisReqNumericAxis(string attrKey) => new(Titles.ValidationFailed, "listing.axis-req-numeric-axis", attrKey);
+    /// <summary>
+    /// Group axis '{0}' contains one or more duplicate values.
+    /// </summary>
+    /// <param name="attrKey"></param>
+    /// <returns></returns>
+    public static DomainError DuplicateGroupAxisValue(string attrKey) => new(Titles.ValidationFailed, "listing.duplicate-group-axis-value", attrKey);
+    /// <summary>
+    /// Attribute axis '{0}' requires a matrix of numeric values.
+    /// </summary>
+    public static DomainError AxisReqMatrix(string attrKey) => new(Titles.ValidationFailed, "listing.axis-req-matrix", attrKey);
+    /// <summary>
+    /// Attribute '{0}' of kind '{1}' cannot be used as a variant axis.
+    /// </summary>
+    public static DomainError UnsupportedVariantInput(string attrKey, AttributeKind kind) => new(Titles.ValidationFailed, "listing.unsupported-variant-input", attrKey, kind.ToString().ToLowerInvariant());
+    /// <summary>
+    /// Attribute axis '{0}' requires at least {1} value(s).
+    /// </summary>
+    public static DomainError AxisReqAtLeastMinValues(string attrKey, int min) => new(Titles.ValidationFailed, "listing.axis-req-at-least-min-values", attrKey, min);
+    /// <summary>
+    /// Attribute axis '{0}' requires exactly {1} value(s).
+    /// </summary>
+    public static DomainError AxisReqExactlyNValues(string attrKey, int exact) => new(Titles.ValidationFailed, "listing.axis-req-exactly-n-values", attrKey, exact);
+    /// <summary>
+    /// Attribute axis '{0}' must not have duplicate values. Duplicate value: '{1}'.
+    /// </summary>
+    public static DomainError AxisMustNotHaveDuplicateValues(string attrKey, string dup) => new(Titles.ValidationFailed, "listing.axis-must-not-have-duplicate-values", attrKey, dup);
     /// <summary>
     /// Value '{1}' for attribute '{0}' must be an integer.
     /// Value '{1}' for attribute '{0}' must be a decimal number.
@@ -58,6 +117,30 @@ public static class ListingErrors
     /// <returns></returns>
     public static DomainError AttrValueMustBeNumeric<T>(string attrKey, string value) where T : struct, INumber<T>
         => new(Titles.ValidationFailed, typeof(T) == typeof(int) ? "listing.attribute-value-must-be-int" : "listing.attribute-value-must-be-decimal", attrKey, value);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one numeric value.
+    /// </summary>
+    public static DomainError AttrReqSingleNumValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-numeric-attribute-value", attrKey);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one string value.
+    /// </summary>
+    public static DomainError AttrReqSingleStrValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-string-attribute-value", attrKey);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one boolean value.
+    /// </summary>
+    public static DomainError AttrReqSingleBoolValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-bool-attribute-value", attrKey);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one date value.
+    /// </summary>
+    public static DomainError AttrReqSingleDateValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-date-attribute-value", attrKey);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one enum option code.
+    /// </summary>
+    public static DomainError AttrReqSingleEnumOptCodeValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-enum-attribute-value", attrKey);
+    /// <summary>
+    /// Attribute '{0}' requires exactly one lookup option code.
+    /// </summary>
+    public static DomainError AttrReqSingleLookupOptCodeValue(string attrKey) => new(Titles.ValidationFailed, "listing.invalid-lookup-attribute-value", attrKey);
     /// <summary>
     /// Value '{1}' for attribute '{0}' must match the pattern '{2}'.
     /// Value '{1}' for attribute '{0}' must not be empty.
@@ -77,18 +160,8 @@ public static class ListingErrors
     /// <summary>
     /// Value '{1}' of attribute '{0}' is not allowed for product type '{2}'.
     /// </summary>
-    public static DomainError LookupValueNotAllowedForProductType(string attrKey, string value, string slugPath)
-        => new(Titles.ValidationFailed, "listing.lookup-value-not-allowed-for-product-type", attrKey, value, slugPath);
-    /// <summary>
-    /// Value '{1}' for attribute '{0}' must be at least '{2}'.
-    /// </summary>
-    public static DomainError AttrValueMustBeAtLeast<T>(string attrKey, T value, INumber<T> minValue) where T : struct, INumber<T>
-        => new(Titles.ValidationFailed, "listing.attribute-value-must-be-at-least", attrKey, value, minValue);
-    /// <summary>
-    /// Value '{1}' for attribute '{0}' must be at most '{2}'.
-    /// </summary>
-    public static DomainError AttrValueMustBeAtMost<T>(string attrKey, T value, INumber<T> maxValue) where T : struct, INumber<T>
-        => new(Titles.ValidationFailed, "listing.attribute-value-must-be-at-most", attrKey, value, maxValue);
+    public static DomainError LookupOptNotAllowedByProductType(string attrKey, string value, string slugPath)
+        => new(Titles.ValidationFailed, "listing.lookup-opt-not-allowed-by-product-type", attrKey, value, slugPath);
     /// <summary>
     /// The variant with SKU '{0}' could not be found.
     /// </summary>

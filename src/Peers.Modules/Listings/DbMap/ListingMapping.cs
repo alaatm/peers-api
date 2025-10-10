@@ -77,7 +77,7 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
                .HasForeignKey(p => p.EnumAttributeOptionId)
                .OnDelete(DeleteBehavior.Restrict);
 
-            nav.HasOne(p => p.LookupValue)
+            nav.HasOne(p => p.LookupOption)
                .WithMany()
                .HasForeignKey(p => p.LookupValueId)
                .OnDelete(DeleteBehavior.Restrict);

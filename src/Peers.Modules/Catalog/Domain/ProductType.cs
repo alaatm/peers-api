@@ -181,26 +181,24 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <param name="kind">The kind of the attribute.</param>
     /// <param name="isRequired">Indicates whether the attribute is required.</param>
     /// <param name="position">The position of the attribute in the attribute list.</param>
-    /// <param name="isVariant">Indicates whether this enum attribute's value creates a unique, sellable variant of a listing.</param>
+    /// <param name="isVariant">Indicates whether this attribute's value creates a unique, sellable variant of a listing.</param>
     /// <param name="lookupType">The lookup type associated with the lookup attribute if applicable.</param>
     /// <param name="unit">The unit of measurement for the attribute if applicable.</param>
-    /// <param name="minInt">The minimum value for integer attributes if applicable.</param>
-    /// <param name="maxInt">The maximum value for integer attributes if applicable.</param>
-    /// <param name="minDecimal">The minimum value for decimal attributes if applicable.</param>
-    /// <param name="maxDecimal">The maximum value for decimal attributes if applicable.</param>
+    /// <param name="min">The minimum value for numeric attributes if applicable.</param>
+    /// <param name="max">The maximum value for numeric attributes if applicable.</param>
+    /// <param name="step">The step/increment value for numeric attributes if applicable.</param>
     /// <param name="regex">A regular expression pattern for string attributes if applicable.</param>
     public AttributeDefinition DefineAttribute(
         string key,
         AttributeKind kind,
         bool isRequired,
+        bool isVariant,
         int position,
-        bool isVariant = false,
         LookupType? lookupType = null,
         string? unit = null,
-        int? minInt = null,
-        int? maxInt = null,
-        decimal? minDecimal = null,
-        decimal? maxDecimal = null,
+        decimal? min = null,
+        decimal? max = null,
+        decimal? step = null,
         string? regex = null)
     {
         if (State is not ProductTypeState.Draft)
@@ -218,9 +216,22 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.AttrAlreadyExists(key));
         }
 
-        if (isVariant && kind is not AttributeKind.Enum)
+        if (isVariant &&
+            kind is AttributeKind.Bool or AttributeKind.Date or AttributeKind.String)
         {
-            throw new DomainException(E.VariantReqEnum);
+            throw new DomainException(E.VariantNotAllowedForBoolStrDate);
+        }
+
+        if (kind is AttributeKind.Group)
+        {
+            if (!isVariant)
+            {
+                throw new DomainException(E.GroupAttrMustBeVariant(key));
+            }
+            if (isRequired)
+            {
+                throw new DomainException(E.GroupAttrMustNotBeRequired(key));
+            }
         }
 
         if (kind is AttributeKind.Lookup)
@@ -240,13 +251,14 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
 
         AttributeDefinition def = kind switch
         {
-            AttributeKind.Int => new IntAttributeDefinition(this, key, isRequired, position, unit, minInt, maxInt),
-            AttributeKind.Decimal => new DecimalAttributeDefinition(this, key, isRequired, position, unit, minDecimal, maxDecimal),
+            AttributeKind.Int => new IntAttributeDefinition(this, key, isRequired, isVariant, position, unit, (int?)min, (int?)max, (int?)step),
+            AttributeKind.Decimal => new DecimalAttributeDefinition(this, key, isRequired, isVariant, position, unit, min, max, step),
             AttributeKind.String => new StringAttributeDefinition(this, key, isRequired, position, regex),
             AttributeKind.Bool => new BoolAttributeDefinition(this, key, isRequired, position),
             AttributeKind.Date => new DateAttributeDefinition(this, key, isRequired, position),
-            AttributeKind.Enum => new EnumAttributeDefinition(this, key, isRequired, position, isVariant),
-            AttributeKind.Lookup => new LookupAttributeDefinition(this, key, isRequired, position, lookupType),
+            AttributeKind.Enum => new EnumAttributeDefinition(this, key, isRequired, isVariant, position),
+            AttributeKind.Group => new GroupAttributeDefinition(this, key, position),
+            AttributeKind.Lookup => new LookupAttributeDefinition(this, key, isRequired, isVariant, position, lookupType),
             _ => throw new UnreachableException(),
         };
 
@@ -263,16 +275,15 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <param name="kind">The kind of the attribute. Must be either enumeration or lookup type.</param>
     /// <param name="isRequired">Indicates whether the attribute is required.</param>
     /// <param name="position">The position of the attribute in the attribute list.</param>
-    /// <param name="isVariant">Indicates whether this attribute's value creates a unique, sellable variant of a listing. Only applicable for
-    /// enumeration attributes.</param>
+    /// <param name="isVariant">Indicates whether this attribute's value creates a unique, sellable variant of a listing.</param>
     /// <param name="lookupType">The lookup type associated with the attribute if applicable. Only applicable for lookup attributes.</param>
     public DependentAttributeDefinition DefineDependentAttribute(
         string parentKey,
         string key,
         AttributeKind kind,
         bool isRequired,
+        bool isVariant,
         int position,
-        bool isVariant = false,
         LookupType? lookupType = null)
     {
         if (Attributes.SingleOrDefault(a => a.Key == parentKey) is not AttributeDefinition parent)
@@ -284,7 +295,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.AttrNotEnum(parentKey));
         }
 
-        var child = (DependentAttributeDefinition)DefineAttribute(key, kind, isRequired, position, isVariant: isVariant, lookupType: lookupType);
+        var child = (DependentAttributeDefinition)DefineAttribute(key, kind, isRequired, isVariant, position, lookupType: lookupType);
         child.SetDependency(enumParent);
         return child;
     }
@@ -375,6 +386,26 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         return attr.AddOption(optionKey, position, parentOptionKey);
     }
 
+    public void AddGroupAttributeMember(
+        string groupAttrKey,
+        string numericAttrKey)
+    {
+        if (State is not ProductTypeState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
+        if (Attributes.SingleOrDefault(a => a.Key == groupAttrKey) is not GroupAttributeDefinition groupAttr)
+        {
+            throw new DomainException(E.GroupAttrNotFound(groupAttrKey));
+        }
+        if (Attributes.SingleOrDefault(a => a.Key == numericAttrKey) is not NumericAttributeDefinition numericAttr)
+        {
+            throw new DomainException(E.NumericAttrNotFound(numericAttrKey));
+        }
+
+        groupAttr.AddMember(numericAttr);
+    }
+
     /// <summary>
     /// Adds the specified lookup value to the list of allowed lookups for this product type, enforcing ancestor
     /// allow-list constraints.
@@ -453,7 +484,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// <param name="value">The lookup value to check.</param>
     /// <param name="noEntriesMeansAllowAll">If true, the absence of any allow-list entries for the value's type in the product type lineage means all values of that type are allowed.</param>
     /// <returns></returns>
-    public bool IsLookupValueAllowed(
+    public bool IsLookupOptionAllowed(
         [NotNull] LookupValue value,
         bool noEntriesMeansAllowAll)
     {
@@ -471,30 +502,16 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         // Acyclic dependency check
         AttributeSchemaUtils.EnsureAcyclic(Attributes);
 
-        // Consistency: if DependsOn set => all options must be scoped; if null => none may be scoped
-        foreach (var attr in Attributes.OfType<EnumAttributeDefinition>())
+        // All attribute definitions must have unique positions to ensure deterministic ordering
+        var positionSet = new HashSet<int>();
+        foreach (var attr in Attributes)
         {
-            if (attr.DependsOn is { } parentAttr)
-            {
-                if (attr.Options.Any(o => o.ParentOption is null))
-                {
-                    throw new DomainException(E.DepScopeReq(attr.Key, parentAttr.Key));
-                }
-
-                foreach (var opt in attr.Options)
-                {
-                    Debug.Assert(opt.ParentOption is not null);
-
-                    if (opt.ParentOption.EnumAttributeDefinition != parentAttr)
+            if (!positionSet.Add(attr.Position))
                     {
-                        throw new DomainException(E.InvalidScopeParent(attr.Key, parentAttr.Key, opt.Key, opt.ParentOption.EnumAttributeDefinition.Key));
+                throw new DomainException(E.DuplicateAttrPosition(attr.Key));
                     }
-                }
-            }
-            else if (attr.Options.Any(o => o.ParentOption is not null))
-            {
-                throw new DomainException(E.ScopeForbiddenWithoutDep(attr.Key));
-            }
+
+            attr.Validate();
         }
 
         var lookupDefs = Attributes.OfType<LookupAttributeDefinition>().ToArray();

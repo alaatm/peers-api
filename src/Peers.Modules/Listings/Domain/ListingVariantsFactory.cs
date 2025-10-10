@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Lookup.Domain;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -10,49 +10,133 @@ namespace Peers.Modules.Listings.Domain;
 internal static class ListingVariantsFactory
 {
     /// <summary>
-    /// Generates all possible combinations of listing variants based on the provided attribute definitions and their options.
-    /// All attribute definitions are assumed to be of enum type (i.e., they have predefined options) and are marked as variant attributes.
-    /// Input dictionary is assumed to be non-empty.
+    /// Compose SKUs from validated, canonical axes. Assumes:
+    /// - <paramref name="axes"/> is sorted by AttributeDefinition.Position then Key,
+    /// - each value list is deduped and sorted,
+    /// - each AxisValue has exactly one non-null payload:
+    ///   EnumOption | LookupOption | Numeric | Group (and Group contains member defs in canonical order).
     /// </summary>
     /// <param name="listing">The listing for which the variants are being generated.</param>
-    /// <param name="axes">The input dictionary where each key is an attribute definition and the corresponding value is a list of its possible options.</param>
-    /// <returns></returns>
+    /// <param name="axes">The input list where each entry is a pair of an attribute definition and a list of its possible axis values.</param>
     public static List<ListingVariant> GenerateVariants(
         Listing listing,
-        Dictionary<EnumAttributeDefinition, List<EnumAttributeOption>> axes)
+        IReadOnlyList<KeyValuePair<AttributeDefinition, List<AxisValue>>> axes)
     {
-        Debug.Assert(axes.Count > 0, "At least one variant axis is required.");
-
-        var variants = new List<ListingVariant>();
-
-        foreach (var combo in Cartesian())
+        if (axes.Count == 0)
         {
-            variants.Add(ListingVariant.Create(listing, combo));
+            return [ListingVariant.CreateDefault(listing)];
+        }
+
+        // Transform each axis into a stream of picks
+        var streams = new List<List<AxisPick>>(axes.Count);
+
+        foreach (var (def, values) in axes)
+        {
+            var stream = new List<AxisPick>(values.Count);
+
+            foreach (var v in values)
+            {
+                if (v.Group is not null)
+                {
+                    // Composite/group: a single pick with N member items
+                    var pick = new AxisPick(v.Group.Count);
+                    foreach (var m in v.Group) // members already in canonical order
+                    {
+                        pick.Add((m.Def, new SingleAxisValue(Numeric: m.Value)));
+                    }
+
+                    stream.Add(pick);
+                }
+                else
+                {
+                    // Single axis: one item pick
+                    stream.Add([(def, new SingleAxisValue(v.EnumOption, v.LookupOption, v.Numeric))]);
+                }
+            }
+
+            streams.Add(stream);
+        }
+
+        // Cartesian across streams → flat lists of (def, value) pairs
+        var variants = new List<ListingVariant>(EstimateSkuCount(axes));
+
+        foreach (var pairs in Cartesian(streams))
+        {
+            variants.Add(ListingVariant.Create(listing, pairs));
         }
 
         return variants;
+    }
 
-        List<List<(AttributeDefinition def, EnumAttributeOption opt)>> Cartesian()
+    // Iterative cartesian: each stream is a list of AxisPick; each result is a flat list of (def, value)
+    private static IEnumerable<AxisPick> Cartesian(List<List<AxisPick>> streams)
+    {
+        var acc = new AxisPick[] { [] };
+
+        foreach (var stream in streams)
         {
-            var combos = new List<List<(AttributeDefinition def, EnumAttributeOption opt)>> { new() };
+            var next = new List<AxisPick>(acc.Length * Math.Max(1, stream.Count));
 
-            foreach (var (def, opts) in axes.OrderBy(x => x.Key.Position))
+            foreach (var partial in acc)
             {
-                var orderedOpts = opts.OrderBy(o => o.Position).ToArray();
-                var newCombos = new List<List<(AttributeDefinition def, EnumAttributeOption opt)>>(combos.Count * Math.Max(1, opts.Count));
-
-                foreach (var combo in combos)
+                foreach (var pick in stream)
                 {
-                    foreach (var opt in orderedOpts)
+                    var merged = new AxisPick(partial.Count + pick.Count);
+                    merged.AddRange(partial);
+                    // append this axis’ contribution (1 for single, N for group)
+                    for (var i = 0; i < pick.Count; i++)
                     {
-                        var newCombo = new List<(AttributeDefinition def, EnumAttributeOption opt)>(combo) { (def, opt) };
-                        newCombos.Add(newCombo);
+                        merged.Add(pick[i]);
                     }
+
+                    next.Add(merged);
                 }
-                combos = newCombos;
             }
 
-            return combos;
+            acc = [.. next];
         }
+
+        foreach (var combo in acc)
+        {
+            yield return combo;
+        }
+    }
+
+    public static int EstimateSkuCount(
+        IReadOnlyList<KeyValuePair<AttributeDefinition, List<AxisValue>>> axis)
+    {
+        if (axis.Count == 0)
+        {
+            // The default variant always exists, even with no axes.
+            return 1;
+        }
+
+        var count = 1;
+        foreach (var (_, values) in axis)
+        {
+            checked
+            { count *= values.Count; }
+        }
+
+        return count;
+    }
+
+    public record SingleAxisValue(
+        EnumAttributeOption? EnumOption = null,
+        LookupValue? LookupOption = null,
+        decimal? Numeric = null);
+
+    public sealed record AxisValue(
+        EnumAttributeOption? EnumOption = null,
+        LookupValue? LookupOption = null,
+        decimal? Numeric = null,
+        List<MemberAxis>? Group = null) : SingleAxisValue(EnumOption, LookupOption, Numeric);
+
+    public sealed record MemberAxis(NumericAttributeDefinition Def, decimal Value);
+
+    public sealed class AxisPick : List<(AttributeDefinition Def, SingleAxisValue Value)>
+    {
+        public AxisPick() { }
+        public AxisPick(int capacity) : base(capacity) { }
     }
 }

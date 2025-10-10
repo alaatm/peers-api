@@ -1,5 +1,6 @@
 using Humanizer;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
 
@@ -43,30 +44,78 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
 
         builder.OwnsMany(p => p.Attributes, nav =>
         {
+            var optionIdColName = nameof(ListingVariantAttribute.EnumAttributeOptionId).Underscore();
+            var lookupIdColName = nameof(ListingVariantAttribute.LookupValueId).Underscore();
+            var numericColName = nameof(ListingVariantAttribute.NumericValue).Underscore();
+
             // One row per (variant, attribute definition) - prevents multiple options for the same axis on a single variant
             nav.HasKey(p => new { p.ListingVariantId, p.AttributeDefinitionId });
-            // per-variant uniqueness for chosen option
-            nav.HasIndex(p => new { p.ListingVariantId, p.AttributeOptionId }).IsUnique();
 
-            nav.WithOwner(p => p.ListingVariant)
-               .HasForeignKey(p => p.ListingVariantId);
+            // Search indexes
+            nav
+                .HasIndex(p => new { p.AttributeDefinitionId, p.NumericValue })
+                .HasDatabaseName("IX_LVA_Num")
+                .HasFilter($"[{numericColName}] IS NOT NULL");
+            nav
+                .HasIndex(p => new { p.AttributeDefinitionId, p.EnumAttributeOptionId })
+                .HasDatabaseName("IX_LVA_Enum")
+                .HasFilter($"[{optionIdColName}] IS NOT NULL");
+            nav
+                .HasIndex(p => new { p.AttributeDefinitionId, p.LookupValueId })
+                .HasDatabaseName("IX_LVA_Lookup")
+                .HasFilter($"[{lookupIdColName}] IS NOT NULL");
 
-            nav.HasOne(p => p.AttributeDefinition)
-               .WithMany()
-               .HasForeignKey(p => p.AttributeDefinitionId)
-               .OnDelete(DeleteBehavior.Restrict);
+            nav
+                .WithOwner(p => p.ListingVariant)
+                .HasForeignKey(p => p.ListingVariantId);
 
-            nav.HasOne(p => p.EnumAttributeOption)
-               .WithMany()
-               .HasForeignKey(p => p.AttributeOptionId)
-               .OnDelete(DeleteBehavior.Restrict);
+            nav
+                .HasOne(p => p.AttributeDefinition)
+                .WithMany()
+                .HasForeignKey(p => p.AttributeDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            nav
+                .HasOne(p => p.EnumAttributeOption)
+                .WithMany()
+                .HasForeignKey(p => p.EnumAttributeOptionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            nav
+                .HasOne(p => p.LookupValue)
+                .WithMany()
+                .HasForeignKey(p => p.LookupValueId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             nav.ToTable(nameof(ListingVariantAttribute).Underscore(), p =>
             {
-                var positionPropName = nameof(ListingAttribute.Position);
+                var positionPropName = nameof(ListingVariantAttribute.Position);
                 var positionColName = positionPropName.Underscore();
+                var attrKindColName = nameof(ListingVariantAttribute.AttributeKind).Underscore();
+
+                var allowedAttrKinds = string.Join(',',
+                [
+                    (int)AttributeKind.Int,
+                    (int)AttributeKind.Decimal,
+                    (int)AttributeKind.Enum,
+                    (int)AttributeKind.Lookup,
+                ]);
+                var allowedNumericKinds = string.Join(',',
+                [
+                    (int)AttributeKind.Int,
+                    (int)AttributeKind.Decimal,
+                ]);
 
                 p.HasCheckConstraint($"CK_LVA_{positionPropName}_NonNegative", $"[{positionColName}] >= 0");
+                p.HasCheckConstraint("CK_LVA_ValidValueCombination",
+                $"""
+                ([{attrKindColName}] IN ({allowedAttrKinds}))
+                AND (
+                    ([{attrKindColName}] IN ({allowedNumericKinds}) AND [{numericColName}] IS NOT NULL AND [{optionIdColName}] IS NULL AND [{lookupIdColName}] IS NULL)
+                 OR ([{attrKindColName}] = {(int)AttributeKind.Enum} AND [{optionIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{lookupIdColName}] IS NULL)
+                 OR ([{attrKindColName}] = {(int)AttributeKind.Lookup} AND [{lookupIdColName}] IS NOT NULL AND [{numericColName}] IS NULL AND [{optionIdColName}] IS NULL)
+                )                
+                """);
             });
         });
 

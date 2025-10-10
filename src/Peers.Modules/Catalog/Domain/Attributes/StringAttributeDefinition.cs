@@ -1,3 +1,7 @@
+using System.Text.RegularExpressions;
+using Peers.Core.Domain.Errors;
+using E = Peers.Modules.Catalog.CatalogErrors;
+
 namespace Peers.Modules.Catalog.Domain.Attributes;
 
 /// <summary>
@@ -14,6 +18,15 @@ public sealed class StringAttributeDefinition : AttributeDefinition
         string key,
         bool isRequired,
         int position,
-        string? regex) : base(owner, key, AttributeKind.String, isRequired, position)
+        string? regex) : base(owner, key, AttributeKind.String, isRequired, false, position)
         => Config = new(regex);
+
+    public void ValidateValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            (Config.Regex is string r && !Regex.IsMatch(value, r)))
+        {
+            throw new DomainException(E.AttrValueMustBeValidString(Key, value, Config.Regex));
+        }
+    }
 }
