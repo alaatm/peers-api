@@ -43,4 +43,23 @@ public class DecimalExtensionsTests
         // Assert
         Assert.Equal(2, decimalPlaces);
     }
+
+    [Theory]
+    [InlineData(0, "0")]
+    [InlineData(1, "1")]
+    [InlineData(-1, "-1")]
+    [InlineData(0.1, "0.1")]
+    [InlineData(0.10, "0.1")]
+    [InlineData(0.100, "0.1")]
+    [InlineData(0.01, "0.01")]
+    [InlineData(0.001, "0.001")]
+    [InlineData(0.0001, "0.0001")]
+    public void Normalize_returns_normalized_string_representation(decimal value, string expected)
+    {
+        // Arrange & Act
+        var actual = value.Normalize();
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
 }

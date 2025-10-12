@@ -37,13 +37,13 @@ public static class ListingErrors
     /// </summary>
     public static DomainError AttrValueCannotBeNull(string key) => new(Titles.ValidationFailed, "listing.attribute-value-cannot-be-null", key);
     /// <summary>
-    /// Maximum number of variant axes exceeded. The maximum allowed is {0}.
+    /// Maximum number of variant axes '{0}' exceeded. The provided number of axes is {1}.
     /// </summary>
-    public static DomainError VariantAxesCapExceeded(int variantAxesCap) => new(Titles.CannotApplyOperation, "listing.variant-axes-cap-exceeded", variantAxesCap);
+    public static DomainError VariantAxesCapExceeded(int variantAxesCap, int providedAxesCount) => new(Titles.CannotApplyOperation, "listing.variant-axes-cap-exceeded", variantAxesCap, providedAxesCount);
     /// <summary>
-    /// Maximum SKU cap of {0} exceeded. The computed number of SKUs is {1}.
+    /// Maximum number of SKUs '{0}' exceeded. The computed number of SKUs is {1}.
     /// </summary>
-    public static DomainError SkuCapExceeded(int maxSkus, long computedSkus) => new(Titles.CannotApplyOperation, "listing.sku-cap-exceeded", maxSkus, computedSkus);
+    public static DomainError SkuCapExceeded(int skusCap, long computedSkus) => new(Titles.CannotApplyOperation, "listing.sku-cap-exceeded", skusCap, computedSkus);
     /// <summary>
     /// Attribute '{0}' requires exactly one value.
     /// </summary>
@@ -162,6 +162,22 @@ public static class ListingErrors
     /// </summary>
     public static DomainError LookupOptNotAllowedByProductType(string attrKey, string value, string slugPath)
         => new(Titles.ValidationFailed, "listing.lookup-opt-not-allowed-by-product-type", attrKey, value, slugPath);
+    /// <summary>
+    /// Appending variants is only allowed after the listing is published.
+    /// </summary>
+    public static DomainError AppendOnlyPostPublish => new(Titles.CannotApplyOperation, "listing.append-only-post-publish");
+    /// <summary>
+    /// Appending variants requires at least one variant axis to be defined.
+    /// </summary>
+    public static DomainError AppendRequiresAtLeastOneVariantAxis => new(Titles.CannotApplyOperation, "listing.append-requires-at-least-one-variant-axis");
+    /// <summary>
+    /// Cannot add new variant axis '{0}' after the listing is published.
+    /// </summary>
+    public static DomainError CannotAddNewAxisPostPublish(string key) => new(Titles.CannotApplyOperation, "listing.cannot-add-new-axis-post-publish", key);
+    /// <summary>
+    /// Appending variants requires at least one new variant value.
+    /// </summary>
+    public static DomainError AppendRequiresAtLeastOneNewVariantValue => new(Titles.CannotApplyOperation, "listing.append-requires-at-least-one-new-variant-value");
     /// <summary>
     /// The variant with SKU '{0}' could not be found.
     /// </summary>

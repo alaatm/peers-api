@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Peers.Modules.Listings.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
 
 namespace Peers.Modules.Listings;
@@ -11,6 +12,8 @@ namespace Peers.Modules.Listings;
 )]
 [JsonSerializable(typeof(FulfillmentPreferences))]
 [JsonSerializable(typeof(LogisticsProfile))]
+[JsonSerializable(typeof(VariantAxesSnapshot))]
+[JsonSerializable(typeof(VariantSelectionSnapshot))]
 public partial class ListingsJsonSourceGenContext : JsonSerializerContext
 {
 }

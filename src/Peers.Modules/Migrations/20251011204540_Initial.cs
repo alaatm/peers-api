@@ -726,9 +726,8 @@ namespace Peers.Modules.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false),
+                    version = table.Column<int>(type: "int", nullable: false),
                     seller_id = table.Column<int>(type: "int", nullable: false),
-                    product_type_id = table.Column<int>(type: "int", nullable: false),
-                    product_type_version = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     hashtag = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
@@ -736,6 +735,9 @@ namespace Peers.Modules.Migrations
                     description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     state = table.Column<int>(type: "int", nullable: false),
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    product_type_version = table.Column<int>(type: "int", nullable: false),
+                    axes_snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     fp_method = table.Column<int>(type: "int", nullable: false),
                     fp_non_returnable = table.Column<bool>(type: "bit", nullable: true),
@@ -997,6 +999,7 @@ namespace Peers.Modules.Migrations
                     price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     stock_qty = table.Column<int>(type: "int", nullable: true),
                     is_active = table.Column<bool>(type: "bit", nullable: false),
+                    selection_snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     logi_fragile = table.Column<bool>(type: "bit", nullable: true),
                     logi_hazmat = table.Column<bool>(type: "bit", nullable: true),

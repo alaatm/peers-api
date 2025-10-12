@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Text;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
@@ -50,6 +49,11 @@ public sealed class ListingVariant : Entity
     /// </summary>
     public Listing Listing { get; private set; } = default!;
     /// <summary>
+    /// A snapshot of the variant selection at the time of creation, capturing the selected attribute options.
+    /// This references <see cref="Listing.AxesSnapshot" /> plus the choices this variant selected.
+    /// </summary>
+    public VariantSelectionSnapshot SelectionSnapshot { get; private set; } = default!;
+    /// <summary>
     /// The logistics profile associated with this variant, if any. This includes details such as dimensions, weight, etc.
     /// </summary>
     /// <remarks>
@@ -68,15 +72,19 @@ public sealed class ListingVariant : Entity
     /// Creates a default variant for the specified listing. This is used when a listing has no variant axes.
     /// </summary>
     /// <param name="listing">The listing for which to create the default variant.</param>
-    internal static ListingVariant CreateDefault(Listing listing) => new()
-    {
-        Listing = listing,
-        VariantKey = DefaultVariantKey,
-        SkuCode = GenerateSku(listing.Id, null),
-        Price = listing.BasePrice,
-        IsActive = true,
-        Attributes = [],
-    };
+    /// <param name="selectionSnapshot">A snapshot referencing the listing's axes snapshot with no selections.</param>
+    internal static ListingVariant CreateDefault(
+        Listing listing,
+        VariantSelectionSnapshot selectionSnapshot) => new()
+        {
+            Listing = listing,
+            SelectionSnapshot = selectionSnapshot,
+            VariantKey = DefaultVariantKey,
+            SkuCode = GenerateSku(listing.Id, null),
+            Price = listing.BasePrice,
+            IsActive = true,
+            Attributes = [],
+        };
 
     /// <summary>
     /// Creates a new <see cref="ListingVariant"/> and its per-SKU attribute selections from the given axes.
@@ -87,29 +95,25 @@ public sealed class ListingVariant : Entity
     /// For each entry, set exactly one value matching the definition type:
     /// enum → <c>enumOption</c>; lookup → <c>lookupOption</c>; numeric (int/decimal) → <c>numericValue</c>.
     /// </param>
+    /// <param name="selectionSnapshot">A snapshot referencing the listing's axes snapshot plus the choices this variant selected.</param>
     /// <remarks>
     /// Builds a canonical <c>VariantKey</c> from ordered <c>def.Key:value</c> tokens and a SKU code from the same tokens.
     /// Numeric tokens use invariant formatting (Int without decimals; Decimal as <c>G29</c>).
     /// </remarks>
     internal static ListingVariant Create(
         Listing listing,
-        ListingVariantsFactory.AxisPick axis)
+        AxisPick axis,
+        VariantSelectionSnapshot selectionSnapshot)
     {
-        // Debug check: ensure caller sent axes sorted by Position then Key
-        Debug.Assert(axis
-            .OrderBy(x => x.Def.Position).ThenBy(x => x.Def.Key)
-            .SequenceEqual(axis));
 
-        // Debug check: ensure caller sent no duplicate attribute definitions
-        Debug.Assert(axis.Select(x => x.Def).Distinct().Count() == axis.Count);
-
-        var keySegments = axis.Select(x => $"{x.Def.Key}:{x.Value.EnumOption?.Code ?? x.Value.LookupOption?.Code ?? NormalizeNumericValue(x.Def, x.Value.Numeric!.Value)}");
-        var variantKey = string.Join("|", keySegments);
+        var choiceSegments = axis.Select(p => $"{p.Definition.Key}:{GetAxisChoiceValue(p.Choice)}");
+        var variantKey = string.Join('|', choiceSegments);
         var skuCode = GenerateSku(listing.Id, axis);
 
         var v = new ListingVariant
         {
             Listing = listing,
+            SelectionSnapshot = selectionSnapshot,
             VariantKey = variantKey,
             SkuCode = skuCode,
             Price = listing.BasePrice,
@@ -117,11 +121,11 @@ public sealed class ListingVariant : Entity
         };
 
         v.Attributes = [.. axis.Select(p =>
-            p.Def switch
+            p.Definition switch
             {
-                EnumAttributeDefinition e => new ListingVariantAttribute(v, e, p.Value.EnumOption!),
-                LookupAttributeDefinition l => new ListingVariantAttribute(v, l, p.Value.LookupOption!),
-                NumericAttributeDefinition n => new ListingVariantAttribute(v, n, p.Value.Numeric!.Value),
+                EnumAttributeDefinition e => new ListingVariantAttribute(v, e, p.Choice.EnumOption!),
+                LookupAttributeDefinition l => new ListingVariantAttribute(v, l, p.Choice.LookupOption!),
+                NumericAttributeDefinition n => new ListingVariantAttribute(v, n, p.Choice.NumericValue!.Value),
                 _ => throw new UnreachableException(),
             }
         )];
@@ -131,17 +135,17 @@ public sealed class ListingVariant : Entity
 
     private static string GenerateSku(
         int listingId,
-        ListingVariantsFactory.AxisPick? axis)
+        AxisPick? axis)
     {
         if (listingId <= 0)
         {
             throw new ArgumentException("Listing ID must be set.", nameof(listingId));
         }
 
-        var valueSegments = axis is not null
-            ? axis.Select(p => Sanitize(p.Value.EnumOption?.Code ?? p.Value.LookupOption?.Code ?? NormalizeNumericValue(p.Def, p.Value.Numeric!.Value)))
+        var choiceSegments = axis is not null
+            ? axis.Select(p => Sanitize(GetAxisChoiceValue(p.Choice)))
             : [];
-        var tail = string.Join("-", valueSegments);
+        var tail = string.Join('-', choiceSegments);
         var prefix = listingId.EncodeBase36().ToUpperInvariant();
         var skuCode = tail.Length == 0
             ? $"SKU-{prefix}-DEFAULT"
@@ -204,6 +208,9 @@ public sealed class ListingVariant : Entity
         Price = price;
     }
 
+    private static string GetAxisChoiceValue(NormalizedAxisChoice choice)
+        => choice.EnumOption?.Code ?? choice.LookupOption?.Code ?? choice.NumericValue!.Value.Normalize();
+
     private static string Sanitize(string code)
     {
         var sb = new StringBuilder(code.Length);
@@ -221,13 +228,4 @@ public sealed class ListingVariant : Entity
 
         return sb.ToString().Trim('-');
     }
-
-    private static string NormalizeNumericValue(AttributeDefinition def, decimal num) => def is NumericAttributeDefinition n
-        ? n.NumericKind switch
-        {
-            NumericKind.Int => ((int)num).ToString(CultureInfo.InvariantCulture),
-            NumericKind.Decimal => num.ToString("G29", CultureInfo.InvariantCulture),
-            _ => throw new UnreachableException(),
-        }
-        : throw new InvalidOperationException("Attribute definition must be numeric to normalize numeric value.");
 }

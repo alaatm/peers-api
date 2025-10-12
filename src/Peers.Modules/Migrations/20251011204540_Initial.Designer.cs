@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251010161520_ProductTypeLineageFunc")]
-    partial class ProductTypeLineageFunc
+    [Migration("20251011204540_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -621,6 +621,11 @@ namespace Peers.Modules.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "listing_seq");
 
+                    b.Property<string>("AxesSnapshot")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("axes_snapshot");
+
                     b.Property<decimal>("BasePrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
@@ -671,6 +676,10 @@ namespace Peers.Modules.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int")
+                        .HasColumnName("version");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "FulfillmentPreferences", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences", b1 =>
                         {
@@ -807,6 +816,11 @@ namespace Peers.Modules.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion")
                         .HasColumnName("row_version");
+
+                    b.Property<string>("SelectionSnapshot")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("selection_snapshot");
 
                     b.Property<string>("SkuCode")
                         .IsRequired()

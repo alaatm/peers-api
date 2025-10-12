@@ -23,17 +23,16 @@ namespace Peers.Modules.Listings.Domain;
 public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, ListingTr>
 {
     /// <summary>
+    /// The version number of the listing.
+    /// </summary>
+    /// <remarks>
+    /// Each update post-publish must increments this and recalculates snapshots of all variant axes
+    /// </remarks>
+    public int Version { get; private set; }
+    /// <summary>
     /// The identifier of the seller who created the listing.
     /// </summary>
     public int SellerId { get; private set; }
-    /// <summary>
-    /// The identifier of the product type associated with this listing.
-    /// </summary>
-    public int ProductTypeId { get; private set; }
-    /// <summary>
-    /// The version of the product type at the time the listing was created.
-    /// </summary>
-    public int ProductTypeVersion { get; private set; }
     /// <summary>
     /// The date and time when the listing was created.
     /// </summary>
@@ -62,6 +61,18 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
     /// The current state of the listing.
     /// </summary>
     public ListingState State { get; private set; }
+    /// <summary>
+    /// The identifier of the product type associated with this listing.
+    /// </summary>
+    public int ProductTypeId { get; private set; }
+    /// <summary>
+    /// The version of the product type at the time the listing was created.
+    /// </summary>
+    public int ProductTypeVersion { get; private set; }
+    /// <summary>
+    /// A snapshot of the variant axes defined for the listing at the time of its last update.
+    /// </summary>
+    public VariantAxesSnapshot AxesSnapshot { get; private set; } = default!;
     /// <summary>
     /// The fulfillment preferences for the listing, indicating how orders will be fulfilled.
     /// </summary>
@@ -106,6 +117,8 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         decimal price,
         DateTime date)
     {
+        const int DefaultVersion = 1;
+
         if (productType.State is not ProductTypeState.Published)
         {
             throw new DomainException(E.ProductTypeNotPublished(productType.SlugPath));
@@ -129,6 +142,8 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
 
         return new()
         {
+            Version = DefaultVersion,
+            AxesSnapshot = VariantAxesSnapshot.Create(DefaultVersion),
             FulfillmentPreferences = FulfillmentPreferences.Default(originLocation),
             Seller = seller,
             ProductType = productType,
@@ -200,23 +215,178 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         var headerAttrs = BuildNonVariantAttributes(inputs, defsByKey);
 
         // Build variant axes (independent + composite)
-        BuildVariantAxes(
+        var axes = BuildVariantAxes(
             inputs,
             defsByKey,
             variantAxesCap,
-            skuCap,
-            out var axes);
+            skuCap);
 
         // Generate variants
-        var newVariants = ListingVariantsFactory.GenerateVariants(this, axes);
+        var newVariants = ListingVariantsFactory.GenerateVariants(
+            this,
+            axes,
+            out var axesSnaptshot);
 
         // Replace state
         Variants.Clear();
         Variants.AddRange(newVariants);
+        AxesSnapshot = axesSnaptshot;
 
         Attributes.Clear();
         Attributes.AddRange(headerAttrs);
 
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Appends new variant choices to existing variant axes for the listing, subject to SKU capacity and axis
+    /// constraints.
+    /// </summary>
+    /// <remarks>
+    /// This method only allows appending new choices to axes that already exist on the listing; it
+    /// does not permit introducing new axes after the listing is published. The SKU cap is strictly enforced, and no
+    /// variants will be added if the operation would exceed the allowed limit. The axes snapshot and variant list are
+    /// updated upon successful append.
+    /// Header attributes (non-variant) are ignored.
+    /// </remarks>
+    /// <param name="inputs">A dictionary containing attribute input data for each axis to append. Each key represents an axis identifier,
+    /// and the value provides the choices to be added. Cannot be null.</param>
+    /// <param name="skuCap">The maximum allowed number of SKUs after appending new variants. Must be greater than or equal to the current
+    /// SKU count.</param>
+    public void AppendVariantAxes(
+        [NotNull] Dictionary<string, AttributeInputDto> inputs,
+        int skuCap)
+    {
+        if (State is ListingState.Draft)
+        {
+            throw new DomainException(E.AppendOnlyPostPublish);
+        }
+
+        // Resolve all PT defs by key (single source of truth)
+        var defsByKey = ProductType
+            .Attributes
+            .ToDictionary(a => a.Key, StringComparer.Ordinal);
+
+        // Ensure all keys on provided inputs exist in the schema and have non-null values
+        foreach (var (key, value) in inputs)
+        {
+            if (!defsByKey.ContainsKey(key))
+            {
+                throw new DomainException(E.AttrNotDefined(key, ProductType.SlugPath));
+            }
+            if (value is null)
+            {
+                throw new DomainException(E.AttrValueCannotBeNull(key));
+            }
+        }
+
+        // Load the baseline axes from the trusted snapshot (immutable, canonical, sorted)
+        var baseline = AxesSnapshot.ToRuntime(ProductType);
+        var baselineAxisByKey = baseline.ToDictionary(a => a.Definition.Key, StringComparer.Ordinal);
+
+        // Parse the incoming delta as axes (validated, canonicalized, sorted)
+        var deltaAxes = BuildVariantAxes(
+            inputs,
+            defsByKey,
+            variantAxesCap: baseline.Count,         // append cannot introduce new axes
+            skuCap: int.MaxValue);                  // final cap enforced later
+
+        if (deltaAxes.Count == 0)
+        {
+            throw new DomainException(E.AppendRequiresAtLeastOneVariantAxis);
+        }
+
+        // Ensure every provided axis already exists on the listing
+        foreach (var axis in deltaAxes)
+        {
+            if (!baselineAxisByKey.ContainsKey(axis.Definition.Key))
+            {
+                throw new DomainException(E.CannotAddNewAxisPostPublish(axis.Definition.Key));
+            }
+        }
+
+        // Compute new choices only (per axis)
+        var newByAxisKey = new Dictionary<string, List<AxisChoice>>(StringComparer.Ordinal);
+
+        foreach (var delta in deltaAxes)
+        {
+            var axisKey = delta.Definition.Key;
+            var existingChoiceKeys = baselineAxisByKey[axisKey].Choices.Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
+            var filtered = new List<AxisChoice>();
+
+            foreach (var c in delta.Choices)
+            {
+                if (!existingChoiceKeys.Contains(c.Key))
+                {
+                    // Not in baseline, so it's new
+                    filtered.Add(c);
+                }
+            }
+
+            if (filtered.Count > 0)
+            {
+                newByAxisKey[axisKey] = filtered;
+            }
+        }
+
+        if (newByAxisKey.Count == 0)
+        {
+            // Nothing to append (all provided values already exist)
+            throw new DomainException(E.AppendRequiresAtLeastOneNewVariantValue);
+        }
+
+        // Build updated baseline (for persistence) by merging new choices, then re-sort per axis canonically
+        var updated = new List<VariantAxis>();
+        foreach (var axis in baseline)
+        {
+            if (!newByAxisKey.TryGetValue(axis.Definition.Key, out var add))
+            {
+                // unchanged axis
+                updated.Add(axis);
+                continue;
+            }
+
+            // Copy existing then add new, then re-sort canonically
+            var merged = new List<AxisChoice>(axis.Cardinality + add.Count);
+            merged.AddRange(axis.Choices);
+            merged.AddRange(add);
+            merged.Sort(AxisChoice.Comparison);
+            updated.Add(new VariantAxis(axis.Definition, merged));
+        }
+
+        // Cap check (upper bound). Every new combo uses >=1 new value by construction.
+        var totalUpdated = ListingVariantsFactory.EstimateSkuCount(updated);
+        var totalBaseline = ListingVariantsFactory.EstimateSkuCount(baseline);
+        var newCount = checked(totalUpdated - totalBaseline);
+        if (newCount <= 0)
+        {
+            throw new DomainException(E.AppendRequiresAtLeastOneNewVariantValue);
+        }
+
+        var remaining = Math.Max(0, skuCap - Variants.Count);
+        if (newCount > remaining)
+        {
+            throw new DomainException(E.SkuCapExceeded(skuCap, Variants.Count + newCount));
+        }
+
+        Version++;
+
+        // Produce the final updated axes snapshot (new id/version/time) from the updated baseline
+        var allVariants = ListingVariantsFactory.GenerateVariants(this, updated, out var newSnapshot);
+        var existingKeys = Variants.Select(v => v.VariantKey).ToHashSet(StringComparer.Ordinal);
+
+        var newVariants = new List<ListingVariant>(newCount);
+        foreach (var v in allVariants)
+        {
+            if (!existingKeys.Contains(v.VariantKey))
+            {
+                newVariants.Add(v);
+            }
+        }
+
+        // Commit: append variants and persist the new axes snapshot
+        Variants.AddRange(newVariants);
+        AxesSnapshot = newSnapshot;
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -264,14 +434,13 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         return result;
     }
 
-    private void BuildVariantAxes(
+    private List<VariantAxis> BuildVariantAxes(
         Dictionary<string, AttributeInputDto> inputs,
         Dictionary<string, AttributeDefinition> defsByKey,
         int variantAxesCap,
-        int skuCap,
-        out List<KeyValuePair<AttributeDefinition, List<ListingVariantsFactory.AxisValue>>> axes)
+        int skuCap)
     {
-        axes = [];
+        var axes = new List<VariantAxis>();
 
         foreach (var (key, input) in inputs)
         {
@@ -297,7 +466,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         enumOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
                         var available = enumDef.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
-                        var picked = new List<ListingVariantsFactory.AxisValue>(enumOptAxis.Value.Count);
+                        var picked = new List<AxisChoice>(enumOptAxis.Value.Count);
 
                         foreach (var code in enumOptAxis.Value)
                         {
@@ -306,10 +475,10 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                                 throw new DomainException(E.UnknownEnumAttrOpt(def.Key, code));
                             }
 
-                            picked.Add(new(EnumOption: opt));
+                            picked.Add(new(Key: opt.Code, EnumOption: opt));
                         }
 
-                        picked.Sort((a, b) => a.EnumOption!.Position.CompareTo(b.EnumOption!.Position));
+                        picked.Sort(AxisChoice.EnumComparison);
                         axes.Add(new(enumDef, picked));
                     }
                     else
@@ -324,7 +493,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         lookupOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
                         var available = lookupDef.LookupType.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
-                        var picked = new List<ListingVariantsFactory.AxisValue>(lookupOptAxis.Value.Count);
+                        var picked = new List<AxisChoice>(lookupOptAxis.Value.Count);
 
                         foreach (var code in lookupOptAxis.Value)
                         {
@@ -338,10 +507,10 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                                 throw new DomainException(E.LookupOptNotAllowedByProductType(code, def.Key, ProductType.SlugPath));
                             }
 
-                            picked.Add(new(LookupOption: opt));
+                            picked.Add(new(Key: opt.Code, LookupOption: opt));
                         }
 
-                        picked.Sort((a, b) => string.Compare(a.LookupOption!.Code, b.LookupOption!.Code, StringComparison.Ordinal));
+                        picked.Sort(AxisChoice.LookupComparison);
                         axes.Add(new(lookupDef, picked));
                     }
                     else
@@ -358,15 +527,15 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         // Enfore atleast one value per single axis and all values are unique
                         numAxis.Validate(def.Key, unique: true, minRequired: 1);
 
-                        var picked = new List<ListingVariantsFactory.AxisValue>(numAxis.Value.Count);
+                        var picked = new List<AxisChoice>(numAxis.Value.Count);
 
                         foreach (var num in numAxis.Value)
                         {
                             numDef.ValidateValue(num);
-                            picked.Add(new(Numeric: num));
+                            picked.Add(new(Key: num.Normalize(), NumericValue: num));
                         }
 
-                        picked.Sort((a, b) => a.Numeric!.Value.CompareTo(b.Numeric!.Value));
+                        picked.Sort(AxisChoice.NumericComparison);
                         axes.Add(new(numDef, picked));
                     }
                     else
@@ -385,14 +554,14 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                         // Enfore atleast one row per group axis and all rows are unique (i.e. prevent [10,20] more than once).
                         groupAxis.Validate(def.Key);
 
-                        var picked = new List<ListingVariantsFactory.AxisValue>(groupAxis.Value.Count);
+                        var picked = new List<AxisChoice>(groupAxis.Value.Count);
 
                         foreach (var row in groupAxis.Value)
                         {
                             // Enfore exactly N values per composite axis (N = member count)
                             row.Validate(key, unique: false, exactRequired: membersDefs.Length);
 
-                            var membersAxes = new List<ListingVariantsFactory.MemberAxis>(row.Value.Count);
+                            var members = new List<AxisChoice.GroupMember>(row.Value.Count);
 
                             for (var i = 0; i < row.Value.Count; i++)
                             {
@@ -400,28 +569,19 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
                                 var value = row.Value[i];
 
                                 memberDef.ValidateValue(value);
-                                membersAxes.Add(new(memberDef, value));
+                                members.Add(new(memberDef, value));
                             }
 
-                            picked.Add(new(Group: membersAxes));
+                            picked.Add(new(
+                                Key: string.Join(',', members.Select(p => $"{p.MemberDefinition.Key}={p.Value.Normalize()}")),
+                                GroupMembers: members));
                         }
 
                         // Deterministic order: sort rows lexicographically
                         // i.e.
                         // [ [ 100, 300, 75 ], [ 150, 400, 125 ] ] => [ [ 100, 300, 75 ], [ 150, 400, 125 ] ]
                         // [ [ 150, 400, 125 ], [ 100, 300, 75 ] ] => [ [ 100, 300, 75 ], [ 150, 400, 125 ] ]
-                        picked.Sort(static (a, b) =>
-                        {
-                            for (var i = 0; i < a.Group!.Count; i++)
-                            {
-                                var cmp = a.Group![i].Value.CompareTo(b.Group![i].Value);
-                                if (cmp != 0)
-                                {
-                                    return cmp;
-                                }
-                            }
-                            return 0;
-                        });
+                        picked.Sort(AxisChoice.GroupComparison);
                         axes.Add(new(groupDef, picked));
                     }
                     else
@@ -438,7 +598,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         // Axis cap
         if (axes.Count > variantAxesCap)
         {
-            throw new DomainException(E.VariantAxesCapExceeded(variantAxesCap));
+            throw new DomainException(E.VariantAxesCapExceeded(variantAxesCap, axes.Count));
         }
         // Sku cap
         if (ListingVariantsFactory.EstimateSkuCount(axes) is { } skuCount && skuCount > skuCap)
@@ -447,13 +607,9 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         }
 
         // Sort axes by attribute position then key for deterministic SKU generation
-        axes.Sort((a, b) =>
-        {
-            var cmp = a.Key.Position.CompareTo(b.Key.Position);
-            return cmp != 0
-                ? cmp
-                : string.Compare(a.Key.Key, b.Key.Key, StringComparison.Ordinal);
-        });
+        axes.Sort(VariantAxis.Comparison);
+
+        return axes;
     }
 
     public void Publish()

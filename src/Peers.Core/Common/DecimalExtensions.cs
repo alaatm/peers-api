@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Peers.Core.Common;
 
 public static class DecimalExtensions
@@ -18,5 +20,12 @@ public static class DecimalExtensions
             }
             return count;
         }
+
+        /// <summary>
+        /// Returns a normalized string representation of the value, omitting unnecessary trailing zeros and using
+        /// invariant culture formatting.
+        /// </summary>
+        public string Normalize()
+            => value.ToString("G29", CultureInfo.InvariantCulture);
     }
 }

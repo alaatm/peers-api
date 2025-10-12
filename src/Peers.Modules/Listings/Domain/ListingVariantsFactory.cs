@@ -1,5 +1,5 @@
+using System.Diagnostics;
 using Peers.Modules.Catalog.Domain.Attributes;
-using Peers.Modules.Lookup.Domain;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -18,54 +18,66 @@ internal static class ListingVariantsFactory
     /// </summary>
     /// <param name="listing">The listing for which the variants are being generated.</param>
     /// <param name="axes">The input list where each entry is a pair of an attribute definition and a list of its possible axis values.</param>
+    /// <param name="axesSnapshot">Outputs a snapshot of the variant axes used to generate the variants.</param>
     public static List<ListingVariant> GenerateVariants(
         Listing listing,
-        IReadOnlyList<KeyValuePair<AttributeDefinition, List<AxisValue>>> axes)
+        IReadOnlyList<VariantAxis> axes,
+        out VariantAxesSnapshot axesSnapshot)
     {
+        axesSnapshot = VariantAxesSnapshot.Create(listing.Version);
+
         if (axes.Count == 0)
         {
-            return [ListingVariant.CreateDefault(listing)];
+            return [ListingVariant.CreateDefault(listing, VariantSelectionSnapshot.Create(axesSnapshot))];
         }
 
         // Transform each axis into a stream of picks
         var streams = new List<List<AxisPick>>(axes.Count);
 
-        foreach (var (def, values) in axes)
+        foreach (var axis in axes) // Axes already sorted canonically
         {
-            var stream = new List<AxisPick>(values.Count);
-
-            foreach (var v in values)
+            var stream = new List<AxisPick>(axis.Cardinality);
+            foreach (var choice in axis.Choices) // Choices already deduped & sorted
             {
-                if (v.Group is not null)
-                {
-                    // Composite/group: a single pick with N member items
-                    var pick = new AxisPick(v.Group.Count);
-                    foreach (var m in v.Group) // members already in canonical order
-                    {
-                        pick.Add((m.Def, new SingleAxisValue(Numeric: m.Value)));
-                    }
-
-                    stream.Add(pick);
-                }
-                else
-                {
-                    // Single axis: one item pick
-                    stream.Add([(def, new SingleAxisValue(v.EnumOption, v.LookupOption, v.Numeric))]);
-                }
+                stream.Add(choice.ToPick(axis.Definition));
             }
 
             streams.Add(stream);
+            axesSnapshot.Axes.Add(axis.ToSnapshot());
         }
 
         // Cartesian across streams → flat lists of (def, value) pairs
         var variants = new List<ListingVariant>(EstimateSkuCount(axes));
 
-        foreach (var pairs in Cartesian(streams))
+        foreach (var pick in Cartesian(streams))
         {
-            variants.Add(ListingVariant.Create(listing, pairs));
+            var selectionRefs = BuildSelectionRefs(pick, axesSnapshot);
+            var selectionSnapshot = new VariantSelectionSnapshot(
+                axesSnapshot.SnapshotId,
+                selectionRefs);
+
+            variants.Add(ListingVariant.Create(listing, pick, selectionSnapshot));
         }
 
         return variants;
+    }
+
+    public static int EstimateSkuCount(IReadOnlyList<VariantAxis> axes)
+    {
+        if (axes.Count == 0)
+        {
+            // The default variant always exists, even with no axes.
+            return 1;
+        }
+
+        var count = 1;
+        foreach (var (_, values) in axes)
+        {
+            checked
+            { count *= values.Count; }
+        }
+
+        return count;
     }
 
     // Iterative cartesian: each stream is a list of AxisPick; each result is a flat list of (def, value)
@@ -102,41 +114,103 @@ internal static class ListingVariantsFactory
         }
     }
 
-    public static int EstimateSkuCount(
-        IReadOnlyList<KeyValuePair<AttributeDefinition, List<AxisValue>>> axis)
+    // Performs the following:
+    // a. Buckets the AxisSelections by axis (for group members, it buckets by the group key),
+    // c. Finds the matching AxisChoiceSnapshot on that axis, and emits one AxisSelectionRef per axis.
+    private static List<AxisSelectionRef> BuildSelectionRefs(
+        List<AxisSelection> pick,
+        VariantAxesSnapshot snapshot)
     {
-        if (axis.Count == 0)
+        // Bucket by axis key: group members → group key; others → their own def key
+        var buckets = new Dictionary<string, List<AxisSelection>>(StringComparer.Ordinal);
+        foreach (var selection in pick)
         {
-            // The default variant always exists, even with no axes.
-            return 1;
+            var axisKey =
+                selection.Definition is NumericAttributeDefinition num && num.GroupDefinition is not null
+                    ? num.GroupDefinition.Key       // group axis
+                    : selection.Definition.Key;     // single axis
+
+            if (!buckets.TryGetValue(axisKey, out var list))
+            {
+                buckets[axisKey] = list = [];
+            }
+
+            list.Add(selection);
         }
 
-        var count = 1;
-        foreach (var (_, values) in axis)
+        var refs = new List<AxisSelectionRef>(buckets.Count);
+
+        foreach (var (axisKey, selections) in buckets)
         {
-            checked
-            { count *= values.Count; }
+            // Locate axis in the snapshot
+            var axisSnap = snapshot.Axes.Single(a => a.DefinitionKey == axisKey);
+            // Locate choice on that axis matching the selection(s)
+            var choiceSnap = FindMatchingChoiceSnap(axisSnap, selections);
+            refs.Add(new AxisSelectionRef(axisKey, choiceSnap.Key));
         }
 
-        return count;
+        return refs;
     }
 
-    public record SingleAxisValue(
-        EnumAttributeOption? EnumOption = null,
-        LookupOption? LookupOption = null,
-        decimal? Numeric = null);
-
-    public sealed record AxisValue(
-        EnumAttributeOption? EnumOption = null,
-        LookupOption? LookupOption = null,
-        decimal? Numeric = null,
-        List<MemberAxis>? Group = null) : SingleAxisValue(EnumOption, LookupOption, Numeric);
-
-    public sealed record MemberAxis(NumericAttributeDefinition Def, decimal Value);
-
-    public sealed class AxisPick : List<(AttributeDefinition Def, SingleAxisValue Value)>
+    private static AxisChoiceSnapshot FindMatchingChoiceSnap(VariantAxisSnapshot axisSnap, List<AxisSelection> selections)
     {
-        public AxisPick() { }
-        public AxisPick(int capacity) : base(capacity) { }
+        if (!axisSnap.IsGroup)
+        {
+            // Single axis must have exactly one selection
+            Debug.Assert(selections.Count == 1);
+            var choiceToMatch = selections[0].Choice;
+
+            foreach (var c in axisSnap.Choices)
+            {
+                switch (choiceToMatch)
+                {
+                    case { EnumOption: not null } when c.EnumOptionCode == choiceToMatch.EnumOption!.Code:
+                    case { LookupOption: not null } when c.LookupOptionCode == choiceToMatch.LookupOption!.Code:
+                    case { NumericValue: not null } when c.NumericValue == choiceToMatch.NumericValue:
+                        return c;
+                    default:
+                        break;
+                }
+            }
+
+            var error = $"No matching choice found on axis '{axisSnap.DefinitionKey}' for the provided selection.";
+            Debug.Fail(error);
+            throw new InvalidOperationException(error);
+        }
+        else
+        {
+            // Group axis must have at least 2 selections (one per member).
+            Debug.Assert(selections.Count >= 2);
+
+            foreach (var c in axisSnap.Choices)
+            {
+                Debug.Assert(c.GroupMembers is not null);
+
+                var allMatch = true;
+                var members = c.GroupMembers;
+
+                // All members must match by value in the same order. Def keys are expected to match regardless.
+
+                for (var i = 0; i < selections.Count; i++)
+                {
+                    Debug.Assert(selections[i].Definition.Key == members[i].MemberDefinitionKey);
+
+                    if (selections[i].Definition.Key != members[i].MemberDefinitionKey ||
+                        selections[i].Choice.NumericValue != members[i].Value)
+                    {
+                        allMatch = false;
+                        break;
+                    }
+                }
+                if (allMatch)
+                {
+                    return c;
+                }
+            }
+
+            var error = $"No matching composite choice found on group axis '{axisSnap.DefinitionKey}' for the provided selections.";
+            Debug.Fail(error);
+            throw new InvalidOperationException(error);
+        }
     }
 }

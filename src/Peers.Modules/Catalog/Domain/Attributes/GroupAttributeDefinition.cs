@@ -134,6 +134,13 @@ public class GroupAttributeDefinition : AttributeDefinition
                 throw new DomainException(E.GroupAttrMembersMixedUnits(Key));
             }
 
+            // All members must not be required - this affects listing header attribute validation
+            // The member is always required if the group is used in a listing
+            if (member.IsRequired)
+            {
+                throw new DomainException(E.GroupAttrMemberMustNotBeRequired(Key, member.Key));
+            }
+
             // No member is also a variant axis
             if (member.IsVariant)
             {

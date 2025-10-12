@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Humanizer;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Peers.Modules.Catalog.Domain.Attributes;
@@ -17,6 +18,12 @@ internal sealed class ListingVariantMapping : IEntityTypeConfiguration<ListingVa
 
         builder.Property(p => p.VariantKey).HasMaxLength(256);
         builder.Property(p => p.SkuCode).HasMaxLength(128);
+        builder
+            .Property(e => e.SelectionSnapshot)
+            .HasColumnName(nameof(ListingVariant.SelectionSnapshot).Underscore())
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, ListingsJsonSourceGenContext.Default.VariantSelectionSnapshot),
+                s => JsonSerializer.Deserialize(s, ListingsJsonSourceGenContext.Default.VariantSelectionSnapshot)!);
 
         // Concurrency token
         builder.Property<byte[]>("RowVersion").IsRowVersion();
