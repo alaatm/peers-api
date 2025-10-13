@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Listings.Domain.Snapshots;
 using Peers.Modules.Lookup.Domain;
 
 namespace Peers.Modules.Listings.Domain;

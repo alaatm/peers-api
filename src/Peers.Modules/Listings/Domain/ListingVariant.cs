@@ -3,6 +3,7 @@ using System.Text;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain.Logistics;
+using Peers.Modules.Listings.Domain.Snapshots;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -206,6 +207,11 @@ public sealed class ListingVariant : Entity
     {
         ArgumentOutOfRangeException.ThrowIfNegative(price, nameof(price));
         Price = price;
+    }
+
+    internal void Validate()
+    {
+        Logistics?.Validate();
     }
 
     private static string GetAxisChoiceValue(NormalizedAxisChoice choice)

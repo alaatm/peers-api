@@ -7,8 +7,9 @@ using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
 using Peers.Modules.Listings.Domain.Translations;
-using static Peers.Modules.Listings.Commands.SetAttributes.Command;
 using E = Peers.Modules.Listings.ListingErrors;
+using static Peers.Modules.Listings.Commands.SetAttributes.Command;
+using Peers.Modules.Listings.Domain.Snapshots;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -852,7 +853,7 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         FulfillmentPreferences.Validate(ProductType.Kind);
         foreach (var variant in Variants)
         {
-            variant.Logistics?.Validate();
+            variant.Validate();
         }
     }
 }
