@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using Peers.Core.Domain.Errors;
+
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
 /// <summary>
@@ -5,10 +8,14 @@ namespace Peers.Modules.Listings.Domain.Snapshots;
 /// </summary>
 /// <param name="SnapshotId">Must match Listing.VariantAxesSnapshot.SnapshotId</param>
 /// <param name="Selections">The selected choices on each axis.</param>
-public sealed record VariantSelectionSnapshot(
+[DebuggerDisplay("{D,nq}")]
+public sealed partial record VariantSelectionSnapshot(
     string SnapshotId,
-    List<AxisSelectionRef> Selections)
+    List<AxisSelectionRef> Selections) : IDebuggable
 {
     internal static VariantSelectionSnapshot Create(VariantAxesSnapshot axesSnapshot)
         => new(axesSnapshot.SnapshotId, []);
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"VSSnap - {SnapshotId.ToString().Split('-').Last()} | {Selections.Count} selections";
 }

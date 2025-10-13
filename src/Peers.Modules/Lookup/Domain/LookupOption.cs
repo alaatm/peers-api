@@ -13,7 +13,7 @@ namespace Peers.Modules.Lookup.Domain;
 /// - Used by listings and product type allow-lists
 /// - If you support aliases/translations, they hang off this value.
 /// </remarks>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public sealed class LookupOption : Entity, ILocalizable<LookupOption, LookupOptionTr>
 {
     /// <summary>
@@ -33,5 +33,6 @@ public sealed class LookupOption : Entity, ILocalizable<LookupOption, LookupOpti
     /// </summary>
     public List<LookupOptionTr> Translations { get; private set; } = default!;
 
-    private string DebuggerDisplay => $"{Code} → {Type?.Key ?? TypeId.ToString(CultureInfo.InvariantCulture)}";
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"LO:{Id} - {Code} → {Type?.Key ?? TypeId.ToString(CultureInfo.InvariantCulture)}";
 }

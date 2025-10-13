@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using Peers.Core.Domain.Errors;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain.Logistics;
@@ -15,7 +16,8 @@ namespace Peers.Modules.Listings.Domain;
 /// quantity, and activation status. Each variant is associated with its parent listing and a set of attributes that
 /// describe its distinguishing features. Variants are typically used to manage inventory and pricing for products that
 /// come in multiple forms (for example, a shirt available in different sizes and colors).</remarks>
-public sealed class ListingVariant : Entity
+[DebuggerDisplay("{D,nq}")]
+public sealed partial class ListingVariant : Entity, IDebuggable
 {
     public const string DefaultVariantKey = "default";
 
@@ -209,11 +211,6 @@ public sealed class ListingVariant : Entity
         Price = price;
     }
 
-    internal void Validate()
-    {
-        Logistics?.Validate();
-    }
-
     private static string GetAxisChoiceValue(NormalizedAxisChoice choice)
         => choice.EnumOption?.Code ?? choice.LookupOption?.Code ?? choice.NumericValue!.Value.Normalize();
 
@@ -234,4 +231,7 @@ public sealed class ListingVariant : Entity
 
         return sb.ToString().Trim('-');
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"LV:{Id} - {VariantKey} - {(IsActive ? "Active" : "Inactive")}";
 }

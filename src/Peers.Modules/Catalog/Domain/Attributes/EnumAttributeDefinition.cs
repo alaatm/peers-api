@@ -147,6 +147,6 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         }
     }
 
-    protected override string DebuggerDisplay
-        => base.DebuggerDisplay;
+    public override string D
+        => $"{base.D} | {Options.Count} options";
 }

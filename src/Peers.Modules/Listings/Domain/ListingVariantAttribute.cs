@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Globalization;
+using Peers.Core.Domain.Errors;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Lookup.Domain;
 
@@ -6,7 +9,8 @@ namespace Peers.Modules.Listings.Domain;
 /// <summary>
 /// Represents the association between a listing variant and a specific attribute option within that variant.
 /// </summary>
-public sealed class ListingVariantAttribute
+[DebuggerDisplay("{D,nq}")]
+public sealed partial class ListingVariantAttribute : IDebuggable
 {
     /// <summary>
     /// The identifier of the listing variant this attribute belongs to.
@@ -82,11 +86,6 @@ public sealed class ListingVariantAttribute
         EnumAttributeDefinition def,
         EnumAttributeOption option)
     {
-        if (def != option.EnumAttributeDefinition)
-        {
-            throw new ArgumentException("The provided option does not belong to the specified attribute definition.", nameof(option));
-        }
-
         AttributeKind = def.Kind;
         ListingVariant = variant;
         AttributeDefinition = def;
@@ -99,11 +98,6 @@ public sealed class ListingVariantAttribute
         LookupAttributeDefinition def,
         LookupOption lookupOption)
     {
-        if (def.LookupType != lookupOption.Type)
-        {
-            throw new ArgumentException("The provided lookup option does not belong to the lookup type associated with the specified attribute definition.", nameof(lookupOption));
-        }
-
         AttributeKind = def.Kind;
         ListingVariant = variant;
         AttributeDefinition = def;
@@ -116,12 +110,13 @@ public sealed class ListingVariantAttribute
         NumericAttributeDefinition def,
         decimal numericValue)
     {
-        def.ValidateValue(numericValue);
-
         AttributeKind = def.Kind;
         ListingVariant = variant;
         AttributeDefinition = def;
         NumericValue = numericValue;
         Position = def.Position;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"LVA:{ListingVariantId}:{AttributeDefinitionId} - {AttributeDefinition.D} = {NumericValue?.ToString(CultureInfo.InvariantCulture) ?? EnumAttributeOption?.D ?? LookupOption?.D ?? "<null>"}";
 }

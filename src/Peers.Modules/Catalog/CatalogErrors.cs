@@ -145,6 +145,11 @@ public static class CatalogErrors
     public static DomainError GroupAttrMembersMixedUnits(string attrKey)
         => new(Titles.ValidationFailed, "catalog.group-attr-members-mixed-units", attrKey);
     /// <summary>
+    /// Member attribute '{1}' of group attribute '{0}' must not be required.
+    /// </summary>
+    public static DomainError GroupAttrMemberMustNotBeRequired(string attrKey, string memberAttrKey)
+        => new(Titles.ValidationFailed, "catalog.group-attr-member-must-not-be-required", attrKey, memberAttrKey);
+    /// <summary>
     /// Member attribute '{1}' of group attribute '{0}' must not be a variant axis.
     /// </summary>
     public static DomainError GroupAttrMemberMustNotBeVariant(string attrKey, string memberAttrKey)

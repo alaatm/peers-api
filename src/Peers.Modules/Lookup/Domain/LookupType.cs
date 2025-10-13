@@ -10,7 +10,7 @@ namespace Peers.Modules.Lookup.Domain;
 /// - Referenced by <see cref="Catalog.Domain.Attributes.LookupAttributeDefinition"/>.
 /// - Uniqueness: <c>Key</c> is unique; values under this type enforce their own (TypeId, Key) uniqueness.
 /// </remarks>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public sealed class LookupType : Entity, IAggregateRoot
 {
     /// <summary>
@@ -37,5 +37,6 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// </summary>
     public List<LookupOption> Options { get; set; } = default!;
 
-    private string DebuggerDisplay => $"{Key}";
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"LT:{Id} - {Key} ({ConstraintMode})";
 }

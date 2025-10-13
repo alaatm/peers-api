@@ -8,11 +8,11 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// Represents the definition of an attribute, including its metadata, constraints, and relationships.
 /// </summary>
 /// <remarks>
-/// This class is used to define the characteristics of an attribute, such as its key, label, data type, 
+/// This class is used to define the characteristics of an attribute, such as its key, label, data type,
 /// and constraints. It also supports relationships to other attributes and product types, enabling  complex attribute
 /// configurations. Instances of this class are immutable after creation.
 /// </remarks>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public abstract class AttributeDefinition : Entity, ILocalizable<AttributeDefinition, AttributeDefinitionTr>
 {
     /// <summary>
@@ -79,5 +79,6 @@ public abstract class AttributeDefinition : Entity, ILocalizable<AttributeDefini
 
     internal virtual void Validate() { }
 
-    protected virtual string DebuggerDisplay => $"{Key} ({Kind}) | {(IsVariant ? "Variant" : "Non-variant")}";
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public virtual string D => $"AD:{Id} - {Key} ({Kind}) | {(IsVariant ? "Variant" : "Non-variant")}";
 }

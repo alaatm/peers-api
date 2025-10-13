@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
 /// <summary>
@@ -28,6 +30,7 @@ namespace Peers.Modules.Listings.Domain.Snapshots;
 /// <param name="LookupOptionCode">The lookup option code; null if not using a lookup.</param>
 /// <param name="NumericValue">The numeric value; null if not using a numeric.</param>
 /// <param name="GroupMembers">A list of group members representing the axis value; null if not using a group.</param>
+[DebuggerDisplay("{D,nq}")]
 public sealed record AxisChoiceSnapshot(
     string Key,
     string? EnumOptionCode = null,
@@ -41,4 +44,7 @@ public sealed record AxisChoiceSnapshot(
     /// <param name="MemberDefinitionKey">The key of the member attribute definition (e.g., "width", "length").</param>
     /// <param name="Value">The numeric value for this group member.</param>
     public sealed record GroupMemberSnapshot(string MemberDefinitionKey, decimal Value);
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"ACSnap - {Key} ({(EnumOptionCode != null ? "Enum" : LookupOptionCode != null ? "Lookup" : NumericValue != null ? "Numeric" : GroupMembers != null ? "Group" : "<UNKN>")})";
 }

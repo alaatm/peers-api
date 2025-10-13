@@ -154,4 +154,7 @@ public class GroupAttributeDefinition : AttributeDefinition
             }
         }
     }
+
+    public override string D
+        => $"{base.D} | {Members.Count} members";
 }

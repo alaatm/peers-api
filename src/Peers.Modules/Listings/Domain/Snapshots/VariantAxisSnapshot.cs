@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Peers.Core.Domain.Errors;
 using Peers.Modules;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
@@ -10,10 +12,11 @@ namespace Peers.Modules.Listings.Domain.Snapshots;
 /// <param name="DefinitionKey">The key of the attribute definition for this axis (e.g., "color", "size").</param>
 /// <param name="IsGroup">True if this is a composite/group axis; false for single axes.</param>
 /// <param name="Choices">The list of offered choices for this axis, in canonical order.</param>
-public sealed record VariantAxisSnapshot(
+[DebuggerDisplay("{D,nq}")]
+public sealed partial record VariantAxisSnapshot(
     string DefinitionKey,
     bool IsGroup,
-    List<AxisChoiceSnapshot> Choices)
+    List<AxisChoiceSnapshot> Choices) : IDebuggable
 {
     internal VariantAxis ToRuntime(ProductType productType)
     {
@@ -63,4 +66,7 @@ public sealed record VariantAxisSnapshot(
 
         return new(def, choices);
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"VAxisSnap - {DefinitionKey} ({(IsGroup ? "Group" : "Individual")}) | {Choices.Count} choices";
 }

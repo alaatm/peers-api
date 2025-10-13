@@ -14,7 +14,7 @@ namespace Peers.Modules.Lookup.Domain;
 ///   (ParentTypeId, ParentOptionId) → (LookupOption.TypeId, LookupOption.Id) and
 ///   (ChildTypeId,  ChildOptionId)  → (LookupOption.TypeId, LookupOption.Id).
 /// </remarks>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public sealed class LookupLink : IAggregateRoot
 {
     /// <summary>
@@ -43,6 +43,6 @@ public sealed class LookupLink : IAggregateRoot
     /// </summary>
     public LookupOption ChildOption { get; set; } = default!;
 
-    private string DebuggerDisplay
-        => $"{ChildOption?.Type?.Key ?? ChildTypeId.ToString(CultureInfo.InvariantCulture)} ({ChildOption?.Code ?? ChildOptionId.ToString(CultureInfo.InvariantCulture)}) → {ParentOption?.Type?.Key ?? ParentTypeId.ToString(CultureInfo.InvariantCulture)} ({ParentOption?.Code ?? ParentOptionId.ToString(CultureInfo.InvariantCulture)})";
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"{ChildOption?.Type?.Key ?? ChildTypeId.ToString(CultureInfo.InvariantCulture)} ({ChildOption?.Code ?? ChildOptionId.ToString(CultureInfo.InvariantCulture)}) → {ParentOption?.Type?.Key ?? ParentTypeId.ToString(CultureInfo.InvariantCulture)} ({ParentOption?.Code ?? ParentOptionId.ToString(CultureInfo.InvariantCulture)})";
 }

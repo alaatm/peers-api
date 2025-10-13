@@ -90,6 +90,6 @@ public abstract class DependentAttributeDefinition : AttributeDefinition
         }
     }
 
-    protected override string DebuggerDisplay
-        => $"{base.DebuggerDisplay} | {(DependsOn != null || DependsOnId != null ? $"Dependent ({DependsOn?.Key ?? DependsOnId!.Value.ToString(CultureInfo.InvariantCulture)})" : "Independent")}";
+    public override string D
+        => $"{base.D} | {(DependsOn != null || DependsOnId != null ? $"Dependent ({DependsOn?.Key ?? DependsOnId!.Value.ToString(CultureInfo.InvariantCulture)})" : "Independent")}";
 }

@@ -7,9 +7,10 @@ using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
 using Peers.Modules.Listings.Domain.Translations;
+using Peers.Modules.Listings.Domain.Snapshots;
 using E = Peers.Modules.Listings.ListingErrors;
 using static Peers.Modules.Listings.Commands.SetAttributes.Command;
-using Peers.Modules.Listings.Domain.Snapshots;
+using Peers.Modules.Listings.Domain.Validation;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -21,7 +22,8 @@ namespace Peers.Modules.Listings.Domain;
 /// price, and available variants. It is associated with a specific product type and maintains both non-variant
 /// attributes and SKU-level variant information. The listing's state and order quantity policy control its availability
 /// and purchasing constraints.</remarks>
-public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, ListingTr>
+[DebuggerDisplay("{D,nq}")]
+public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listing, ListingTr>, IDebuggable
 {
     /// <summary>
     /// The version number of the listing.
@@ -386,9 +388,25 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
         }
 
         // Commit: append variants and persist the new axes snapshot
+        var oldSnapshot = AxesSnapshot;
+        var oldUpdatedAt = UpdatedAt;
         Variants.AddRange(newVariants);
         AxesSnapshot = newSnapshot;
         UpdatedAt = DateTime.UtcNow;
+
+        try
+        {
+            Validate(new ValidationContext(this));
+        }
+        catch (InvalidDomainStateException)
+        {
+            // Rollback
+            Version--;
+            Variants.RemoveRange(Variants.Count - newVariants.Count, newVariants.Count);
+            AxesSnapshot = oldSnapshot;
+            UpdatedAt = oldUpdatedAt;
+            throw;
+        }
     }
 
     private List<ListingAttribute> BuildNonVariantAttributes(
@@ -760,100 +778,24 @@ public sealed class Listing : Entity, IAggregateRoot, ILocalizable<Listing, List
 
     private void ValidateForPublish()
     {
-        var reqAttrs = ProductType
-            .Attributes
-            .Where(p => p.IsRequired);
-
-        foreach (var reqAttr in reqAttrs)
-        {
-            if (!Attributes.Any(p => p.AttributeDefinition == reqAttr))
-            {
-                throw new DomainException(E.AttrReq(reqAttr.Key));
-            }
-        }
-
-        var variantAxes = ProductType
-            .Attributes
-            .OfType<EnumAttributeDefinition>()
-            .Where(p => p.IsVariant)
-            .ToArray();
-
-        // Ensure at least one option is used for each axis across all variants
-        foreach (var axis in variantAxes)
-        {
-            var usedOpts = Variants
-                .SelectMany(p => p.Attributes)
-                .Where(p => p.AttributeDefinition == axis)
-                .Select(a => a.EnumAttributeOption.Code)
-                .Distinct()
-                .ToArray();
-
-            if (usedOpts.Length == 0)
-            {
-                throw new DomainException(E.VariantAttrReqAtleastOneOption(axis.Key));
-            }
-        }
-
-        if (Variants.Count == 0)
-        {
-            throw new DomainException(E.AtLeastOneVariantRequired);
-        }
-
-        // Ensure each variant sets a value for every axis, and no duplicate combinations
-        var comboKeys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var v in Variants)
-        {
-            var parts = new List<string>(variantAxes.Length);
-            foreach (var axis in variantAxes)
-            {
-                if (v.Attributes.FirstOrDefault(av => av.AttributeDefinition == axis) is not { } choice)
-                {
-                    throw new DomainException(E.VariantMissingAxis(axis.Key));
-                }
-
-                parts.Add(choice.EnumAttributeOption.Code);
-            }
-
-            // If there are no variant axes (simple/default variant), we still want one variant max.
-            var key = parts.Count == 0 ? "default" : string.Join("|", parts);
-            if (!comboKeys.Add(key))
-            {
-                throw new DomainException(E.DuplicateVariantCombination);
-            }
-        }
-
-        // If no axes defined, enforce exactly one "default" variant
-        if (variantAxes.Length == 0 && Variants.Count != 1)
-        {
-            throw new DomainException(E.SingleDefaultVariantExpected);
-        }
-
-        // Fulfillment branch
+        FulfillmentPreferences.Validate(ProductType.Kind);
 
         if (ProductType.Kind is ProductTypeKind.Physical)
         {
-            if (FulfillmentPreferences.Method is FulfillmentMethod.None)
+            foreach (var variant in Variants)
             {
-                throw new DomainException(E.FulfillmentMethodMustBeSet);
-            }
+                if (variant.Logistics is null)
+                {
+                    throw new DomainException(E.LogisticsRequiredForPhysicalProducts);
+                }
 
-            if (Variants.Any(v => v.Logistics is null))
-            {
-                throw new DomainException(E.LogisticsRequiredForPhysicalProducts);
-            }
-        }
-        else
-        {
-            if (FulfillmentPreferences.Method is not FulfillmentMethod.None)
-            {
-                throw new DomainException(E.FulfillmentMethodMustBeNone);
+                variant.Logistics.Validate();
             }
         }
 
-        FulfillmentPreferences.Validate(ProductType.Kind);
-        foreach (var variant in Variants)
-        {
-            variant.Validate();
-        }
+        Validate(new ValidationContext(this));
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"L:{Id} - {Title} (v{Version}, {State} | {Variants.Count} axes)";
 }

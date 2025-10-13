@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
@@ -13,7 +14,7 @@ namespace Peers.Modules.Catalog.Domain;
 /// <summary>
 /// Represents a hierarchical product type with a specific kind, state, and versioning capabilities.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductType, ProductTypeTr>
 {
     /// <summary>
@@ -663,5 +664,6 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
     }
 
-    private string DebuggerDisplay => $"{SlugPath} ({Kind}) | (v{Version}, {State})";
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"PT:{Id} - {SlugPath} ({Kind}) | (v{Version}, {State})";
 }

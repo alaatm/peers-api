@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace Peers.Modules.Listings.Domain.Snapshots;
 /// </summary>
 /// <param name="DefinitionKey">The key of the attribute definition for the axis.</param>
 /// <param name="ChoiceKey">The key of the selected choice within the axis.</param>
+[DebuggerDisplay("{D,nq}")]
 public sealed record AxisSelectionRef(
     string DefinitionKey,
-    string ChoiceKey);
+    string ChoiceKey)
+{
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"ASRef - {DefinitionKey} | {ChoiceKey}";
+}

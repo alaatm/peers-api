@@ -15,7 +15,7 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// using the <see cref="Position"/> property. Options may also have a parent-child relationship, defined by <see
 /// cref="ParentOption"/>.
 /// </remarks>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerDisplay("{D,nq}")]
 public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOption, EnumAttributeOptionTr>
 {
     /// <summary>
@@ -71,6 +71,6 @@ public sealed class EnumAttributeOption : Entity, ILocalizable<EnumAttributeOpti
         ParentOptionId = null;
     }
 
-    private string DebuggerDisplay
-        => $"{Code} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Code ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
+    public string D
+        => $"EO:{Id} - {Code} → {EnumAttributeDefinition?.Key ?? EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture)} | {(ParentOption != null || ParentOptionId != null ? $"Scoped ({ParentOption?.Code ?? ParentOptionId!.Value.ToString(CultureInfo.InvariantCulture)} → {ParentOption?.EnumAttributeDefinition?.Key ?? ParentOption?.EnumAttributeDefinitionId.ToString(CultureInfo.InvariantCulture) ?? "<unloaded>"})" : "Unscoped")}";
 }

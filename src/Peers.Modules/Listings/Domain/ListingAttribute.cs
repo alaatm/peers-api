@@ -15,7 +15,8 @@ namespace Peers.Modules.Listings.Domain;
 /// <remarks>A ListingAttribute encapsulates the value and metadata for a single attribute instance on a listing,
 /// supporting various attribute kinds such as numeric, string, boolean, date, enum, and lookup types. The actual value
 /// may be stored as a string or as a reference to an enum or lookup option, depending on the attribute kind.</remarks>
-public sealed class ListingAttribute
+[DebuggerDisplay("{D,nq}")]
+public sealed partial class ListingAttribute : IDebuggable
 {
     /// <summary>
     /// The identifier of the listing this attribute belongs to.
@@ -176,4 +177,7 @@ public sealed class ListingAttribute
 
         throw new DomainException(E.AttrReqSingleLookupOptCodeValue(def.Key));
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public string D => $"LA:{ListingId}:{AttributeDefinitionId} - {AttributeDefinition.D} = {Value ?? EnumAttributeOption?.D ?? LookupOption?.D ?? "<null>"}";
 }

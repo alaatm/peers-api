@@ -55,6 +55,6 @@ public sealed class LookupAttributeDefinition : DependentAttributeDefinition
         }
     }
 
-    protected override string DebuggerDisplay
-        => $"{base.DebuggerDisplay} | LookupType: {LookupType?.Key ?? LookupTypeId.ToString(CultureInfo.InvariantCulture)}";
+    public override string D
+        => $"{base.D} | LookupType: {LookupType?.Key ?? LookupTypeId.ToString(CultureInfo.InvariantCulture)}";
 }
