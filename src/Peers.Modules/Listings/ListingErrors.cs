@@ -167,6 +167,10 @@ public static class ListingErrors
     /// </summary>
     public static DomainError AppendOnlyPostPublish => new(Titles.CannotApplyOperation, "listing.append-only-post-publish");
     /// <summary>
+    /// The operation requires the listing snapshot ID to match.
+    /// </summary>
+    public static DomainError SnapshotMismatch => new(Titles.CannotApplyOperation, "listing.snapshot-mismatch");
+    /// <summary>
     /// Appending variants requires at least one variant axis to be defined.
     /// </summary>
     public static DomainError AppendRequiresAtLeastOneVariantAxis => new(Titles.CannotApplyOperation, "listing.append-requires-at-least-one-variant-axis");

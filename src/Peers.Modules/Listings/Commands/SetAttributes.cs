@@ -17,8 +17,12 @@ public static class SetAttributes
     /// member order.
     /// </remarks>
     /// <param name="ListingId">The unique identifier of the product listing to update.</param>
+    /// <param name="SnapshotId">The snapshot identifier of the listing. This must match the listing's current snapshot ID to ensure consistency.</param>
     /// <param name="Attributes">A dictionary mapping attribute keys to their corresponding input values, specifying the attributes and variant axes to set for the listing.</param>
-    public record Command(int ListingId, Dictionary<string, Command.AttributeInputDto> Attributes)
+    public record Command(
+        int ListingId,
+        string SnapshotId,
+        Dictionary<string, Command.AttributeInputDto> Attributes)
     {
         /// <summary>
         /// Discriminated input for setting listing attributes and variant axes.

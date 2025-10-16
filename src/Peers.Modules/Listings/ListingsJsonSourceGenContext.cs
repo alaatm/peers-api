@@ -12,7 +12,7 @@ namespace Peers.Modules.Listings;
 )]
 [JsonSerializable(typeof(FulfillmentPreferences))]
 [JsonSerializable(typeof(LogisticsProfile))]
-[JsonSerializable(typeof(VariantAxesSnapshot))]
+[JsonSerializable(typeof(ListingSnapshot))]
 [JsonSerializable(typeof(VariantSelectionSnapshot))]
 public partial class ListingsJsonSourceGenContext : JsonSerializerContext
 {

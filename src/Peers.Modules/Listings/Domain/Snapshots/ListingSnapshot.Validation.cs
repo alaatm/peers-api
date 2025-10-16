@@ -1,13 +1,16 @@
-using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain.Validation;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
-public partial record VariantAxesSnapshot
+public partial record ListingSnapshot
 {
     internal void Validate(ValidationContext ctx)
     {
+        // Attributes validation
+        //
+
+        // Axes validation
         var schemaAxesDefSet = new HashSet<AttributeDefinition>();
 
         foreach (var axis in Axes)
@@ -23,5 +26,6 @@ public partial record VariantAxesSnapshot
                 axis.ValidateVariantCoverage(ctx, variant, variantAttrsByDef, schemaAxesDefSet);
             }
         }
+        //
     }
 }

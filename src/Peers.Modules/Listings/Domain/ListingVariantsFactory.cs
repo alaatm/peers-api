@@ -23,13 +23,13 @@ internal static class ListingVariantsFactory
     public static List<ListingVariant> GenerateVariants(
         Listing listing,
         IReadOnlyList<VariantAxis> axes,
-        out VariantAxesSnapshot axesSnapshot)
+        out List<VariantAxisSnapshot> axesSnapshot)
     {
-        axesSnapshot = VariantAxesSnapshot.Create(listing.Version);
+        axesSnapshot = [];
 
         if (axes.Count == 0)
         {
-            return [ListingVariant.CreateDefault(listing, VariantSelectionSnapshot.Create(axesSnapshot))];
+            return [ListingVariant.CreateDefault(listing)];
         }
 
         // Transform each axis into a stream of picks
@@ -44,7 +44,7 @@ internal static class ListingVariantsFactory
             }
 
             streams.Add(stream);
-            axesSnapshot.Axes.Add(axis.ToSnapshot());
+            axesSnapshot.Add(axis.ToSnapshot());
         }
 
         // Cartesian across streams → flat lists of (def, value) pairs
@@ -54,7 +54,7 @@ internal static class ListingVariantsFactory
         {
             var selectionRefs = BuildSelectionRefs(pick, axesSnapshot);
             var selectionSnapshot = new VariantSelectionSnapshot(
-                axesSnapshot.SnapshotId,
+                listing.Snapshot.SnapshotId,
                 selectionRefs);
 
             variants.Add(ListingVariant.Create(listing, pick, selectionSnapshot));
@@ -120,7 +120,7 @@ internal static class ListingVariantsFactory
     // c. Finds the matching AxisChoiceSnapshot on that axis, and emits one AxisSelectionRef per axis.
     private static List<AxisSelectionRef> BuildSelectionRefs(
         List<AxisSelection> pick,
-        VariantAxesSnapshot snapshot)
+        List<VariantAxisSnapshot> axesSnapshot)
     {
         // Bucket by axis key: group members → group key; others → their own def key
         var buckets = new Dictionary<string, List<AxisSelection>>(StringComparer.Ordinal);
@@ -144,7 +144,7 @@ internal static class ListingVariantsFactory
         foreach (var (axisKey, selections) in buckets)
         {
             // Locate axis in the snapshot
-            var axisSnap = snapshot.Axes.Single(a => a.DefinitionKey == axisKey);
+            var axisSnap = axesSnapshot.Single(a => a.DefinitionKey == axisKey);
             // Locate choice on that axis matching the selection(s)
             var choiceSnap = FindMatchingChoiceSnap(axisSnap, selections);
             refs.Add(new AxisSelectionRef(axisKey, choiceSnap.Key));

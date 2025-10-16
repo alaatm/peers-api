@@ -20,11 +20,11 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
         builder.Property(p => p.Hashtag).HasMaxLength(64);
         builder.Property(p => p.Title).HasMaxLength(256);
         builder
-            .Property(e => e.AxesSnapshot)
-            .HasColumnName(nameof(Listing.AxesSnapshot).Underscore())
+            .Property(e => e.Snapshot)
+            .HasColumnName(nameof(Listing.Snapshot).Underscore())
             .HasConversion(
-                v => JsonSerializer.Serialize(v, ListingsJsonSourceGenContext.Default.VariantAxesSnapshot),
-                s => JsonSerializer.Deserialize(s, ListingsJsonSourceGenContext.Default.VariantAxesSnapshot)!);
+                v => JsonSerializer.Serialize(v, ListingsJsonSourceGenContext.Default.ListingSnapshot),
+                s => JsonSerializer.Deserialize(s, ListingsJsonSourceGenContext.Default.ListingSnapshot)!);
 
         // Concurrency token
         builder.Property<byte[]>("RowVersion").IsRowVersion();

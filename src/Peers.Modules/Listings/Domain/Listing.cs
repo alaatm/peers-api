@@ -26,13 +26,6 @@ namespace Peers.Modules.Listings.Domain;
 public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listing, ListingTr>, IDebuggable
 {
     /// <summary>
-    /// The version number of the listing.
-    /// </summary>
-    /// <remarks>
-    /// Each update post-publish must increments this and recalculates snapshots of all variant axes
-    /// </remarks>
-    public int Version { get; private set; }
-    /// <summary>
     /// The identifier of the seller who created the listing.
     /// </summary>
     public int SellerId { get; private set; }
@@ -73,9 +66,9 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// </summary>
     public int ProductTypeVersion { get; private set; }
     /// <summary>
-    /// A snapshot of the variant axes defined for the listing at the time of its last update.
+    /// The current snapshot of the listing, representing its state at a specific point in time.
     /// </summary>
-    public VariantAxesSnapshot AxesSnapshot { get; private set; } = default!;
+    public ListingSnapshot Snapshot { get; private set; } = default!;
     /// <summary>
     /// The fulfillment preferences for the listing, indicating how orders will be fulfilled.
     /// </summary>
@@ -120,8 +113,6 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         decimal price,
         DateTime date)
     {
-        const int DefaultVersion = 1;
-
         if (productType.State is not ProductTypeState.Published)
         {
             throw new DomainException(E.ProductTypeNotPublished(productType.SlugPath));
@@ -145,8 +136,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
         return new()
         {
-            Version = DefaultVersion,
-            AxesSnapshot = VariantAxesSnapshot.Create(DefaultVersion),
+            Snapshot = ListingSnapshot.Create(date),
             FulfillmentPreferences = FulfillmentPreferences.Default(originLocation),
             Seller = seller,
             ProductType = productType,
@@ -170,14 +160,18 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// All required attributes defined in the product type schema must be present in the inputs. The current set of attributes and variants
     /// for the listing are replaced. This operation can only be performed when the listing is in the draft state.
     /// </remarks>
+    /// <param name="snapshotId">The current snapshot ID of the listing. Must match the listing's snapshot ID to ensure consistency.</param>
     /// <param name="inputs">A dictionary containing attribute keys and their corresponding input values. Each key must exist in the product
     /// type schema, and each value must be non-null.</param>
     /// <param name="variantAxesCap">The maximum number of variant axes allowed for the listing. Must be greater than or equal to 1.</param>
     /// <param name="skuCap">The maximum number of SKUs (variants) allowed for the listing. Must be greater than or equal to 1.</param>
+    /// <param name="date">The date and time when the attributes are being set.</param>
     public void SetAttributes(
+        string snapshotId,
         [NotNull] Dictionary<string, AttributeInputDto> inputs,
         int variantAxesCap,
-        int skuCap)
+        int skuCap,
+        DateTime date)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(variantAxesCap, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(skuCap, 1);
@@ -186,6 +180,14 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         {
             throw new DomainException(E.NotDraft);
         }
+
+        if (snapshotId != Snapshot.SnapshotId)
+        {
+            throw new DomainException(E.SnapshotMismatch);
+        }
+
+        // Replace the snapshot entirely, staying in draft state (v1)
+        Snapshot = ListingSnapshot.Create(date);
 
         // Resolve all PT defs by key (single source of truth)
         var defsByKey = ProductType
@@ -215,7 +217,10 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         }
 
         // Build non-variant attributes (and validate requireds)
-        var headerAttrs = BuildNonVariantAttributes(inputs, defsByKey);
+        var headerAttrs = BuildNonVariantAttributes(
+            inputs,
+            defsByKey,
+            out var attrsSnapshot);
 
         // Build variant axes (independent + composite)
         var axes = BuildVariantAxes(
@@ -231,9 +236,14 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             out var axesSnaptshot);
 
         // Replace state
+        Snapshot = Snapshot with
+        {
+            Attributes = attrsSnapshot,
+            Axes = axesSnaptshot
+        };
+
         Variants.Clear();
         Variants.AddRange(newVariants);
-        AxesSnapshot = axesSnaptshot;
 
         Attributes.Clear();
         Attributes.AddRange(headerAttrs);
@@ -252,17 +262,26 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// updated upon successful append.
     /// Header attributes (non-variant) are ignored.
     /// </remarks>
+    /// <param name="snapshotId">The current snapshot ID of the listing. Must match the listing's snapshot ID to ensure consistency.</param>
     /// <param name="inputs">A dictionary containing attribute input data for each axis to append. Each key represents an axis identifier,
     /// and the value provides the choices to be added. Cannot be null.</param>
     /// <param name="skuCap">The maximum allowed number of SKUs after appending new variants. Must be greater than or equal to the current
+    /// <paramref name="date"/> The date and time when the append operation is performed.</param>
     /// SKU count.</param>
     public void AppendVariantAxes(
+        string snapshotId,
         [NotNull] Dictionary<string, AttributeInputDto> inputs,
-        int skuCap)
+        int skuCap,
+        DateTime date)
     {
         if (State is ListingState.Draft)
         {
             throw new DomainException(E.AppendOnlyPostPublish);
+        }
+
+        if (snapshotId != Snapshot.SnapshotId)
+        {
+            throw new DomainException(E.SnapshotMismatch);
         }
 
         // Resolve all PT defs by key (single source of truth)
@@ -284,7 +303,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         }
 
         // Load the baseline axes from the trusted snapshot (immutable, canonical, sorted)
-        var baseline = AxesSnapshot.ToRuntime(ProductType);
+        var baseline = Snapshot.ToRuntime(ProductType);
         var baselineAxisByKey = baseline.ToDictionary(a => a.Definition.Key, StringComparer.Ordinal);
 
         // Parse the incoming delta as axes (validated, canonicalized, sorted)
@@ -372,10 +391,8 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             throw new DomainException(E.SkuCapExceeded(skuCap, Variants.Count + newCount));
         }
 
-        Version++;
-
         // Produce the final updated axes snapshot (new id/version/time) from the updated baseline
-        var allVariants = ListingVariantsFactory.GenerateVariants(this, updated, out var newSnapshot);
+        var allVariants = ListingVariantsFactory.GenerateVariants(this, updated, out var newAxesSnapshot);
         var existingKeys = Variants.Select(v => v.VariantKey).ToHashSet(StringComparer.Ordinal);
 
         var newVariants = new List<ListingVariant>(newCount);
@@ -386,33 +403,33 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                 newVariants.Add(v);
             }
         }
+        if (newVariants.Count != newCount)
+        {
+            Debug.Fail("Logic error: new variant count does not match expectation.");
+            throw new InvalidDomainStateException(this, $"Logic error: new variant count '{newVariants.Count}' does not match expected count '{newCount}'.");
+        }
 
-        // Commit: append variants and persist the new axes snapshot
-        var oldSnapshot = AxesSnapshot;
-        var oldUpdatedAt = UpdatedAt;
+        // Update state
+        UpdatedAt = date;
+        Snapshot = Snapshot.Update(newAxesSnapshot, date);
+        // Append new variants
         Variants.AddRange(newVariants);
-        AxesSnapshot = newSnapshot;
-        UpdatedAt = DateTime.UtcNow;
+        // Repoint existing variants' selections to the new snapshot
+        foreach (var v in Variants)
+        {
+            v.SetSelectionSnapshotId(Snapshot);
+        }
 
-        try
-        {
-            Validate(new ValidationContext(this));
-        }
-        catch (InvalidDomainStateException)
-        {
-            // Rollback
-            Version--;
-            Variants.RemoveRange(Variants.Count - newVariants.Count, newVariants.Count);
-            AxesSnapshot = oldSnapshot;
-            UpdatedAt = oldUpdatedAt;
-            throw;
-        }
+        // This should always pass, caller should handle InvalidDomainStateException anyway and not commit transaction
+        Validate(new ValidationContext(this));
     }
 
     private List<ListingAttribute> BuildNonVariantAttributes(
         Dictionary<string, AttributeInputDto> inputs,
-        Dictionary<string, AttributeDefinition> defsByKey)
+        Dictionary<string, AttributeDefinition> defsByKey,
+        out List<HeaderAttrSnapshot> attrsSnapshot)
     {
+        attrsSnapshot = [];
         var result = new List<ListingAttribute>(inputs.Count);
 
         foreach (var (key, input) in inputs)
@@ -797,5 +814,5 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public string D => $"L:{Id} - {Title} (v{Version}, {State} | {Variants.Count} axes)";
+    public string D => $"L:{Id} - {Title} ({State} | {Variants.Count} axes)";
 }

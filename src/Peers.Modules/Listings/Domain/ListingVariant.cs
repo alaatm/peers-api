@@ -53,7 +53,7 @@ public sealed partial class ListingVariant : Entity, IDebuggable
     public Listing Listing { get; private set; } = default!;
     /// <summary>
     /// A snapshot of the variant selection at the time of creation, capturing the selected attribute options.
-    /// This references <see cref="Listing.AxesSnapshot" /> plus the choices this variant selected.
+    /// This references <see cref="ListingSnapshot.Axes"/> plus the choices this variant selected.
     /// </summary>
     public VariantSelectionSnapshot SelectionSnapshot { get; private set; } = default!;
     /// <summary>
@@ -75,19 +75,16 @@ public sealed partial class ListingVariant : Entity, IDebuggable
     /// Creates a default variant for the specified listing. This is used when a listing has no variant axes.
     /// </summary>
     /// <param name="listing">The listing for which to create the default variant.</param>
-    /// <param name="selectionSnapshot">A snapshot referencing the listing's axes snapshot with no selections.</param>
-    internal static ListingVariant CreateDefault(
-        Listing listing,
-        VariantSelectionSnapshot selectionSnapshot) => new()
-        {
-            Listing = listing,
-            SelectionSnapshot = selectionSnapshot,
-            VariantKey = DefaultVariantKey,
-            SkuCode = GenerateSku(listing.Id, null),
-            Price = listing.BasePrice,
-            IsActive = true,
-            Attributes = [],
-        };
+    internal static ListingVariant CreateDefault(Listing listing) => new()
+    {
+        Listing = listing,
+        SelectionSnapshot = VariantSelectionSnapshot.Create(listing.Snapshot.SnapshotId),
+        VariantKey = DefaultVariantKey,
+        SkuCode = GenerateSku(listing.Id, null),
+        Price = listing.BasePrice,
+        IsActive = true,
+        Attributes = [],
+    };
 
     /// <summary>
     /// Creates a new <see cref="ListingVariant"/> and its per-SKU attribute selections from the given axes.
@@ -135,6 +132,9 @@ public sealed partial class ListingVariant : Entity, IDebuggable
 
         return v;
     }
+
+    internal void SetSelectionSnapshotId(ListingSnapshot snapshot)
+        => SelectionSnapshot = SelectionSnapshot with { SnapshotId = snapshot.SnapshotId };
 
     private static string GenerateSku(
         int listingId,

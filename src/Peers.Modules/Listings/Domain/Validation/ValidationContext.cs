@@ -10,7 +10,8 @@ internal sealed class ValidationContext
 
     public ProductType ProductType => Listing.ProductType;
     public List<ListingVariant> Variants => Listing.Variants;
-    public VariantAxesSnapshot AxesSnapshot => Listing.AxesSnapshot;
+    public ListingSnapshot Snapshot => Listing.Snapshot;
+    public List<VariantAxisSnapshot> AxesSnapshot => Snapshot.Axes;
 
     public Dictionary<string, AttributeDefinition> DefByKey { get; }
     public Dictionary<string, VariantAxisSnapshot> AxisByDefKey { get; }
@@ -20,6 +21,6 @@ internal sealed class ValidationContext
     {
         Listing = listing;
         DefByKey = ProductType.Attributes.ToDictionary(p => p.Key, StringComparer.Ordinal);
-        AxisByDefKey = AxesSnapshot.Axes.ToDictionary(p => p.DefinitionKey, p => p, StringComparer.Ordinal);
+        AxisByDefKey = AxesSnapshot.ToDictionary(p => p.DefinitionKey, p => p, StringComparer.Ordinal);
     }
 }

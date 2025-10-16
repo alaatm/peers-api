@@ -40,7 +40,7 @@ public partial class Listing
             throw StateError("Invalid fulfillment preferences.", ex);
         }
 
-        AxesSnapshot.Validate(ctx);
+        Snapshot.Validate(ctx);
         foreach (var variant in Variants)
         {
             variant.Validate(ctx);

@@ -13,8 +13,8 @@ public sealed partial record VariantSelectionSnapshot(
     string SnapshotId,
     List<AxisSelectionRef> Selections) : IDebuggable
 {
-    internal static VariantSelectionSnapshot Create(VariantAxesSnapshot axesSnapshot)
-        => new(axesSnapshot.SnapshotId, []);
+    internal static VariantSelectionSnapshot Create(string snapshotId)
+        => new(snapshotId, []);
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"VSSnap - {SnapshotId.ToString().Split('-').Last()} | {Selections.Count} selections";
