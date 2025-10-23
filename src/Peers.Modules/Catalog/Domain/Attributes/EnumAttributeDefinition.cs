@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using Peers.Core.Domain.Errors;
 using E = Peers.Modules.Catalog.CatalogErrors;
 
@@ -8,11 +9,21 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// Represents an attribute definition whose value is selected from a predefined set of options, typically used for
 /// enumerated product attributes.
 /// </summary>
-/// <remarks>EnumAttributeDefinition is used to define attributes that have a fixed list of selectable options,
+/// <remarks>
+/// EnumAttributeDefinition is used to define attributes that have a fixed list of selectable options,
 /// such as color or size. Each option is represented by an EnumAttributeOption. This class supports defining dependencies
-/// on other enum attribute definitions, enabling hierarchical or scoped option selection.</remarks>
-public sealed class EnumAttributeDefinition : DependentAttributeDefinition
+/// on other enum attribute definitions, enabling hierarchical or scoped option selection.
+/// </remarks>
+public sealed class EnumAttributeDefinition : AttributeDefinition
 {
+    /// <summary>
+    /// The identifier of another attribute definition that this attribute depends on, if any.
+    /// </summary>
+    public int? DependsOnId { get; private set; }
+    /// <summary>
+    /// The other attribute definition that this attribute depends on, if any.
+    /// </summary>
+    public EnumAttributeDefinition? DependsOn { get; private set; }
     /// <summary>
     /// The list of options associated with this attribute definition.
     /// </summary>
@@ -51,7 +62,7 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
 
         var opt = new EnumAttributeOption(this, code, position);
 
-        if (DependsOn is EnumAttributeDefinition parentAttr)
+        if (DependsOn is { } parentAttr)
         {
             if (parentCode is null)
             {
@@ -75,24 +86,26 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
         return opt;
     }
 
-    internal override void SetDependency(DependentAttributeDefinition parent)
+    internal void SetDependency(EnumAttributeDefinition parent)
     {
         if (Options.Count != 0)
         {
             throw new DomainException(E.EnumAttrDepSetOnlyIfNoOpts(Key));
         }
 
-        base.SetDependency(parent);
+        ValidateDependency(parent);
+        DependsOn = parent;
     }
 
-    internal override void ClearDependency()
+    internal void ClearDependency()
     {
         foreach (var opt in Options)
         {
             opt.ClearScope();
         }
 
-        base.ClearDependency();
+        DependsOn = null;
+        DependsOnId = null;
     }
 
     internal override void Validate()
@@ -145,8 +158,48 @@ public sealed class EnumAttributeDefinition : DependentAttributeDefinition
                 throw new DomainException(E.DuplicateEnumOptPosition(Key, opt.Code));
             }
         }
+
+        if (DependsOn is not null)
+        {
+            ValidateDependency(DependsOn);
+        }
+    }
+
+    private void ValidateDependency(EnumAttributeDefinition parent)
+    {
+        if (parent.ProductType != ProductType)
+        {
+            throw new DomainException(E.DepDiffProductType(childKey: Key, parentKey: parent.Key));
+        }
+        if (parent == this)
+        {
+            throw new DomainException(E.SelfDep(Key));
+        }
+
+        // Ensure the following:
+        // 1. If parent is variant, child must be variant too.
+        // 2. if parent is not variant, child can be either.
+        // 3. If child is required, parent must be required too.
+        // 4. If child is not required, parent can be either.
+        if (parent.IsVariant && !IsVariant)
+        {
+            throw new DomainException(E.VariantDependencyViolation(childKey: Key, parentKey: parent.Key));
+        }
+        if (IsRequired && !parent.IsRequired)
+        {
+            throw new DomainException(E.RequiredDependencyViolation(childKey: Key, parentKey: parent.Key));
+        }
+
+        // Prevent cycles
+        for (var anc = parent; anc is not null; anc = anc.DependsOn)
+        {
+            if (anc == this)
+            {
+                throw new DomainException(E.CyclicDependency);
+            }
+        }
     }
 
     public override string D
-        => $"{base.D} | {Options.Count} options";
+        => $"{base.D} | {(DependsOn != null || DependsOnId != null ? $"Dependent ({DependsOn?.Key ?? DependsOnId!.Value.ToString(CultureInfo.InvariantCulture)})" : "Independent")} | {Options.Count} options";
 }

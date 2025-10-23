@@ -60,25 +60,22 @@ internal sealed class AttributeDefinitionMapping : IEntityTypeConfiguration<Attr
     }
 }
 
-internal sealed class DependentAttributeDefinitionMapping : IEntityTypeConfiguration<DependentAttributeDefinition>
+internal sealed class EnumAttributeDefinitionMapping : IEntityTypeConfiguration<EnumAttributeDefinition>
 {
-    public void Configure(EntityTypeBuilder<DependentAttributeDefinition> builder) =>
-        // Self-reference: depends on another definition
+    public void Configure(EntityTypeBuilder<EnumAttributeDefinition> builder)
+    {
         builder
             .HasOne(p => p.DependsOn)
             .WithMany()
             .HasForeignKey(p => p.DependsOnId)
             .OnDelete(DeleteBehavior.Restrict);
-}
 
-internal sealed class EnumAttributeDefinitionMapping : IEntityTypeConfiguration<EnumAttributeDefinition>
-{
-    public void Configure(EntityTypeBuilder<EnumAttributeDefinition> builder) =>
         builder
             .HasMany(p => p.Options)
             .WithOne(p => p.EnumAttributeDefinition)
             .HasForeignKey(p => p.EnumAttributeDefinitionId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
 }
 
 internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguration<LookupAttributeDefinition>

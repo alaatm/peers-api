@@ -268,35 +268,31 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     }
 
     /// <summary>
-    /// Defines a dependent attribute that is linked to an existing parent attribute of enumeration or lookup type.
+    /// Defines a dependent attribute that is linked to an existing parent attribute of enum type.
     /// </summary>
     /// <param name="parentKey">The key of the parent attribute to which the new dependent attribute will be linked. The parent attribute must
-    /// be of enumeration or lookup type.</param>
+    /// be of enum type.</param>
     /// <param name="key">The unique key for the attribute.</param>
-    /// <param name="kind">The kind of the attribute. Must be either enumeration or lookup type.</param>
     /// <param name="isRequired">Indicates whether the attribute is required.</param>
     /// <param name="position">The position of the attribute in the attribute list.</param>
     /// <param name="isVariant">Indicates whether this attribute's value creates a unique, sellable variant of a listing.</param>
-    /// <param name="lookupType">The lookup type associated with the attribute if applicable. Only applicable for lookup attributes.</param>
-    public DependentAttributeDefinition DefineDependentAttribute(
+    public EnumAttributeDefinition DefineDependentAttribute(
         string parentKey,
         string key,
-        AttributeKind kind,
         bool isRequired,
         bool isVariant,
-        int position,
-        LookupType? lookupType = null)
+        int position)
     {
         if (Attributes.SingleOrDefault(a => a.Key == parentKey) is not AttributeDefinition parent)
         {
             throw new DomainException(E.AttrNotFound(parentKey));
         }
-        if (parent is not DependentAttributeDefinition enumParent)
+        if (parent is not EnumAttributeDefinition enumParent)
         {
             throw new DomainException(E.AttrNotEnum(parentKey));
         }
 
-        var child = (DependentAttributeDefinition)DefineAttribute(key, kind, isRequired, isVariant, position, lookupType: lookupType);
+        var child = (EnumAttributeDefinition)DefineAttribute(key, AttributeKind.Enum, isRequired, isVariant, position);
         child.SetDependency(enumParent);
         return child;
     }
@@ -317,11 +313,11 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.AttrNotFound(key));
         }
 
-        if (attr is DependentAttributeDefinition depAttr)
+        if (attr is EnumAttributeDefinition depAttr)
         {
             // Ensure no other attribute depends on this one
             var dependents = Attributes
-                .OfType<DependentAttributeDefinition>()
+                .OfType<EnumAttributeDefinition>()
                 .Where(a => a.DependsOn == attr)
                 .Select(a => a.Key)
                 .ToArray();

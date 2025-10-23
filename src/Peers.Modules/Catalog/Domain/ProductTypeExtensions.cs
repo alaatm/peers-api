@@ -62,22 +62,5 @@ public static class ProductTypeExtensions
             int position,
             LookupType lookupType)
             => (LookupAttributeDefinition)pt.DefineAttribute(key, AttributeKind.Lookup, isRequired, isVariant, position, lookupType: lookupType);
-
-        public EnumAttributeDefinition DefineDependentEnumAttribute(
-            string parentKey,
-            string key,
-            bool isRequired,
-            bool isVariant,
-            int position)
-            => (EnumAttributeDefinition)pt.DefineDependentAttribute(parentKey, key, AttributeKind.Enum, isRequired, isVariant, position);
-
-        public LookupAttributeDefinition DefineDependentLookupAttribute(
-            string parentKey,
-            string key,
-            bool isRequired,
-            bool isVariant,
-            int position,
-            LookupType lookupType)
-            => (LookupAttributeDefinition)pt.DefineDependentAttribute(parentKey, key, AttributeKind.Lookup, isRequired, isVariant, position, lookupType: lookupType);
     }
 }

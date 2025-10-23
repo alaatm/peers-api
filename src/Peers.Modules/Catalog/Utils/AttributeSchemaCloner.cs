@@ -38,20 +38,18 @@ internal static class AttributeSchemaCloner
         {
             AttributeDefinition dstDef;
 
-            // Enum/Lookup with dependency
-            if (srcDef is DependentAttributeDefinition srcDepDef &&
+            // Enum with dependency
+            if (srcDef is EnumAttributeDefinition srcDepDef &&
                 srcDepDef.DependsOn is { } srcParentDepDef)
             {
-                var dstParentDepDef = (DependentAttributeDefinition)defMap[srcParentDepDef.Key];
+                var dstParentDepDef = (EnumAttributeDefinition)defMap[srcParentDepDef.Key];
 
                 dstDef = target.DefineDependentAttribute(
                     parentKey: dstParentDepDef.Key,
                     key: srcDepDef.Key,
-                    kind: srcDepDef.Kind,
                     isRequired: srcDepDef.IsRequired,
-                    isVariant: (srcDef as DependentAttributeDefinition)?.IsVariant ?? false,
-                    position: srcDepDef.Position,
-                    lookupType: (srcDef as LookupAttributeDefinition)?.LookupType);
+                    isVariant: (srcDef as EnumAttributeDefinition)?.IsVariant ?? false,
+                    position: srcDepDef.Position);
             }
             // Everything else including Enum/Lookup without dependency
             else

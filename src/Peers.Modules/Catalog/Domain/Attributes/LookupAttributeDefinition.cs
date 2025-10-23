@@ -11,7 +11,7 @@ namespace Peers.Modules.Catalog.Domain.Attributes;
 /// <remarks>A lookup attribute definition specifies that the attribute's value must correspond to an entry in the
 /// associated lookup type. This class is typically used to enforce consistency and restrict attribute values to a
 /// controlled set defined by the lookup type.</remarks>
-public sealed class LookupAttributeDefinition : DependentAttributeDefinition
+public sealed class LookupAttributeDefinition : AttributeDefinition
 {
     /// <summary>
     /// The identifier of the associated lookup type.

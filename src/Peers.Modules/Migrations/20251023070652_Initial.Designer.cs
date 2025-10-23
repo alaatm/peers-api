@@ -14,7 +14,7 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251020070325_Initial")]
+    [Migration("20251023070652_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -1754,7 +1754,7 @@ namespace Peers.Modules.Migrations
                     b.HasDiscriminator().HasValue(4);
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
 
@@ -1772,6 +1772,8 @@ namespace Peers.Modules.Migrations
 
                             t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
                         });
+
+                    b.HasDiscriminator().HasValue(6);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
@@ -1788,6 +1790,34 @@ namespace Peers.Modules.Migrations
                         });
 
                     b.HasDiscriminator().HasValue(5);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("config");
+
+                    b.Property<int>("LookupTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("lookup_type_id");
+
+                    b.HasIndex("LookupTypeId");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
+
+                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
+
+                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
+                        });
+
+                    b.HasDiscriminator().HasValue(7);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition", b =>
@@ -1830,50 +1860,6 @@ namespace Peers.Modules.Migrations
                         });
 
                     b.HasDiscriminator().HasValue(2);
-                });
-
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
-                {
-                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
-
-                    b.ToTable(t =>
-                        {
-                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
-
-                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
-
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
-                        });
-
-                    b.HasDiscriminator().HasValue(6);
-                });
-
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
-                {
-                    b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition");
-
-                    b.Property<string>("Config")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("config");
-
-                    b.Property<int>("LookupTypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("lookup_type_id");
-
-                    b.HasIndex("LookupTypeId");
-
-                    b.ToTable(t =>
-                        {
-                            t.HasCheckConstraint("CK_AD_Group_VariantOnly", "[kind] <> 5 OR is_variant = 1");
-
-                            t.HasCheckConstraint("CK_AD_IsVariant_NumericGroupEnumLookupOnly", "[is_variant] = 0 OR [kind] IN (0,1,5,6,7)");
-
-                            t.HasCheckConstraint("CK_AD_LookupTypeId_LookupOnly", "(\r\n    ([kind] = 7 AND [lookup_type_id] IS NOT NULL)\r\n    OR\r\n    ([kind] <> 7 AND [lookup_type_id] IS NULL)\r\n)");
-                        });
-
-                    b.HasDiscriminator().HasValue(7);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
@@ -2549,24 +2535,14 @@ namespace Peers.Modules.Migrations
                     b.Navigation("ChangedBy");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", b =>
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
                 {
-                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.DependentAttributeDefinition", "DependsOn")
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", "DependsOn")
                         .WithMany()
                         .HasForeignKey("DependsOnId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DependsOn");
-                });
-
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition", b =>
-                {
-                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", "GroupDefinition")
-                        .WithMany("Members")
-                        .HasForeignKey("GroupDefinitionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("GroupDefinition");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.LookupAttributeDefinition", b =>
@@ -2578,6 +2554,16 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
 
                     b.Navigation("LookupType");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition", b =>
+                {
+                    b.HasOne("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", "GroupDefinition")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("GroupDefinition");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
@@ -2651,14 +2637,14 @@ namespace Peers.Modules.Migrations
                     b.Navigation("StatusChangeHistory");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
-                {
-                    b.Navigation("Members");
-                });
-
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.EnumAttributeDefinition", b =>
                 {
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

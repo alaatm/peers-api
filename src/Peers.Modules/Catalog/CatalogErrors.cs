@@ -179,11 +179,6 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError SelfDep(string attrKey) => new(Titles.ValidationFailed, "catalog.self-dep", attrKey);
     /// <summary>
-    /// Attribute '{0}' ({1}) cannot depend on '{2}' ({3}); only {1}→{1} is allowed.
-    /// </summary>
-    public static DomainError DepComboNotSupported(string childKey, AttributeKind childKind, string parentKey, AttributeKind parentKind)
-        => new(Titles.ValidationFailed, "catalog.dep-combo-not-supported", childKey, childKind.ToString(), parentKey, parentKind.ToString());
-    /// <summary>
     /// Attribute '{0}' must be variant because its parent '{1}' is variant.
     /// </summary>
     public static DomainError VariantDependencyViolation(string childKey, string parentKey)
