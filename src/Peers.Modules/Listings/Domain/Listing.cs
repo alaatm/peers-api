@@ -265,9 +265,8 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// <param name="snapshotId">The current snapshot ID of the listing. Must match the listing's snapshot ID to ensure consistency.</param>
     /// <param name="inputs">A dictionary containing attribute input data for each axis to append. Each key represents an axis identifier,
     /// and the value provides the choices to be added. Cannot be null.</param>
-    /// <param name="skuCap">The maximum allowed number of SKUs after appending new variants. Must be greater than or equal to the current
-    /// <paramref name="date"/> The date and time when the append operation is performed.</param>
-    /// SKU count.</param>
+    /// <param name="skuCap">The maximum allowed number of SKUs after appending new variants.</param>
+    /// <param name="date">The date and time when the append operation is performed.</param>
     public void AppendVariantAxes(
         string snapshotId,
         [NotNull] Dictionary<string, AttributeInputDto> inputs,

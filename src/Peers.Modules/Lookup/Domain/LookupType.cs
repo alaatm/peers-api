@@ -36,6 +36,14 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// The list of lookup options associated with this type.
     /// </summary>
     public List<LookupOption> Options { get; set; } = default!;
+    /// <summary>
+    /// The list of links where this type is the parent.
+    /// </summary>
+    public List<LookupLink> ParentLinks { get; private set; } = default!;
+    /// <summary>
+    /// The list of links where this type is the child.
+    /// </summary>
+    public List<LookupLink> ChildLinks { get; private set; } = default!;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"LT:{Id} - {Key} ({ConstraintMode})";

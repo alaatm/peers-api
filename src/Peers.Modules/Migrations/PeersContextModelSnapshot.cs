@@ -19,7 +19,7 @@ namespace Peers.Modules.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0-rc.1.25451.107")
+                .HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -618,11 +618,6 @@ namespace Peers.Modules.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "listing_seq");
 
-                    b.Property<string>("AxesSnapshot")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("axes_snapshot");
-
                     b.Property<decimal>("BasePrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
@@ -660,6 +655,11 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("seller_id");
 
+                    b.Property<string>("Snapshot")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("snapshot");
+
                     b.Property<int>("State")
                         .HasColumnType("int")
                         .HasColumnName("state");
@@ -673,10 +673,6 @@ namespace Peers.Modules.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("int")
-                        .HasColumnName("version");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "FulfillmentPreferences", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences", b1 =>
                         {
@@ -2315,6 +2311,18 @@ namespace Peers.Modules.Migrations
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupLink", b =>
                 {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "ChildType")
+                        .WithMany("ChildLinks")
+                        .HasForeignKey("ChildTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupType", "ParentType")
+                        .WithMany("ParentLinks")
+                        .HasForeignKey("ParentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "ChildOption")
                         .WithMany()
                         .HasForeignKey("ChildTypeId", "ChildOptionId")
@@ -2331,7 +2339,11 @@ namespace Peers.Modules.Migrations
 
                     b.Navigation("ChildOption");
 
+                    b.Navigation("ChildType");
+
                     b.Navigation("ParentOption");
+
+                    b.Navigation("ParentType");
                 });
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupOption", b =>
@@ -2605,7 +2617,11 @@ namespace Peers.Modules.Migrations
 
             modelBuilder.Entity("Peers.Modules.Lookup.Domain.LookupType", b =>
                 {
+                    b.Navigation("ChildLinks");
+
                     b.Navigation("Options");
+
+                    b.Navigation("ParentLinks");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>

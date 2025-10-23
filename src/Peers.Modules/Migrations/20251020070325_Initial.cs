@@ -726,7 +726,6 @@ namespace Peers.Modules.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false),
-                    version = table.Column<int>(type: "int", nullable: false),
                     seller_id = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -737,7 +736,7 @@ namespace Peers.Modules.Migrations
                     state = table.Column<int>(type: "int", nullable: false),
                     product_type_id = table.Column<int>(type: "int", nullable: false),
                     product_type_version = table.Column<int>(type: "int", nullable: false),
-                    axes_snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     fp_method = table.Column<int>(type: "int", nullable: false),
                     fp_non_returnable = table.Column<bool>(type: "bit", nullable: true),
@@ -870,6 +869,20 @@ namespace Peers.Modules.Migrations
                         principalSchema: "lookup",
                         principalTable: "lookup_option",
                         principalColumns: new[] { "type_id", "id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_lookup_link_lookup_type_child_type_id",
+                        column: x => x.child_type_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_lookup_link_lookup_type_parent_type_id",
+                        column: x => x.parent_type_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_type",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 

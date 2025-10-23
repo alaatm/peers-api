@@ -17,6 +17,18 @@ internal sealed class LookupTypeMapping : IEntityTypeConfiguration<LookupType>
             .HasForeignKey(p => p.TypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder
+            .HasMany(p => p.ParentLinks)
+            .WithOne(p => p.ParentType)
+            .HasForeignKey(p => p.ParentTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasMany(p => p.ChildLinks)
+            .WithOne(p => p.ChildType)
+            .HasForeignKey(p => p.ChildTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.ToTable(nameof(LookupType).Underscore(), "lookup");
     }
 }

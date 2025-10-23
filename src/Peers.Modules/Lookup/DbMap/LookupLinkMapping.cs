@@ -24,6 +24,18 @@ internal sealed class LookupLinkMapping : IEntityTypeConfiguration<LookupLink>
             .HasPrincipalKey(p => new { p.TypeId, p.Id })
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder
+            .HasOne(p => p.ParentType)
+            .WithMany(p => p.ParentLinks)
+            .HasForeignKey(p => p.ParentTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(p => p.ChildType)
+            .WithMany(p => p.ChildLinks)
+            .HasForeignKey(p => p.ChildTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.ToTable(nameof(LookupLink).Underscore(), "lookup");
     }
 }

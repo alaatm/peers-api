@@ -80,6 +80,20 @@ public abstract class DependentAttributeDefinition : AttributeDefinition
                 childKey: Key, childKind: Kind, parentKey: parent.Key, parentKind: parent.Kind));
         }
 
+        // Ensure the following:
+        // 1. If parent is variant, child must be variant too.
+        // 2. if parent is not variant, child can be either.
+        // 3. If child is required, parent must be required too.
+        // 4. If child is not required, parent can be either.
+        if (parent.IsVariant && !IsVariant)
+        {
+            throw new DomainException(E.VariantDependencyViolation(childKey: Key, parentKey: parent.Key));
+        }
+        if (IsRequired && !parent.IsRequired)
+        {
+            throw new DomainException(E.RequiredDependencyViolation(childKey: Key, parentKey: parent.Key));
+        }
+
         // Prevent cycles
         for (var anc = parent; anc is not null; anc = anc.DependsOn)
         {

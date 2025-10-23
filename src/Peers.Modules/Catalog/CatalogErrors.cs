@@ -184,6 +184,16 @@ public static class CatalogErrors
     public static DomainError DepComboNotSupported(string childKey, AttributeKind childKind, string parentKey, AttributeKind parentKind)
         => new(Titles.ValidationFailed, "catalog.dep-combo-not-supported", childKey, childKind.ToString(), parentKey, parentKind.ToString());
     /// <summary>
+    /// Attribute '{0}' must be variant because its parent '{1}' is variant.
+    /// </summary>
+    public static DomainError VariantDependencyViolation(string childKey, string parentKey)
+        => new(Titles.ValidationFailed, "catalog.variant-dependency-violation", childKey, parentKey);
+    /// <summary>
+    /// Attribute '{0}' cannot be required unless its parent '{1}' is also required.
+    /// </summary>
+    public static DomainError RequiredDependencyViolation(string childKey, string parentKey)
+        => new(Titles.ValidationFailed, "catalog.required-dependency-violation", childKey, parentKey);
+    /// <summary>
     /// Option '{0}' already exists.
     /// </summary>
     public static DomainError EnumOptAlreadyExists(string code) => new(Titles.ResourceConflict, "catalog.opt-already-exists", code);

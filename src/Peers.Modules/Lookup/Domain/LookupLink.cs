@@ -35,6 +35,14 @@ public sealed class LookupLink : IAggregateRoot
     public int ChildOptionId { get; private set; }
 
     /// <summary>
+    /// The parent lookup type (e.g., brand).
+    /// </summary>
+    public LookupType ParentType { get; set; } = default!;
+    /// <summary>
+    /// The child lookup type (e.g., device_model).
+    /// </summary>
+    public LookupType ChildType { get; set; } = default!;
+    /// <summary>
     /// The parent lookup option (e.g., apple).
     /// </summary>
     public LookupOption ParentOption { get; set; } = default!;

@@ -50,5 +50,5 @@ public sealed class LookupAllowed
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public string D => $"{ProductType.SlugPath}: {Option}";
+    public string D => $"{ProductType.SlugPath}: {Option.D}";
 }
