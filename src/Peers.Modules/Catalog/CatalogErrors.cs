@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Numerics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization;
-using Peers.Modules.Catalog.Domain.Attributes;
 
 namespace Peers.Modules.Catalog;
 
@@ -32,6 +31,20 @@ public static class CatalogErrors
     /// Enum attribute '{0}' does not exist.
     /// </summary>
     public static DomainError EnumAttrNotFound(string attrKey) => new(Titles.NotFound, "catalog.enum-attr-not-found", attrKey);
+    /// <summary>
+    /// Lookup attribute '{0}' does not exist.
+    /// </summary>
+    public static DomainError LookupAttrNotFound(string attrKey) => new(Titles.NotFound, "catalog.lookup-attr-not-found", attrKey);
+    /// <summary>
+    /// Lookup option '{0}' on '{1}' is not reachable from any allowed parent option on this ProductType.
+    /// </summary>
+    public static DomainError NoUsableLookupParentPath(string optCode, string lookupTypeKey)
+        => new(Titles.ValidationFailed, "catalog.no-usable-lookup-parent-path", optCode, lookupTypeKey);
+    /// <summary>
+    /// Parent option '{0}' on '{1}' has no linked child options for linked child attributes.
+    /// </summary>
+    public static DomainError DeadLookupOptionForChild(string optCode, string lookupTypeKey)
+        => new(Titles.ValidationFailed, "catalog.dead-lookup-option-for-child", optCode, lookupTypeKey);
     /// <summary>
     /// Attribute '{0}' kind must be 'Enum'.
     /// </summary>
@@ -209,9 +222,20 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError ParentOptMustBelongToDep => new(Titles.ValidationFailed, "catalog.parent-opt-must-belong-to-dep");
     /// <summary>
-    /// The lookup type '{0}' does not allow variants.
+    /// Attribute '{0}' of lookup type '{1}' cannot be variant because it is disallowed by the lookup type.
     /// </summary>
-    public static DomainError LookupTypeDoesNotAllowVariants(string key) => new(Titles.ValidationFailed, "catalog.lookup-type-does-not-allow-variants", key);
+    public static DomainError LookupTypeDoesNotAllowVariants(string attrKey, string lookupTypeKey)
+        => new(Titles.ValidationFailed, "catalog.lookup-type-does-not-allow-variants", attrKey, lookupTypeKey);
+    /// <summary>
+    /// Lookup option '{0}' does not belong to lookup type '{1}'.
+    /// </summary>
+    public static DomainError LookupOptionDoesNotBelongToType(string optCode, string typeKey)
+        => new(Titles.ValidationFailed, "catalog.lookup-option-does-not-belong-to-type", optCode, typeKey);
+    /// <summary>
+    /// Lookup option '{0}' is already included in the allowed options for attribute '{1}'.
+    /// </summary>
+    public static DomainError DuplicateLookupAllowedOption(string optCode, string attrKey)
+        => new(Titles.ResourceConflict, "catalog.duplicate-lookup-allowed-option", optCode, attrKey);
     /// <summary>
     /// Cyclic attribute dependency detected.
     /// </summary>
@@ -227,11 +251,6 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError LookupTypeRequired => new(Titles.ValidationFailed, "catalog.lookup-type-required");
     /// <summary>
-    /// The lookup types {0} are assigned to multiple attributes on the same product type, which is not allowed.
-    /// </summary>
-    public static DomainError DuplicateLookupTypeOnProductType(string[] lookupTypeKeys)
-        => new(Titles.ResourceConflict, "catalog.duplicate-lookup-types-on-product-type", LocalizationHelper.FormatList(lookupTypeKeys));
-    /// <summary>
     /// The lookup option '{0}' was not found.
     /// </summary>
     public static DomainError LookupOptNotFound(string key) => new(Titles.NotFound, "catalog.lookup-opt-not-found", key);
@@ -246,7 +265,7 @@ public static class CatalogErrors
     public static DomainError DuplicateAllowedLookupOpts(string[] codes)
         => new(Titles.ResourceConflict, "catalog.duplicate-allowed-lookup-opts", LocalizationHelper.FormatList(codes));
     /// <summary>
-    /// The lookup type '{1}' used by attribute '{0}' requires an allow-list of permitted values on the product type, but none was provided.
+    /// The lookup type '{1}' used by attribute '{0}' requires an allow-list of permitted values, but none was provided.
     /// </summary>
     public static DomainError MissingLookupAllowList(string attrKey, string lookupTypeKey)
         => new(Titles.ValidationFailed, "catalog.missing-lookup-allow-list", attrKey, lookupTypeKey);

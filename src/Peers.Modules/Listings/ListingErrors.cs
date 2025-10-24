@@ -158,10 +158,10 @@ public static class ListingErrors
     /// </summary>
     public static DomainError AttrValueMustBeDate(string attrKey, string value) => new(Titles.ValidationFailed, "listing.attribute-value-must-be-date", attrKey, value);
     /// <summary>
-    /// Value '{1}' of attribute '{0}' is not allowed for product type '{2}'.
+    /// Value '{1}' of attribute '{0}' is not allowed.
     /// </summary>
-    public static DomainError LookupOptNotAllowedByProductType(string attrKey, string value, string slugPath)
-        => new(Titles.ValidationFailed, "listing.lookup-opt-not-allowed-by-product-type", attrKey, value, slugPath);
+    public static DomainError LookupOptNotAllowedByAttr(string attrKey, string value)
+        => new(Titles.ValidationFailed, "listing.lookup-opt-not-allowed-by-attr", attrKey, value);
     /// <summary>
     /// Appending variants is only allowed after the listing is published.
     /// </summary>

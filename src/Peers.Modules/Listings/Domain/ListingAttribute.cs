@@ -167,9 +167,9 @@ public sealed partial class ListingAttribute : IDebuggable
                 throw new DomainException(E.UnknownLookupAttrOpt(def.Key, value));
             }
 
-            if (!listing.ProductType.IsLookupOptionAllowed(option, noEntriesMeansAllowAll: true))
+            if (!def.IsOptionAllowed(option, noEntriesMeansAllowAll: true))
             {
-                throw new DomainException(E.LookupOptNotAllowedByProductType(value, def.Key, listing.ProductType.SlugPath));
+                throw new DomainException(E.LookupOptNotAllowedByAttr(def.Key, value));
             }
 
             return new(listing, def, lookupOption: option);

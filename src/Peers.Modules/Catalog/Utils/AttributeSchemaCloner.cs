@@ -51,7 +51,7 @@ internal static class AttributeSchemaCloner
                     isVariant: (srcDef as EnumAttributeDefinition)?.IsVariant ?? false,
                     position: srcDepDef.Position);
             }
-            // Everything else including Enum/Lookup without dependency
+            // Everything else including Enum without dependency
             else
             {
                 ExtractAttrDefConfig(srcDef,
@@ -81,8 +81,6 @@ internal static class AttributeSchemaCloner
 
             if (srcDef is EnumAttributeDefinition srcEnumDef)
             {
-                Debug.Assert(dstDef is EnumAttributeDefinition);
-
                 // Clone options (resolve parent option via optMap)
                 foreach (var srcOpt in srcEnumDef.Options.OrderBy(o => o.Position))
                 {
@@ -100,6 +98,14 @@ internal static class AttributeSchemaCloner
 
                     optMap[(srcDef.Key, srcOpt.Code)] = dstOpt;
                     CopyOptionTranslations(srcOpt, dstOpt);
+                }
+            }
+            else if (srcDef is LookupAttributeDefinition srcLookupDef)
+            {
+                // Clone allowed lookup options
+                foreach (var srcAllowedOpt in srcLookupDef.AllowedOptions)
+                {
+                    target.AddAllowedLookup(srcDef.Key, srcAllowedOpt.Option);
                 }
             }
         }

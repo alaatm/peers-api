@@ -94,6 +94,29 @@ internal sealed class LookupAttributeDefinitionMapping : IEntityTypeConfiguratio
             .WithMany()
             .HasForeignKey(p => p.LookupTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .OwnsMany(p => p.AllowedOptions, nav =>
+            {
+                nav.HasKey(p => new { p.AttributeDefinitionId, p.OptionId });
+
+                nav
+                    .HasOne(p => p.AttributeDefinition)
+                    .WithMany(a => a.AllowedOptions)
+                    .HasForeignKey(x => x.AttributeDefinitionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                nav
+                    .HasOne(p => p.Option)
+                    .WithMany()
+                    .HasForeignKey(p => new { p.TypeId, p.OptionId })
+                    .HasPrincipalKey(p => new { p.TypeId, p.Id })
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                nav.ToTable(nameof(LookupAllowed).Underscore(), "catalog");
+            });
+
+        builder.Navigation(p => p.AllowedOptions).AutoInclude(false);
     }
 }
 

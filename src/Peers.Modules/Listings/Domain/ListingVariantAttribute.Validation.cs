@@ -71,9 +71,9 @@ public partial class ListingVariantAttribute
                 {
                     throw StateError($"Lookup option '{opt.D}' does not belong to the lookup type '{ld.LookupType.D}' associated with attribute definition '{def.D}'.");
                 }
-                if (!pt.IsLookupOptionAllowed(opt, noEntriesMeansAllowAll: true))
+                if (!ld.IsOptionAllowed(opt, noEntriesMeansAllowAll: true))
                 {
-                    throw StateError($"Lookup option '{opt.D}' is not allowed for product type '{pt.D}'.");
+                    throw StateError($"Lookup option '{opt.D}' is not allowed for attribute '{ld.D}'.");
                 }
 
                 break;

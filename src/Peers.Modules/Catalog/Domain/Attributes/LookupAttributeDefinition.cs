@@ -22,6 +22,14 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
     /// The associated lookup type.
     /// </summary>
     public LookupType LookupType { get; private set; } = default!;
+    /// <summary>
+    /// The list of allowed lookup options for this lookup attribute.
+    /// </summary>
+    /// <remarks>
+    /// Rows exist → only listed options are allowed.
+    /// No rows    → treat as "allow all" but can be overridden by policy.
+    /// </remarks>
+    public List<LookupAllowed> AllowedOptions { get; private set; } = default!;
 
     private LookupAttributeDefinition() : base() { }
 
@@ -37,12 +45,55 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
 
         if (!lookupType.AllowVariant && isVariant)
         {
-            throw new DomainException(E.LookupTypeDoesNotAllowVariants(lookupType.Key));
+            throw new DomainException(E.LookupTypeDoesNotAllowVariants(key, lookupType.Key));
         }
 
         LookupType = lookupType;
         // TODO: Allow override
         Config = new LookupAttrConfig { ConstraintMode = lookupType.ConstraintMode };
+        AllowedOptions = [];
+    }
+
+    /// <summary>
+    /// Returns true if the speicifed lookup option is permitted by this lookup attribute. If no allow-list is declared, the fallback policy
+    /// applies as set in noEntriesMeansAllowAll.
+    /// </summary>
+    /// <param name="option">The lookup option to check.</param>
+    /// <param name="noEntriesMeansAllowAll">If true, the absence of allow-list entries means all options of the lookup type are allowed; if false, none are allowed.</param>
+    /// <returns></returns>
+    public bool IsOptionAllowed(
+        [NotNull] LookupOption option,
+        bool noEntriesMeansAllowAll)
+    {
+        if (option.Type != LookupType)
+        {
+            throw new DomainException(E.LookupOptionDoesNotBelongToType(option.Code, LookupType.Key));
+        }
+
+        if (AllowedOptions.Count > 0 &&
+            AllowedOptions.Any(p => p.Option.Code == option.Code))
+        {
+            return true;
+        }
+
+        // No allow-list declaration, fallback to policy
+        return noEntriesMeansAllowAll;
+    }
+
+    internal void AddAllowedOption([NotNull] LookupOption option)
+    {
+        if (option.Type != LookupType)
+        {
+            throw new DomainException(E.LookupOptionDoesNotBelongToType(option.Code, LookupType.Key));
+        }
+
+        if (AllowedOptions.Any(p => p.Option.Code == option.Code))
+        {
+            throw new DomainException(E.DuplicateLookupAllowedOption(option.Code, Key));
+        }
+
+        var allowed = new LookupAllowed(this, option);
+        AllowedOptions.Add(allowed);
     }
 
     internal override void Validate()
@@ -51,7 +102,13 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
 
         if (!LookupType.AllowVariant && IsVariant)
         {
-            throw new DomainException(E.LookupTypeDoesNotAllowVariants(LookupType.Key));
+            throw new DomainException(E.LookupTypeDoesNotAllowVariants(Key, LookupType.Key));
+        }
+
+        if (LookupType.ConstraintMode is LookupConstraintMode.RequireAllowList &&
+            AllowedOptions.Count == 0)
+        {
+            throw new DomainException(E.MissingLookupAllowList(Key, LookupType.Key));
         }
     }
 

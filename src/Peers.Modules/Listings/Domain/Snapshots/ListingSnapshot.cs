@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Humanizer;
 using Peers.Modules.Catalog.Domain;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;

@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251023070709_ProductTypeLineageFunc")]
-    partial class ProductTypeLineageFunc
+    [Migration("20251024193547_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -287,29 +287,6 @@ namespace Peers.Modules.Migrations
                         .IsUnique();
 
                     b.ToTable("enum_attribute_option", (string)null);
-                });
-
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
-                {
-                    b.Property<int>("ProductTypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("product_type_id");
-
-                    b.Property<int>("TypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("type_id");
-
-                    b.Property<int>("OptionId")
-                        .HasColumnType("int")
-                        .HasColumnName("option_id");
-
-                    b.HasKey("ProductTypeId", "TypeId", "OptionId");
-
-                    b.HasIndex("ProductTypeId", "TypeId");
-
-                    b.HasIndex("TypeId", "OptionId");
-
-                    b.ToTable("lookup_allowed", "catalog");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
@@ -1986,26 +1963,6 @@ namespace Peers.Modules.Migrations
                     b.Navigation("ParentOption");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Catalog.Domain.LookupAllowed", b =>
-                {
-                    b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
-                        .WithMany("LookupsAllowed")
-                        .HasForeignKey("ProductTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "Option")
-                        .WithMany()
-                        .HasForeignKey("TypeId", "OptionId")
-                        .HasPrincipalKey("TypeId", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Option");
-
-                    b.Navigation("ProductType");
-                });
-
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
                 {
                     b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "Parent")
@@ -2553,6 +2510,43 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsMany("Peers.Modules.Catalog.Domain.Attributes.LookupAllowed", "AllowedOptions", b1 =>
+                        {
+                            b1.Property<int>("AttributeDefinitionId")
+                                .HasColumnType("int")
+                                .HasColumnName("attribute_definition_id");
+
+                            b1.Property<int>("OptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("option_id");
+
+                            b1.Property<int>("TypeId")
+                                .HasColumnType("int")
+                                .HasColumnName("type_id");
+
+                            b1.HasKey("AttributeDefinitionId", "OptionId");
+
+                            b1.HasIndex("TypeId", "OptionId");
+
+                            b1.ToTable("lookup_allowed", "catalog");
+
+                            b1.WithOwner("AttributeDefinition")
+                                .HasForeignKey("AttributeDefinitionId");
+
+                            b1.HasOne("Peers.Modules.Lookup.Domain.LookupOption", "Option")
+                                .WithMany()
+                                .HasForeignKey("TypeId", "OptionId")
+                                .HasPrincipalKey("TypeId", "Id")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.Navigation("AttributeDefinition");
+
+                            b1.Navigation("Option");
+                        });
+
+                    b.Navigation("AllowedOptions");
+
                     b.Navigation("LookupType");
                 });
 
@@ -2581,8 +2575,6 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Attributes");
 
                     b.Navigation("Children");
-
-                    b.Navigation("LookupsAllowed");
 
                     b.Navigation("Translations");
                 });

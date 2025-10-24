@@ -816,34 +816,6 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "lookup_allowed",
-                schema: "catalog",
-                columns: table => new
-                {
-                    product_type_id = table.Column<int>(type: "int", nullable: false),
-                    type_id = table.Column<int>(type: "int", nullable: false),
-                    option_id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_lookup_allowed", x => new { x.product_type_id, x.type_id, x.option_id });
-                    table.ForeignKey(
-                        name: "FK_lookup_allowed_lookup_option_type_id_option_id",
-                        columns: x => new { x.type_id, x.option_id },
-                        principalSchema: "lookup",
-                        principalTable: "lookup_option",
-                        principalColumns: new[] { "type_id", "id" },
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_lookup_allowed_product_type_product_type_id",
-                        column: x => x.product_type_id,
-                        principalSchema: "catalog",
-                        principalTable: "product_type",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "lookup_link",
                 schema: "lookup",
                 columns: table => new
@@ -969,6 +941,34 @@ namespace Peers.Modules.Migrations
                         column: x => x.parent_option_id,
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "lookup_allowed",
+                schema: "catalog",
+                columns: table => new
+                {
+                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    option_id = table.Column<int>(type: "int", nullable: false),
+                    type_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_allowed", x => new { x.attribute_definition_id, x.option_id });
+                    table.ForeignKey(
+                        name: "FK_lookup_allowed_attribute_definition_attribute_definition_id",
+                        column: x => x.attribute_definition_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_lookup_allowed_lookup_option_type_id_option_id",
+                        columns: x => new { x.type_id, x.option_id },
+                        principalSchema: "lookup",
+                        principalTable: "lookup_option",
+                        principalColumns: new[] { "type_id", "id" },
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -1405,12 +1405,6 @@ namespace Peers.Modules.Migrations
                 table: "listing_variant_attribute",
                 columns: new[] { "attribute_definition_id", "numeric_value" },
                 filter: "[numeric_value] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_lookup_allowed_product_type_id_type_id",
-                schema: "catalog",
-                table: "lookup_allowed",
-                columns: new[] { "product_type_id", "type_id" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_lookup_allowed_type_id_option_id",

@@ -537,9 +537,9 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                                 throw new DomainException(E.UnknownLookupAttrOpt(def.Key, code));
                             }
 
-                            if (!ProductType.IsLookupOptionAllowed(opt, noEntriesMeansAllowAll: true))
+                            if (!lookupDef.IsOptionAllowed(opt, noEntriesMeansAllowAll: true))
                             {
-                                throw new DomainException(E.LookupOptNotAllowedByProductType(code, def.Key, ProductType.SlugPath));
+                                throw new DomainException(E.LookupOptNotAllowedByAttr(def.Key, code));
                             }
 
                             picked.Add(new(Key: opt.Code, LookupOption: opt));
