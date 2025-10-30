@@ -602,33 +602,6 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
     }
 
-    // Build ancestor chain from root to this (self inclusive)
-    private List<ProductType> BuildChain(bool reverse = false, bool includeSelf = true)
-    {
-        var chain = new List<ProductType>();
-        CollectAncestors(this);
-
-        if (reverse)
-        {
-            chain.Reverse();
-        }
-
-        return chain;
-
-        void CollectAncestors(ProductType node)
-        {
-            if (node.Parent is not null)
-            {
-                CollectAncestors(node.Parent);
-            }
-
-            if (includeSelf || node != this)
-            {
-                chain.Add(node);
-            }
-        }
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"PT:{Id} - {SlugPath} ({Kind}) | (v{Version}, {State})";
 }
