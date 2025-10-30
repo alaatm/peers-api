@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Catalog.Domain.Index;
 
 namespace Peers.Modules.Catalog;
 
@@ -13,6 +14,7 @@ namespace Peers.Modules.Catalog;
 [JsonSerializable(typeof(NumericAttrConfig<int>))]
 [JsonSerializable(typeof(NumericAttrConfig<decimal>))]
 [JsonSerializable(typeof(LookupAttrConfig))]
+[JsonSerializable(typeof(CatalogIndexSnapshot))]
 public partial class CatalogJsonSourceGenContext : JsonSerializerContext
 {
 }

@@ -49,6 +49,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     /// The parent product type, if any.
     /// </summary>
     public ProductType? Parent { get; private set; }
+    /// <summary>
+    /// An index snapshot representing precomputed data for efficient querying of this product type.
+    /// </summary>
+    public ProductTypeIndex? Index { get; private set; }
 
     /// <summary>
     /// The list of child product types.
@@ -502,21 +506,22 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         }
     }
 
-    //public void RemoveAllowedLookup([NotNull] LookupOption value)
-    //{
-    //    if (State is not ProductTypeState.Draft)
-    //    {
-    //        throw new DomainException(E.NotDraft);
-    //    }
+    public void RemoveAllowedLookup(
+        string key,
+        [NotNull] LookupOption option)
+    {
+        if (State is not ProductTypeState.Draft)
+        {
+            throw new DomainException(E.NotDraft);
+        }
 
-    //    if (LookupsAllowed.SingleOrDefault(a => a.Option == value) is not { } existing)
-    //    {
-    //        throw new DomainException(E.LookupOptNotFound(value.Code));
-    //    }
+        if (Attributes.SingleOrDefault(a => a.Key == key) is not LookupAttributeDefinition attr)
+        {
+            throw new DomainException(E.LookupAttrNotFound(key));
+        }
 
-    //    LookupsAllowed.Remove(existing);
-    //    EffectiveLookupsAllowed = null!; // reset cache
-    //}
+        attr.RemoveAllowedOption(option);
+    }
 
     /// <summary>
     /// Transitions the product type from the draft state to the published state.
@@ -534,6 +539,8 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
 
         ValidateForPublish();
         State = ProductTypeState.Published;
+
+        Index = ProductTypeIndex.Build(this);
         // set PublishedAt & schemaHash, etc.
     }
 

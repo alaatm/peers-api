@@ -237,6 +237,11 @@ public static class CatalogErrors
     public static DomainError DuplicateLookupAllowedOption(string optCode, string attrKey)
         => new(Titles.ResourceConflict, "catalog.duplicate-lookup-allowed-option", optCode, attrKey);
     /// <summary>
+    /// Lookup option '{0}' is not included in the allowed options for attribute '{1}'.
+    /// </summary>
+    public static DomainError LookupAllowedOptionNotFound(string optCode, string attrKey)
+        => new(Titles.NotFound, "catalog.lookup-allowed-option-not-found", optCode, attrKey);
+    /// <summary>
     /// Cyclic attribute dependency detected.
     /// </summary>
     public static DomainError CyclicDependency => new(Titles.ValidationFailed, "catalog.cyclic-dependency");

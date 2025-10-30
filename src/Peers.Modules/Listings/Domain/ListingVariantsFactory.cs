@@ -25,6 +25,7 @@ internal static class ListingVariantsFactory
         IReadOnlyList<VariantAxis> axes,
         out List<VariantAxisSnapshot> axesSnapshot)
     {
+        var idx = listing.ProductType.Index!.Hydrated;
         axesSnapshot = [];
 
         if (axes.Count == 0)
@@ -52,6 +53,12 @@ internal static class ListingVariantsFactory
 
         foreach (var pick in Cartesian(streams))
         {
+            // Prune invalid combos
+            if (!idx.IsVariantComboValid(pick, noEntriesMeansAllowAll: true))
+            {
+                continue;
+            }
+
             var selectionRefs = BuildSelectionRefs(pick, axesSnapshot);
             var selectionSnapshot = new VariantSelectionSnapshot(
                 listing.Snapshot.SnapshotId,
@@ -63,6 +70,7 @@ internal static class ListingVariantsFactory
         return variants;
     }
 
+    // TODO: Need to update to handle pruning rules that may reduce the SKU count.
     public static int EstimateSkuCount(IReadOnlyList<VariantAxis> axes)
     {
         if (axes.Count == 0)

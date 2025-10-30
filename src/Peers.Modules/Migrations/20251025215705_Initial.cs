@@ -585,6 +585,26 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "product_type_index",
+                schema: "catalog",
+                columns: table => new
+                {
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_product_type_index", x => x.product_type_id);
+                    table.ForeignKey(
+                        name: "FK_product_type_index_product_type_product_type_id",
+                        column: x => x.product_type_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "product_type_tr",
                 schema: "i18n",
                 columns: table => new
@@ -1670,6 +1690,10 @@ namespace Peers.Modules.Migrations
             migrationBuilder.DropTable(
                 name: "privacy_policy_tr",
                 schema: "i18n");
+
+            migrationBuilder.DropTable(
+                name: "product_type_index",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
                 name: "product_type_tr",

@@ -1967,6 +1967,29 @@ namespace Peers.Modules.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.OwnsOne("Peers.Modules.Catalog.Domain.ProductTypeIndex", "Index", b1 =>
+                        {
+                            b1.Property<int>("ProductTypeId")
+                                .HasColumnType("int")
+                                .HasColumnName("product_type_id");
+
+                            b1.Property<string>("Snapshot")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("snapshot");
+
+                            b1.HasKey("ProductTypeId");
+
+                            b1.ToTable("product_type_index", "catalog");
+
+                            b1.WithOwner("ProductType")
+                                .HasForeignKey("ProductTypeId");
+
+                            b1.Navigation("ProductType");
+                        });
+
+                    b.Navigation("Index");
+
                     b.Navigation("Parent");
                 });
 

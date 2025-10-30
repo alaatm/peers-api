@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
@@ -45,6 +46,7 @@ public sealed record AxisChoiceSnapshot(
     /// <param name="Value">The numeric value for this group member.</param>
     public sealed record GroupMemberSnapshot(string MemberDefinitionKey, decimal Value);
 
+    [JsonIgnore]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"ACSnap - {Key} ({(EnumOptionCode != null ? "Enum" : LookupOptionCode != null ? "Lookup" : NumericValue != null ? "Numeric" : GroupMembers != null ? "Group" : "<UNKN>")})";
 }

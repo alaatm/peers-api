@@ -188,16 +188,12 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
         // Replace the snapshot entirely, staying in draft state (v1)
         Snapshot = ListingSnapshot.Create(date);
-
-        // Resolve all PT defs by key (single source of truth)
-        var defsByKey = ProductType
-            .Attributes
-            .ToDictionary(a => a.Key, StringComparer.Ordinal);
+        var idx = ProductType.Index!.Hydrated;
 
         // Ensure all keys on provided inputs exist in the schema and have non-null values
         foreach (var (key, value) in inputs)
         {
-            if (!defsByKey.ContainsKey(key))
+            if (!idx.DefsByKey.ContainsKey(key))
             {
                 throw new DomainException(E.AttrNotDefined(key, ProductType.SlugPath));
             }
@@ -208,7 +204,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         }
 
         // Ensure all required attributes are present in the inputs
-        foreach (var (key, value) in defsByKey)
+        foreach (var (key, value) in idx.DefsByKey)
         {
             if (value.IsRequired && !inputs.ContainsKey(key))
             {
@@ -216,16 +212,16 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             }
         }
 
+        idx.InitializeListingValidationWithInputs(inputs);
+
         // Build non-variant attributes (and validate requireds)
         var headerAttrs = BuildNonVariantAttributes(
             inputs,
-            defsByKey,
             out var attrsSnapshot);
 
         // Build variant axes (independent + composite)
         var axes = BuildVariantAxes(
             inputs,
-            defsByKey,
             variantAxesCap,
             skuCap);
 
@@ -283,15 +279,13 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             throw new DomainException(E.SnapshotMismatch);
         }
 
-        // Resolve all PT defs by key (single source of truth)
-        var defsByKey = ProductType
-            .Attributes
-            .ToDictionary(a => a.Key, StringComparer.Ordinal);
+        var idx = ProductType.Index!.Hydrated;
+        idx.InitializeListingValidationWithInputs(inputs);
 
         // Ensure all keys on provided inputs exist in the schema and have non-null values
         foreach (var (key, value) in inputs)
         {
-            if (!defsByKey.ContainsKey(key))
+            if (!idx.DefsByKey.ContainsKey(key))
             {
                 throw new DomainException(E.AttrNotDefined(key, ProductType.SlugPath));
             }
@@ -308,7 +302,6 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         // Parse the incoming delta as axes (validated, canonicalized, sorted)
         var deltaAxes = BuildVariantAxes(
             inputs,
-            defsByKey,
             variantAxesCap: baseline.Count,         // append cannot introduce new axes
             skuCap: int.MaxValue);                  // final cap enforced later
 
@@ -425,10 +418,10 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
     private List<ListingAttribute> BuildNonVariantAttributes(
         Dictionary<string, AttributeInputDto> inputs,
-        Dictionary<string, AttributeDefinition> defsByKey,
         out List<HeaderAttrSnapshot> attrsSnapshot)
     {
         attrsSnapshot = [];
+        var defsByKey = ProductType.Index!.Hydrated.DefsByKey;
         var result = new List<ListingAttribute>(inputs.Count);
 
         foreach (var (key, input) in inputs)
@@ -463,7 +456,9 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             }
 
             // Create the header attribute (each typed helper will validate the scalar DTO shape)
-            result.Add(ListingAttribute.Create(this, def, input));
+            var attr = ListingAttribute.Create(this, def, input);
+            result.Add(attr);
+            attrsSnapshot.Add(new HeaderAttrSnapshot(def.Key, def.Kind, attr.EnumAttributeOption?.Code ?? attr.LookupOption?.Code ?? attr.Value));
         }
 
         return result;
@@ -471,15 +466,15 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
     private List<VariantAxis> BuildVariantAxes(
         Dictionary<string, AttributeInputDto> inputs,
-        Dictionary<string, AttributeDefinition> defsByKey,
         int variantAxesCap,
         int skuCap)
     {
+        var idx = ProductType.Index!.Hydrated;
         var axes = new List<VariantAxis>();
 
         foreach (var (key, input) in inputs)
         {
-            if (!defsByKey.TryGetValue(key, out var def))
+            if (!idx.DefsByKey.TryGetValue(key, out var def))
             {
                 // We already validated all keys exist by the caller.
                 Debug.Assert(false, "Key should exist.");
@@ -500,7 +495,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                         // Enfore atleast one value per single axis and all values are unique
                         enumOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
-                        var available = enumDef.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
+                        var available = idx.EnumByCode[def.Key];
                         var picked = new List<AxisChoice>(enumOptAxis.Value.Count);
 
                         foreach (var code in enumOptAxis.Value)
@@ -508,6 +503,11 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                             if (!available.TryGetValue(code, out var opt))
                             {
                                 throw new DomainException(E.UnknownEnumAttrOpt(def.Key, code));
+                            }
+
+                            if (!idx.IsChildCodeReachableFromParents(def.Key, code))
+                            {
+                                throw new DomainException(E.EnumOptNotReachableFromParents(def.Key, code));
                             }
 
                             picked.Add(new(Key: opt.Code, EnumOption: opt));
@@ -527,7 +527,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                         // Enfore atleast one value per single axis and all values are unique
                         lookupOptAxis.Validate(def.Key, unique: true, minRequired: 1);
 
-                        var available = lookupDef.LookupType.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
+                        var available = idx.LookupByCode[def.Key];
                         var picked = new List<AxisChoice>(lookupOptAxis.Value.Count);
 
                         foreach (var code in lookupOptAxis.Value)
@@ -537,9 +537,15 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
                                 throw new DomainException(E.UnknownLookupAttrOpt(def.Key, code));
                             }
 
-                            if (!lookupDef.IsOptionAllowed(opt, noEntriesMeansAllowAll: true))
+                            if (!idx.IsLookupOptionAllowed(def.Key, opt.Code, noEntriesMeansAllowAll: true))
                             {
+                                Debug.Assert(!lookupDef.IsOptionAllowed(opt, noEntriesMeansAllowAll: true));
                                 throw new DomainException(E.LookupOptNotAllowedByAttr(def.Key, code));
+                            }
+
+                            if (!idx.IsChildCodeReachableFromParents(def.Key, code))
+                            {
+                                throw new DomainException(E.LookupOptNotReachableFromParents(def.Key, code));
                             }
 
                             picked.Add(new(Key: opt.Code, LookupOption: opt));

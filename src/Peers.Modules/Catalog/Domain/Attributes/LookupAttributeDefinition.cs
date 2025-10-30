@@ -80,7 +80,7 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
         return noEntriesMeansAllowAll;
     }
 
-    internal void AddAllowedOption([NotNull] LookupOption option)
+    internal void AddAllowedOption(LookupOption option)
     {
         if (option.Type != LookupType)
         {
@@ -94,6 +94,16 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
 
         var allowed = new LookupAllowed(this, option);
         AllowedOptions.Add(allowed);
+    }
+
+    internal void RemoveAllowedOption(LookupOption option)
+    {
+        if (AllowedOptions.FirstOrDefault(p => p.Option.Code == option.Code) is not { } allowedOpt)
+        {
+            throw new DomainException(E.LookupAllowedOptionNotFound(option.Code, Key));
+        }
+
+        AllowedOptions.Remove(allowedOpt);
     }
 
     internal override void Validate()

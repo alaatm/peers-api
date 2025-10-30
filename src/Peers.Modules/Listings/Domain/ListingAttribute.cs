@@ -147,7 +147,8 @@ public sealed partial class ListingAttribute : IDebuggable
     {
         if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            if (def.Options.FirstOrDefault(p => p.Code == value) is not EnumAttributeOption option)
+            var idx = listing.ProductType.Index!.Hydrated;
+            if (!idx.TryGetEnumOption(def.Key, value, out var option))
             {
                 throw new DomainException(E.UnknownEnumAttrOpt(def.Key, value));
             }
@@ -162,12 +163,13 @@ public sealed partial class ListingAttribute : IDebuggable
     {
         if (input is AttributeInputDto.OptionCodeOrScalarString(var value))
         {
-            if (def.LookupType.Options.FirstOrDefault(p => p.Code == value) is not LookupOption option)
+            var idx = listing.ProductType.Index!.Hydrated;
+            if (!idx.TryGetLookupOption(def.Key, value, out var option))
             {
                 throw new DomainException(E.UnknownLookupAttrOpt(def.Key, value));
             }
 
-            if (!def.IsOptionAllowed(option, noEntriesMeansAllowAll: true))
+            if (!idx.IsLookupOptionAllowed(def.Key, option.Code, noEntriesMeansAllowAll: true))
             {
                 throw new DomainException(E.LookupOptNotAllowedByAttr(def.Key, value));
             }

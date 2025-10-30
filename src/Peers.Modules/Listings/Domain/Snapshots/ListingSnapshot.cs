@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Peers.Modules.Catalog.Domain;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;
@@ -50,6 +51,7 @@ public sealed partial record ListingSnapshot(
         return axes;
     }
 
+    [JsonIgnore]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"LSnap - {SnapshotId.ToString().Split('-').Last()} (v{Version}) - {Attributes.Count} attrs | {Axes.Count} axes";
 }

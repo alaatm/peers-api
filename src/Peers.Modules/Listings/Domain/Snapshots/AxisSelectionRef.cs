@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;
 
@@ -12,6 +13,7 @@ public sealed record AxisSelectionRef(
     string DefinitionKey,
     string ChoiceKey)
 {
+    [JsonIgnore]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"ASRef - {DefinitionKey} | {ChoiceKey}";
 }

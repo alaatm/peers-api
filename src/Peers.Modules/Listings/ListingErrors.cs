@@ -163,6 +163,16 @@ public static class ListingErrors
     public static DomainError LookupOptNotAllowedByAttr(string attrKey, string value)
         => new(Titles.ValidationFailed, "listing.lookup-opt-not-allowed-by-attr", attrKey, value);
     /// <summary>
+    /// Enum option '{1}' for attribute '{0}' is not reachable from parent attributes.
+    /// </summary>
+    public static DomainError EnumOptNotReachableFromParents(string attrKey, string optCode)
+        => new(Titles.ValidationFailed, "listing.enum-opt-not-reachable-from-parents", attrKey, optCode);
+    /// <summary>
+    /// Lookup option '{1}' for attribute '{0}' is not reachable from parent attributes.
+    /// </summary>
+    public static DomainError LookupOptNotReachableFromParents(string attrKey, string optCode)
+        => new(Titles.ValidationFailed, "listing.lookup-opt-not-reachable-from-parents", attrKey, optCode);
+    /// <summary>
     /// Appending variants is only allowed after the listing is published.
     /// </summary>
     public static DomainError AppendOnlyPostPublish => new(Titles.CannotApplyOperation, "listing.append-only-post-publish");

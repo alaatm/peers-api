@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Peers.Core.Domain.Errors;
 using Peers.Modules;
 using Peers.Modules.Catalog.Domain;
@@ -67,6 +68,7 @@ public sealed partial record VariantAxisSnapshot(
         return new(def, choices);
     }
 
+    [JsonIgnore]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"VAxisSnap - {DefinitionKey} ({(IsGroup ? "Group" : "Individual")}) | {Choices.Count} choices";
 }

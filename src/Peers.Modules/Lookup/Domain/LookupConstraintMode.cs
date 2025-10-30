@@ -12,8 +12,8 @@ public enum LookupConstraintMode
 {
     /// <summary>
     /// No allow-list is required by default. Any value belonging to the
-    /// <see cref="LookupType"/> is permitted unless a product type explicitly
-    /// declares an allow-list in its lineage.
+    /// <see cref="LookupType"/> is permitted unless a lookup attribute explicitly
+    /// declares an allow-list.
     /// </summary>
     /// <remarks>
     /// Good for broad, standardized dictionaries where per-category scoping
@@ -21,9 +21,8 @@ public enum LookupConstraintMode
     /// </remarks>
     Open,
     /// <summary>
-    /// An allow-list is required by default. Product types must declare an
-    /// allow-list (on themselves or the nearest ancestor) before values of this
-    /// <see cref="LookupType"/> can be used.
+    /// An allow-list is required by default. Lookup attributes must declare an
+    /// allow-list before values of this <see cref="LookupType"/> can be used.
     /// </summary>
     /// <remarks>
     /// Use for domains where choices must be curated per category

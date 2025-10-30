@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Peers.Core.Domain.Errors;
 
 namespace Peers.Modules.Listings.Domain.Snapshots;
@@ -16,6 +17,7 @@ public sealed partial record VariantSelectionSnapshot(
     internal static VariantSelectionSnapshot Create(string snapshotId)
         => new(snapshotId, []);
 
+    [JsonIgnore]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"VSSnap - {SnapshotId.ToString().Split('-').Last()} | {Selections.Count} selections";
 }
