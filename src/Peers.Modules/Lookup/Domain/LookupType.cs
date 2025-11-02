@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Peers.Core.Domain.Errors;
+using E = Peers.Modules.Lookup.LookupErrors;
 
 namespace Peers.Modules.Lookup.Domain;
 
@@ -44,6 +46,99 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// The list of links where this type is the child.
     /// </summary>
     public List<LookupLink> ChildLinks { get; private set; } = default!;
+
+    private LookupType()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LookupType class with the specified key, constraint mode, and variant
+    /// allowance.
+    /// </summary>
+    /// <param name="key">The unique identifier for the lookup type. Must be in snake_case format.</param>
+    /// <param name="constraintMode">The constraint mode that determines how lookups are validated or restricted.</param>
+    /// <param name="allowVariant">A value indicating whether variants are permitted for this lookup type.</param>
+    public LookupType(
+        string key,
+        LookupConstraintMode constraintMode,
+        bool allowVariant)
+    {
+        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(key))
+        {
+            throw new DomainException(E.KeyFormatInvalid(key));
+        }
+
+        Key = key;
+        ConstraintMode = constraintMode;
+        AllowVariant = allowVariant;
+        Options = [];
+        ParentLinks = [];
+        ChildLinks = [];
+    }
+
+    /// <summary>
+    /// Creates a new option with the specified code and adds it to the collection of options.
+    /// </summary>
+    /// <param name="code">The code that uniquely identifies the option to create. Must be in snake_case format.</param>
+    public void CreateOption(string code)
+    {
+        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(code))
+        {
+            throw new DomainException(E.KeyFormatInvalid(code));
+        }
+
+        var option = new LookupOption(code, this);
+        Options.Add(option);
+    }
+
+    /// <summary>
+    /// Establishes links between a parent option and one or more child options of the specified type.
+    /// </summary>
+    /// <param name="parentOptCode">The code identifying the parent option to which child options will be linked.</param>
+    /// <param name="childType">The lookup type representing the category of child options to link.</param>
+    /// <param name="childOptCodes">An array of codes identifying the child options to link to the parent option. Each code must correspond to an
+    /// existing option in the specified child type.</param>
+    public void LinkOptions(
+        [NotNull] string parentOptCode,
+        [NotNull] LookupType childType,
+        [NotNull] string[] childOptCodes)
+    {
+        var parentOpt = Options.Find(o => o.Code == parentOptCode)
+            ?? throw new DomainException(E.ParentOptNotFound(parentOptCode, Key));
+
+        var childOptByCode = childType.Options.ToDictionary(o => o.Code, StringComparer.Ordinal);
+
+        // Current links for this (parentType -> childType) pair
+        var existing = ParentLinks
+            .Where(p => p.ChildType == childType && p.ParentOption == parentOpt)
+            .Select(p => p.ChildOption.Code)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var childOptCode in childOptCodes)
+        {
+            if (!childOptByCode.TryGetValue(childOptCode, out var childOpt))
+            {
+                throw new DomainException(E.ChildOptNotFound(childOptCode, childType.Key));
+            }
+
+            if (existing.Contains(childOptCode))
+            {
+                continue;
+            }
+
+            var link = new LookupLink
+            {
+                ParentType = this,
+                ParentOption = parentOpt,
+                ChildType = childType,
+                ChildOption = childOpt
+            };
+
+            ParentLinks.Add(link);
+            childType.ChildLinks.Add(link);
+            existing.Add(childOptCode);
+        }
+    }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"LT:{Id} - {Key} ({ConstraintMode})";

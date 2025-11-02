@@ -33,6 +33,22 @@ public sealed class LookupOption : Entity, ILocalizable<LookupOption, LookupOpti
     /// </summary>
     public List<LookupOptionTr> Translations { get; private set; } = default!;
 
+    private LookupOption()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the LookupOption class with the specified code and lookup type.
+    /// </summary>
+    /// <param name="code">The unique code that identifies the lookup option.</param>
+    /// <param name="type">The type of the lookup option to associate with this instance.</param>
+    internal LookupOption(string code, LookupType type)
+    {
+        Code = code;
+        Type = type;
+        Translations = [];
+    }
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public string D => $"LO:{Id} - {Code} → {Type?.Key ?? TypeId.ToString(CultureInfo.InvariantCulture)}";
 }

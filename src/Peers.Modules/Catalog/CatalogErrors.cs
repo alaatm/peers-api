@@ -304,8 +304,7 @@ public static class CatalogErrors
     /// <summary>
     /// Key '{0}' must be in lower_snake format.
     /// </summary>
-    /// <returns></returns>
-    public static DomainError KeyFormatInvalid(string key) => new(Titles.ValidationFailed, "catalog.common.key-format-invalid", key);
+    public static DomainError KeyFormatInvalid(string key) => new(Titles.ValidationFailed, "common.key-format-invalid", key);
 
     public static class Titles
     {
