@@ -22,7 +22,7 @@ public sealed class CanUnlinkDeviceRule : BusinessRule
 
     public override bool IsBroken()
     {
-        var userDevice = _user.DeviceList.SingleOrDefault(p => p.DeviceId == _device.DeviceId);
+        var userDevice = _user.DeviceList.Find(p => p.DeviceId == _device.DeviceId);
 
         if (userDevice is null)
         {

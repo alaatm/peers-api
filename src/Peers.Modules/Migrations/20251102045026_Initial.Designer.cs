@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251025215757_ProductTypeLineageFunc")]
-    partial class ProductTypeLineageFunc
+    [Migration("20251102045026_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2453,9 +2453,9 @@ namespace Peers.Modules.Migrations
 
                             b1.HasKey("id");
 
-                            b1.HasIndex("Revoked");
-
-                            b1.HasIndex("user_id");
+                            b1.HasIndex("user_id")
+                                .IsUnique()
+                                .HasFilter("[revoked] IS NULL");
 
                             b1.ToTable("refresh_token", "dbo");
 

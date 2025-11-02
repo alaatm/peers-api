@@ -22,7 +22,7 @@ public sealed class CanLinkDeviceRule : BusinessRule
 
     public override bool IsBroken()
     {
-        if (_user.DeviceList.Any(p => p.DeviceId == _device.DeviceId))
+        if (_user.DeviceList.Find(p => p.DeviceId == _device.DeviceId) is not null)
         {
             Append(_l["The device is already linked."]);
             return true;

@@ -26,7 +26,7 @@ public partial record VariantSelectionSnapshot
             }
 
             // Choice must exist on axis
-            if (!axis.Choices.Any(c => c.Key == sel.ChoiceKey))
+            if (axis.Choices.Find(c => c.Key == sel.ChoiceKey) is null)
             {
                 throw StateError($"Selection '{sel}' not found on axis '{axis}'.");
             }

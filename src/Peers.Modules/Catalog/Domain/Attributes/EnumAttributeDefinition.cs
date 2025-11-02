@@ -49,7 +49,7 @@ public sealed class EnumAttributeDefinition : AttributeDefinition
             throw new DomainException(E.KeyFormatInvalid(code));
         }
 
-        if (Options.Any(p => p.Code == code))
+        if (Options.Find(p => p.Code == code) is not null)
         {
             throw new DomainException(E.EnumOptAlreadyExists(code));
         }
@@ -69,7 +69,7 @@ public sealed class EnumAttributeDefinition : AttributeDefinition
                 throw new DomainException(E.DepReqScopeOtp);
             }
 
-            if (parentAttr.Options.SingleOrDefault(p => p.Code == parentCode) is not { } parentOption)
+            if (parentAttr.Options.Find(p => p.Code == parentCode) is not { } parentOption)
             {
                 throw new DomainException(E.EnumOptNotFound(parentCode));
             }

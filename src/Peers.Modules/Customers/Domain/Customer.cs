@@ -65,7 +65,7 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// Retrieves the default address associated with the customer, if one is set.
     /// </summary>
     public Address? GetDefaultAddress()
-        => AddressList.SingleOrDefault(a => a.IsDefault)?.Address;
+        => AddressList.Find(a => a.IsDefault)?.Address;
 
     /// <summary>
     /// Adds a new address with the specified name to the address list and optionally sets it as the default address.
@@ -153,7 +153,7 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     }
 
     private CustomerAddress? GetAddress(string name)
-        => AddressList.FirstOrDefault(a => a.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        => AddressList.Find(a => a.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
     private void SetDefaultAddress(CustomerAddress address, bool makeDefault)
     {

@@ -68,7 +68,7 @@ public sealed class PushNotificationService : IPushNotificationService
         var retries = 0;
         bool hasFailure;
 
-        if (!messageGroup.Item1.Any() && !messageGroup.Item2.Any())
+        if (messageGroup.Item1.Count == 0 && messageGroup.Item2.Count == 0)
         {
             return messageGroup;
         }
@@ -80,7 +80,7 @@ public sealed class PushNotificationService : IPushNotificationService
             _log.PushNotificationDispatch(retries + 1, messageGroup.Item1.Count, messageGroup.Item2.Count, messageGroup.Item2.Sum(p => p.Tokens.Count));
             messageGroup = await DispatchCoreAsync(messageGroup);
 
-            if (hasFailure = messageGroup.Item1.Any() || messageGroup.Item2.Any())
+            if (hasFailure = messageGroup.Item1.Count > 0 || messageGroup.Item2.Count > 0)
             {
                 _log.PushNotificationDispatchFailure(messageGroup.Item1.Count, messageGroup.Item2.Count, messageGroup.Item2.Sum(p => p.Tokens.Count));
             }
@@ -96,7 +96,7 @@ public sealed class PushNotificationService : IPushNotificationService
         var (messages, multicastMessages) = messageGroup;
         var dispatchErrors = new List<(string, ErrorCode, MessagingErrorCode?)>();
 
-        if (messages.Any())
+        if (messages.Count > 0)
         {
             if (messages.Count == 1)
             {
@@ -139,7 +139,7 @@ public sealed class PushNotificationService : IPushNotificationService
             }
         }
 
-        if (multicastMessages.Any())
+        if (multicastMessages.Count > 0)
         {
             var tasks = multicastMessages
                 .Select(_firebase.SendMulticastAsync);

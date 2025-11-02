@@ -46,7 +46,7 @@ public partial class ListingVariant
         {
             if (attr.IsRequired && attr.IsVariant)
             {
-                if (!Attributes.Any(p => p.AttributeDefinition == attr))
+                if (Attributes.Find(p => p.AttributeDefinition == attr) is null)
                 {
                     throw StateError($"Missing required variant attribute '{attr}'.");
                 }

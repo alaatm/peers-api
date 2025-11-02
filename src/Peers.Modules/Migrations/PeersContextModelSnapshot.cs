@@ -2450,9 +2450,9 @@ namespace Peers.Modules.Migrations
 
                             b1.HasKey("id");
 
-                            b1.HasIndex("Revoked");
-
-                            b1.HasIndex("user_id");
+                            b1.HasIndex("user_id")
+                                .IsUnique()
+                                .HasFilter("[revoked] IS NULL");
 
                             b1.ToTable("refresh_token", "dbo");
 

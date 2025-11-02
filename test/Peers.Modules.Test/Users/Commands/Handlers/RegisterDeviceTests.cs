@@ -238,7 +238,7 @@ public class RegisterDeviceTests : IntegrationTestBase
         Assert.Equal(newCmd.PnsHandle, device.PnsHandle);
 
         customer1 = await FindAsync<Customer>(customer1.Id, "User.DeviceList");
-        Assert.Null(customer1.User.DeviceList.SingleOrDefault(p => p.DeviceId == cmd.Id));
+        Assert.Null(customer1.User.DeviceList.Find(p => p.DeviceId == cmd.Id));
 
         FirebaseMoq.Verify();
         FirebaseMoq.Reset();

@@ -712,7 +712,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
         }
 
-        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
         {
             throw new DomainException(E.VariantNotFound(sku));
         }
@@ -735,7 +735,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
     //public void ActivateVariant(string sku)
     //{
-    //    if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+    //    if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
     //    {
     //        throw new DomainException(E.VariantNotFound(sku));
     //    }
@@ -745,7 +745,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
     //public void DeactivateVariant(string sku)
     //{
-    //    if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+    //    if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
     //    {
     //        throw new DomainException(E.VariantNotFound(sku));
     //    }
@@ -767,7 +767,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// <param name="newQty">The new stock quantity to set for the variant.</param>
     public void UpdateStockQuantity(string sku, int newQty)
     {
-        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
         {
             throw new DomainException(E.VariantNotFound(sku));
         }
@@ -783,7 +783,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// <param name="newPrice">The new price to assign to the variant.</param>
     public void UpdatePrice(string sku, decimal newPrice)
     {
-        if (Variants.FirstOrDefault(v => v.SkuCode == sku) is not { } variant)
+        if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
         {
             throw new DomainException(E.VariantNotFound(sku));
         }

@@ -71,7 +71,7 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
         }
 
         if (AllowedOptions.Count > 0 &&
-            AllowedOptions.Any(p => p.Option.Code == option.Code))
+            AllowedOptions.Find(p => p.Option.Code == option.Code) is not null)
         {
             return true;
         }
@@ -87,7 +87,7 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
             throw new DomainException(E.LookupOptionDoesNotBelongToType(option.Code, LookupType.Key));
         }
 
-        if (AllowedOptions.Any(p => p.Option.Code == option.Code))
+        if (AllowedOptions.Find(p => p.Option.Code == option.Code) is not null)
         {
             throw new DomainException(E.DuplicateLookupAllowedOption(option.Code, Key));
         }
@@ -98,7 +98,7 @@ public sealed class LookupAttributeDefinition : AttributeDefinition
 
     internal void RemoveAllowedOption(LookupOption option)
     {
-        if (AllowedOptions.FirstOrDefault(p => p.Option.Code == option.Code) is not { } allowedOpt)
+        if (AllowedOptions.Find(p => p.Option.Code == option.Code) is not { } allowedOpt)
         {
             throw new DomainException(E.LookupAllowedOptionNotFound(option.Code, Key));
         }

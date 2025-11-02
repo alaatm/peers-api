@@ -152,7 +152,7 @@ internal static class ListingVariantsFactory
         foreach (var (axisKey, selections) in buckets)
         {
             // Locate axis in the snapshot
-            var axisSnap = axesSnapshot.Single(a => a.DefinitionKey == axisKey);
+            var axisSnap = axesSnapshot.Find(a => a.DefinitionKey == axisKey)!;
             // Locate choice on that axis matching the selection(s)
             var choiceSnap = FindMatchingChoiceSnap(axisSnap, selections);
             refs.Add(new AxisSelectionRef(axisKey, choiceSnap.Key));
@@ -161,7 +161,9 @@ internal static class ListingVariantsFactory
         return refs;
     }
 
-    private static AxisChoiceSnapshot FindMatchingChoiceSnap(VariantAxisSnapshot axisSnap, List<AxisSelection> selections)
+    private static AxisChoiceSnapshot FindMatchingChoiceSnap(
+        VariantAxisSnapshot axisSnap,
+        List<AxisSelection> selections)
     {
         if (!axisSnap.IsGroup)
         {

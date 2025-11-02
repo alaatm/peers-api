@@ -184,7 +184,8 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// Returns the active refresh token for this user or throws if none exist.
     /// </summary>
     /// <returns></returns>
-    public RefreshToken GetActiveRefreshToken() => RefreshTokens.Single(p => p.IsActive);
+    public RefreshToken GetActiveRefreshToken() => RefreshTokens.Find(p => p.IsActive) ??
+        throw new InvalidOperationException($"No active refresh token found for user '{UserName}'.");
 
     /// <summary>
     /// Returns the currently active refresh token if found. Otherwise,
@@ -194,7 +195,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// <returns></returns>
     public RefreshToken GetOrCreateRefreshToken(DateTime date)
     {
-        if (RefreshTokens.SingleOrDefault(p => p.IsActive) is RefreshToken rt)
+        if (RefreshTokens.Find(p => p.IsActive) is RefreshToken rt)
         {
             return rt;
         }
@@ -219,7 +220,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
         // For banned and deleted user, there wont be any active refresh tokens
-        if (RefreshTokens.SingleOrDefault(p => p.IsActive && p.Token == token) is RefreshToken rt)
+        if (RefreshTokens.Find(p => p.IsActive && p.Token == token) is RefreshToken rt)
         {
             // Revoke supplied token
             rt.Revoked = date;
@@ -316,7 +317,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
             throw new ArgumentException("Device ID cannot be empty.", nameof(deviceId));
         }
 
-        if (DeviceList.SingleOrDefault(p => p.DeviceId == deviceId) is Device device)
+        if (DeviceList.Find(p => p.DeviceId == deviceId) is Device device)
         {
             oldHandle = device.PnsHandle;
             device.UpdateHandle(date, pnsHandle);
@@ -357,7 +358,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         if (newStatus is UserStatus.Banned or UserStatus.Deleted)
         {
             // Revoke active refresh token, if one exist.
-            if (RefreshTokens.SingleOrDefault(p => p.IsActive) is RefreshToken rt)
+            if (RefreshTokens.Find(p => p.IsActive) is RefreshToken rt)
             {
                 rt.Revoked = date;
             }

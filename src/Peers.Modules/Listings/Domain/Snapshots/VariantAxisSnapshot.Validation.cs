@@ -92,10 +92,10 @@ public partial record VariantAxisSnapshot
             }
 
             // Ensure this attribute's value matches one of the axis choices
-            var match = Choices.Any(c =>
+            var match = Choices.Find(c =>
                 (c.EnumOptionCode is not null && variantAttr.EnumAttributeOption?.Code == c.EnumOptionCode) ||
                 (c.LookupOptionCode is not null && variantAttr.LookupOption?.Code == c.LookupOptionCode) ||
-                (c.NumericValue is not null && variantAttr.NumericValue == c.NumericValue));
+                (c.NumericValue is not null && variantAttr.NumericValue == c.NumericValue)) is not null;
 
             if (!match)
             {
@@ -125,10 +125,10 @@ public partial record VariantAxisSnapshot
             }
 
             // Must match exactly one group choice in snapshot
-            var exists = Choices.Any(c =>
+            var exists = Choices.Find(c =>
                 c.GroupMembers is not null &&
                 c.GroupMembers.Count == memberValues.Count &&
-                c.GroupMembers.Select(x => x.Value).SequenceEqual(memberValues));
+                c.GroupMembers.Select(x => x.Value).SequenceEqual(memberValues)) is not null;
 
             if (!exists)
             {

@@ -120,7 +120,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
 
         var childSlug = SlugHelper.ToSlug(name);
 
-        if (Children.Any(p => p.Slug == childSlug))
+        if (Children.Find(p => p.Slug == childSlug) is not null)
         {
             throw new DomainException(E.ChildAlreadyExists(name.Trim()));
         }
@@ -203,7 +203,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.KeyFormatInvalid(key));
         }
 
-        if (Attributes.Any(p => p.Key == key))
+        if (Attributes.Find(p => p.Key == key) is not null)
         {
             throw new DomainException(E.AttrAlreadyExists(key));
         }
@@ -278,7 +278,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         bool isVariant,
         int position)
     {
-        if (Attributes.SingleOrDefault(a => a.Key == parentKey) is not AttributeDefinition parent)
+        if (Attributes.Find(a => a.Key == parentKey) is not AttributeDefinition parent)
         {
             throw new DomainException(E.AttrNotFound(parentKey));
         }
@@ -303,7 +303,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == key) is not { } attr)
+        if (Attributes.Find(a => a.Key == key) is not { } attr)
         {
             throw new DomainException(E.AttrNotFound(key));
         }
@@ -337,7 +337,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == key) is not EnumAttributeDefinition attr)
+        if (Attributes.Find(a => a.Key == key) is not EnumAttributeDefinition attr)
         {
             throw new DomainException(E.EnumAttrNotFound(key));
         }
@@ -364,7 +364,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == key) is not EnumAttributeDefinition attr)
+        if (Attributes.Find(a => a.Key == key) is not EnumAttributeDefinition attr)
         {
             throw new DomainException(E.EnumAttrNotFound(key));
         }
@@ -380,11 +380,11 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         {
             throw new DomainException(E.NotDraft);
         }
-        if (Attributes.SingleOrDefault(a => a.Key == groupKey) is not GroupAttributeDefinition groupAttr)
+        if (Attributes.Find(a => a.Key == groupKey) is not GroupAttributeDefinition groupAttr)
         {
             throw new DomainException(E.GroupAttrNotFound(groupKey));
         }
-        if (Attributes.SingleOrDefault(a => a.Key == memberKey) is not NumericAttributeDefinition numericAttr)
+        if (Attributes.Find(a => a.Key == memberKey) is not NumericAttributeDefinition numericAttr)
         {
             throw new DomainException(E.NumericAttrNotFound(memberKey));
         }
@@ -411,7 +411,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == key) is not LookupAttributeDefinition attr)
+        if (Attributes.Find(a => a.Key == key) is not LookupAttributeDefinition attr)
         {
             throw new DomainException(E.LookupAttrNotFound(key));
         }
@@ -432,7 +432,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             // Find parent attributes on this product type that actually gate this child type
             var parents = Attributes
                 .OfType<LookupAttributeDefinition>()
-                .Where(p => p.LookupType.ParentLinks.Any(p => p.ChildType == option.Type))
+                .Where(p => p.LookupType.ParentLinks.Find(p => p.ChildType == option.Type) is not null)
                 .ToArray();
 
             // If there's no parent attribute present here, this child option is usable
@@ -451,10 +451,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
                 // Does ANY allowed parent option link to this child option?
                 foreach (var allowedParent in allowedParents)
                 {
-                    var hasLink = parent.LookupType.ParentLinks.Any(p =>
+                    var hasLink = parent.LookupType.ParentLinks.Find(p =>
                         p.ChildType == option.Type &&
                         p.ChildOption == option &&
-                        p.ParentOption == allowedParent);
+                        p.ParentOption == allowedParent) is not null;
 
                     if (hasLink)
                     {
@@ -473,7 +473,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             // Children on THIS product type that are gated by this option's type
             var children = Attributes
                 .OfType<LookupAttributeDefinition>()
-                .Where(p => p.LookupType.ChildLinks.Any(p => p.ParentType == option.Type))
+                .Where(p => p.LookupType.ChildLinks.Find(p => p.ParentType == option.Type) is not null)
                 .ToArray();
 
             // If there are no linked children on this PT, nothing to check
@@ -490,10 +490,10 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
                     : child.LookupType.Options;
 
                 // Does this parent option link to ANY allowed child option of this child attribute?
-                var hasAny = child.LookupType.ChildLinks.Any(p =>
+                var hasAny = child.LookupType.ChildLinks.Find(p =>
                     p.ParentType == option.Type &&
                     p.ParentOption == option &&
-                    allowedChildren.Contains(p.ChildOption));
+                    allowedChildren.Contains(p.ChildOption)) is not null;
 
                 if (!hasAny)
                 {
@@ -515,7 +515,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
             throw new DomainException(E.NotDraft);
         }
 
-        if (Attributes.SingleOrDefault(a => a.Key == key) is not LookupAttributeDefinition attr)
+        if (Attributes.Find(a => a.Key == key) is not LookupAttributeDefinition attr)
         {
             throw new DomainException(E.LookupAttrNotFound(key));
         }
@@ -585,7 +585,7 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         foreach (var child in lookupAttrs)
         {
             var linkedParents = lookupAttrs
-                .Where(p => p.LookupType.ParentLinks.Any(pl => pl.ChildType == child.LookupType))
+                .Where(p => p.LookupType.ParentLinks.Find(pl => pl.ChildType == child.LookupType) is not null)
                 .ToArray();
 
             foreach (var parent in linkedParents)

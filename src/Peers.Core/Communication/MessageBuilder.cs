@@ -303,7 +303,7 @@ public sealed class MessageBuilder
         {
             Debug.Assert(topic is null);
 
-            if ((data is null || !data.Any()) && title is null && body is null)
+            if ((data is null || data.Count == 0) && title is null && body is null)
             {
                 throw new InvalidOperationException("Either data or title/body or both must have values.");
             }

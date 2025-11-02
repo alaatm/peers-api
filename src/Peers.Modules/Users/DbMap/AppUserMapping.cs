@@ -8,6 +8,9 @@ internal sealed class AppUserMapping : IEntityTypeConfiguration<AppUser>
 {
     public void Configure(EntityTypeBuilder<AppUser> builder)
     {
+        const string IdColName = "id";
+        const string UserIdColName = "user_id";
+
         builder.HasIndex(p => p.Status);
         builder.HasIndex(p => p.UserName).IsUnique(true);
         builder.HasIndex(p => p.IsDeleted);
@@ -20,16 +23,18 @@ internal sealed class AppUserMapping : IEntityTypeConfiguration<AppUser>
         builder
             .HasMany(p => p.StatusChangeHistory)
             .WithOne()
-            .HasForeignKey("user_id")
+            .HasForeignKey(UserIdColName)
             .IsRequired();
 
         builder
             .OwnsMany(p => p.RefreshTokens, a =>
             {
-                a.WithOwner().HasForeignKey("user_id");
-                a.Property<int>("id");
-                a.HasKey("id");
-                a.HasIndex(p => p.Revoked);
+                var revokedColName = nameof(RefreshToken.Revoked).Underscore();
+
+                a.WithOwner().HasForeignKey(UserIdColName);
+                a.Property<int>(IdColName);
+                a.HasKey(IdColName);
+                a.HasIndex(UserIdColName).HasFilter($"[{revokedColName}] IS NULL").IsUnique(true);
                 a.Property<byte[]>("concurrency_token").IsRowVersion();
                 a.ToTable(nameof(RefreshToken).Underscore(), "dbo");
             });
@@ -42,9 +47,9 @@ internal sealed class AppUserMapping : IEntityTypeConfiguration<AppUser>
         builder
             .OwnsMany(p => p.AppUsage, a =>
             {
-                a.WithOwner().HasForeignKey("user_id");
-                a.Property<int>("id");
-                a.HasKey("id");
+                a.WithOwner().HasForeignKey(UserIdColName);
+                a.Property<int>(IdColName);
+                a.HasKey(IdColName);
                 a.ToTable(nameof(AppUsageHistory).Underscore(), "dbo");
             });
 

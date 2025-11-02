@@ -22,7 +22,7 @@ public sealed partial record VariantAxisSnapshot(
     internal VariantAxis ToRuntime(ProductType productType)
     {
         var choices = new List<AxisChoice>(Choices.Count);
-        var def = productType.Attributes.Single(p => p.Key == DefinitionKey);
+        var def = productType.Attributes.Find(p => p.Key == DefinitionKey)!;
 
         foreach (var c in Choices)
         {
@@ -33,7 +33,8 @@ public sealed partial record VariantAxisSnapshot(
 
                 foreach (var member in c.GroupMembers)
                 {
-                    var memberDef = groupDef.Members.Single(p => p.Key == member.MemberDefinitionKey);
+                    var memberDef = groupDef.Members.Find(p => p.Key == member.MemberDefinitionKey)
+                        ?? throw new InvalidDomainStateException($"Group member definition '{member.MemberDefinitionKey}' not found in runtime representation.");
                     members.Add(new(memberDef, member.Value));
                 }
 
@@ -44,13 +45,15 @@ public sealed partial record VariantAxisSnapshot(
                 if (c.EnumOptionCode is not null)
                 {
                     var enumDef = (EnumAttributeDefinition)def;
-                    var option = enumDef.Options.Single(p => p.Code == c.EnumOptionCode);
+                    var option = enumDef.Options.Find(p => p.Code == c.EnumOptionCode)
+                        ?? throw new InvalidDomainStateException($"Enum option '{c.EnumOptionCode}' not found in runtime representation.");
                     choices.Add(new AxisChoice(Key: c.Key, EnumOption: option));
                 }
                 else if (c.LookupOptionCode is not null)
                 {
                     var lookupDef = (LookupAttributeDefinition)def;
-                    var option = lookupDef.LookupType.Options.Single(p => p.Code == c.LookupOptionCode);
+                    var option = lookupDef.LookupType.Options.Find(p => p.Code == c.LookupOptionCode)
+                        ?? throw new InvalidDomainStateException($"Lookup option '{c.LookupOptionCode}' not found in runtime representation.");
                     choices.Add(new AxisChoice(Key: c.Key, LookupOption: option));
                 }
                 else if (c.NumericValue is not null)

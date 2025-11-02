@@ -103,7 +103,7 @@ public static class RegisterDevice
                 .Include(p => p.DeviceList)
                 .FirstAsync(p => p.Id == _identity.Id, ctk);
 
-            var device = user.DeviceList.FirstOrDefault(p => p.DeviceId == cmd.Id) ?? await _context
+            var device = user.DeviceList.Find(p => p.DeviceId == cmd.Id) ?? await _context
                 .Set<Device>()
                 .Include(p => p.User)
                 .FirstOrDefaultAsync(p => p.DeviceId == cmd.Id, ctk);

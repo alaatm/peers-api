@@ -1562,16 +1562,12 @@ namespace Peers.Modules.Migrations
                 column: "token");
 
             migrationBuilder.CreateIndex(
-                name: "IX_refresh_token_revoked",
-                schema: "dbo",
-                table: "refresh_token",
-                column: "revoked");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_refresh_token_user_id",
                 schema: "dbo",
                 table: "refresh_token",
-                column: "user_id");
+                column: "user_id",
+                unique: true,
+                filter: "[revoked] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",

@@ -39,7 +39,7 @@ public static class LocalizableExtensions
         where TTr : ITranslation<T>
         => entity
             .Translations
-            .SingleOrDefault(p => p.LangCode == langCode);
+            .Find(p => p.LangCode == langCode);
 
     /// <summary>
     /// Adds new translations or updates existing translations for the specified entity based on the provided incoming

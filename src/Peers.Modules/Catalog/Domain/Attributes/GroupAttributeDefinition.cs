@@ -70,7 +70,7 @@ public class GroupAttributeDefinition : AttributeDefinition
         {
             throw new DomainException(E.GroupAttrMemberMustNotBeVariant(Key, member.Key));
         }
-        if (Members.Any(p => p == member))
+        if (Members.Find(p => p == member) is not null)
         {
             throw new DomainException(E.GroupAttrMemberAlreadyExists(Key, member.Key));
         }
