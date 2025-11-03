@@ -9,4 +9,12 @@ public enum MediaType
     /// A profile picture, typically used for user avatars or personal images.
     /// </summary>
     ProfilePicture,
+    /// <summary>
+    /// Represents an image associated with a product listing.
+    /// </summary>
+    ListingImage,
+    /// <summary>
+    /// Represents an image associated with a specific variant of a product listing.
+    /// </summary>
+    ListingVariantImage,
 }

@@ -31,11 +31,15 @@ public static class MediaMaps
         new Dictionary<MediaType, MediaCategory>()
         {
             [MediaType.ProfilePicture] = MediaCategory.Image,
+            [MediaType.ListingImage] = MediaCategory.Image,
+            [MediaType.ListingVariantImage] = MediaCategory.Image,
         }.ToFrozenDictionary();
 
     public static readonly FrozenDictionary<MediaType, string> MediaTypeToEntity =
         new Dictionary<MediaType, string>()
         {
             [MediaType.ProfilePicture] = nameof(Customer),
+            [MediaType.ListingImage] = nameof(Listing),
+            [MediaType.ListingVariantImage] = nameof(ListingVariant),
         }.ToFrozenDictionary();
 }
