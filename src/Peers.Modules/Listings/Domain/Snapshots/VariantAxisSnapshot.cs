@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Peers.Core.Domain.Errors;
-using Peers.Modules;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 

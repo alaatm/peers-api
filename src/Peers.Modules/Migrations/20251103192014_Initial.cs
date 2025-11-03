@@ -712,6 +712,35 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "cart",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    last_touched_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_cart", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_cart_customer_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_cart_customer_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "customer_address",
                 columns: table => new
                 {
@@ -831,6 +860,41 @@ namespace Peers.Modules.Migrations
                         column: x => x.thumbnail_id,
                         principalSchema: "dbo",
                         principalTable: "media_file",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "order",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    placed_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    items_total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    cancellation_reason = table.Column<int>(type: "int", nullable: true),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_order_customer_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_order_customer_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "customer",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1126,6 +1190,41 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "cart_line",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    cart_id = table.Column<int>(type: "int", nullable: false),
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    variant_id = table.Column<int>(type: "int", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: false),
+                    unit_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_cart_line", x => new { x.cart_id, x.id });
+                    table.ForeignKey(
+                        name: "FK_cart_line_cart_cart_id",
+                        column: x => x.cart_id,
+                        principalTable: "cart",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_cart_line_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_cart_line_listing_variant_variant_id",
+                        column: x => x.variant_id,
+                        principalTable: "listing_variant",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "listing_variant_attribute",
                 columns: table => new
                 {
@@ -1168,6 +1267,41 @@ namespace Peers.Modules.Migrations
                         principalTable: "lookup_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "order_line",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    order_id = table.Column<int>(type: "int", nullable: false),
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    variant_id = table.Column<int>(type: "int", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: false),
+                    unit_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order_line", x => new { x.order_id, x.id });
+                    table.ForeignKey(
+                        name: "FK_order_line_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_order_line_listing_variant_variant_id",
+                        column: x => x.variant_id,
+                        principalTable: "listing_variant",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_order_line_order_order_id",
+                        column: x => x.order_id,
+                        principalTable: "order",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1246,6 +1380,33 @@ namespace Peers.Modules.Migrations
                 schema: "i18n",
                 table: "attribute_definition_tr",
                 column: "lang_code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cart_buyer_id_seller_id",
+                table: "cart",
+                columns: new[] { "buyer_id", "seller_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cart_seller_id",
+                table: "cart",
+                column: "seller_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cart_line_cart_id_variant_id",
+                table: "cart_line",
+                columns: new[] { "cart_id", "variant_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cart_line_listing_id",
+                table: "cart_line",
+                column: "listing_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cart_line_variant_id",
+                table: "cart_line",
+                column: "variant_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_client_app_info_android_store_link",
@@ -1517,6 +1678,34 @@ namespace Peers.Modules.Migrations
                 filter: "[type] = 0");
 
             migrationBuilder.CreateIndex(
+                name: "IX_order_buyer_id_seller_id",
+                table: "order",
+                columns: new[] { "buyer_id", "seller_id" },
+                unique: true,
+                filter: "[state] = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_order_seller_id",
+                table: "order",
+                column: "seller_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_order_line_listing_id",
+                table: "order_line",
+                column: "listing_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_order_line_order_id_variant_id",
+                table: "order_line",
+                columns: new[] { "order_id", "variant_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_order_line_variant_id",
+                table: "order_line",
+                column: "variant_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_privacy_policy_tr_lang_code",
                 schema: "i18n",
                 table: "privacy_policy_tr",
@@ -1640,6 +1829,9 @@ namespace Peers.Modules.Migrations
                 schema: "i18n");
 
             migrationBuilder.DropTable(
+                name: "cart_line");
+
+            migrationBuilder.DropTable(
                 name: "client_app_info");
 
             migrationBuilder.DropTable(
@@ -1682,6 +1874,9 @@ namespace Peers.Modules.Migrations
             migrationBuilder.DropTable(
                 name: "media_file",
                 schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "order_line");
 
             migrationBuilder.DropTable(
                 name: "privacy_policy_tr",
@@ -1734,14 +1929,20 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
+                name: "cart");
+
+            migrationBuilder.DropTable(
                 name: "enum_attribute_option");
+
+            migrationBuilder.DropTable(
+                name: "lookup_option",
+                schema: "lookup");
 
             migrationBuilder.DropTable(
                 name: "listing_variant");
 
             migrationBuilder.DropTable(
-                name: "lookup_option",
-                schema: "lookup");
+                name: "order");
 
             migrationBuilder.DropTable(
                 name: "privacy_policy",

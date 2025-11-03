@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251102045026_Initial")]
-    partial class Initial
+    [Migration("20251103192247_ProductTypeLineageFunc")]
+    partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -189,6 +189,47 @@ namespace Peers.Modules.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("user_token", "id");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("int")
+                        .HasColumnName("buyer_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("LastTouchedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("last_touched_at");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerId");
+
+                    b.HasIndex("BuyerId", "SellerId")
+                        .IsUnique();
+
+                    b.ToTable("cart", (string)null);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
@@ -1093,6 +1134,76 @@ namespace Peers.Modules.Migrations
                     b.ToTable("media_file", "dbo");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Ordering.Domain.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("int")
+                        .HasColumnName("buyer_id");
+
+                    b.Property<int?>("CancellationReason")
+                        .HasColumnType("int")
+                        .HasColumnName("cancellation_reason");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("delivered_at");
+
+                    b.Property<decimal>("ItemsTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("items_total");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("number");
+
+                    b.Property<DateTime>("PlacedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("placed_at");
+
+                    b.Property<DateTime?>("ReadyToShipAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ready_to_ship_at");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.Property<decimal>("ShippingFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("shipping_fee");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerId");
+
+                    b.HasIndex("BuyerId", "SellerId")
+                        .IsUnique()
+                        .HasFilter("[state] = 0");
+
+                    b.ToTable("order", (string)null);
+                });
+
             modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicy", b =>
                 {
                     b.Property<int>("Id")
@@ -1934,6 +2045,90 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.Cart", b =>
+                {
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("Peers.Modules.Carts.Domain.CartLine", "Lines", b1 =>
+                        {
+                            b1.Property<int>("CartId")
+                                .HasColumnType("int")
+                                .HasColumnName("cart_id");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("ListingId")
+                                .HasColumnType("int")
+                                .HasColumnName("listing_id");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("quantity");
+
+                            b1.Property<decimal>("UnitPrice")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("unit_price");
+
+                            b1.Property<int>("VariantId")
+                                .HasColumnType("int")
+                                .HasColumnName("variant_id");
+
+                            b1.HasKey("CartId", "Id");
+
+                            b1.HasIndex("ListingId");
+
+                            b1.HasIndex("VariantId");
+
+                            b1.HasIndex("CartId", "VariantId")
+                                .IsUnique();
+
+                            b1.ToTable("cart_line", (string)null);
+
+                            b1.WithOwner("Cart")
+                                .HasForeignKey("CartId");
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
+                                .WithMany()
+                                .HasForeignKey("ListingId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.ListingVariant", "Variant")
+                                .WithMany()
+                                .HasForeignKey("VariantId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.Navigation("Cart");
+
+                            b1.Navigation("Listing");
+
+                            b1.Navigation("Variant");
+                        });
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Lines");
+
+                    b.Navigation("Seller");
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
                 {
                     b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
@@ -2357,6 +2552,90 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Thumbnail");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Ordering.Domain.Order", b =>
+                {
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("Peers.Modules.Ordering.Domain.OrderLine", "Lines", b1 =>
+                        {
+                            b1.Property<int>("OrderId")
+                                .HasColumnType("int")
+                                .HasColumnName("order_id");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("ListingId")
+                                .HasColumnType("int")
+                                .HasColumnName("listing_id");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("quantity");
+
+                            b1.Property<decimal>("UnitPrice")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("unit_price");
+
+                            b1.Property<int>("VariantId")
+                                .HasColumnType("int")
+                                .HasColumnName("variant_id");
+
+                            b1.HasKey("OrderId", "Id");
+
+                            b1.HasIndex("ListingId");
+
+                            b1.HasIndex("VariantId");
+
+                            b1.HasIndex("OrderId", "VariantId")
+                                .IsUnique();
+
+                            b1.ToTable("order_line", (string)null);
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
+                                .WithMany()
+                                .HasForeignKey("ListingId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner("Order")
+                                .HasForeignKey("OrderId");
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.ListingVariant", "Variant")
+                                .WithMany()
+                                .HasForeignKey("VariantId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.Navigation("Listing");
+
+                            b1.Navigation("Order");
+
+                            b1.Navigation("Variant");
+                        });
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Lines");
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicyTr", b =>

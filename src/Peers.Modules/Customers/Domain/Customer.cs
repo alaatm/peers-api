@@ -25,6 +25,9 @@ public sealed class Customer : Entity, ISystemUser, IAggregateRoot
     /// The linked database user.
     /// </summary>
     public AppUser User { get; set; } = default!;
+    /// <summary>
+    /// A list of addresses associated with the customer.
+    /// </summary>
     public List<CustomerAddress> AddressList { get; set; } = default!;
 
     /// <summary>

@@ -136,7 +136,6 @@ public sealed class CatalogIndex
     /// </summary>
     /// <param name="attrKey">The key of the lookup attribute whose option is to be resolved.</param>
     /// <param name="code">The code corresponding to the desired lookup option.</param>
-    /// <param name="opt">When this method returns, contains the matching <see cref="LookupOption"/> if found; otherwise, null.</param>
     /// <param name="noEntriesMeansAllowAll">Determines whether all codes are considered allowed when the allow-list for the attribute key is empty. Set to
     /// true to allow all codes in this case; otherwise, false.</param>
     /// <returns>true if the lookup option is resolved and allowed by the current policy; otherwise, false.</returns>
@@ -242,7 +241,6 @@ public sealed class CatalogIndex
     /// Validate a concrete selection (variant + non-variant) against all enum and lookup deps.
     /// </summary>
     /// <param name="pick">The list of selected variant axes and their chosen options. Represents the selected values for variant attributes in the combination.</param>
-    /// chosen values for non-variant attributes in the combination.</param>
     /// <param name="noEntriesMeansAllowAll">true to allow all combinations when no dependency entries are defined; otherwise, false to require explicit
     /// entries for a combination to be considered valid. The default is true.</param>
     /// <returns>true if the combination of variant and non-variant codes is valid according to the defined dependencies;
@@ -368,7 +366,6 @@ public sealed class CatalogIndex
     /// does not declare a dependency on the child, it does not affect reachability.</remarks>
     /// <param name="childAttrKey">The attribute key identifying the child for which reachability is being evaluated.</param>
     /// <param name="childCode">The option code of the child attribute to check for reachability.</param>
-    /// <param name="parents">A collection of parent attribute keys and their corresponding codes to consider when evaluating dependencies.</param>
     /// <param name="noEntriesMeansAllowAll">true to allow all child codes if no explicit entries are found in a lookup dependency; otherwise, false.</param>
     /// <returns>true if the child code is reachable from the given parent codes according to all declared dependencies;
     /// otherwise, false.</returns>
