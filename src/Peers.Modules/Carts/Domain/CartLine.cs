@@ -45,6 +45,11 @@ public sealed class CartLine : Entity
     /// </summary>
     public ListingVariant Variant { get; set; } = default!;
 
+    /// <summary>
+    /// Returns the total price for this line item, calculated as UnitPrice multiplied by Quantity.
+    /// </summary>
+    public decimal LineTotal => UnitPrice * Quantity;
+
     private CartLine() { }
 
     /// <summary>

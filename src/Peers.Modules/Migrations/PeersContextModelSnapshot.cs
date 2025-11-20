@@ -19,7 +19,7 @@ namespace Peers.Modules.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -493,6 +493,8 @@ namespace Peers.Modules.Migrations
                         .IsUnique();
 
                     b.ToTable("customer", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Peers.Modules.Customers.Domain.CustomerAddress", b =>
@@ -673,6 +675,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("seller_id");
 
+                    b.Property<int?>("ShippingProfileId")
+                        .HasColumnType("int")
+                        .HasColumnName("shipping_profile_id");
+
                     b.Property<string>("Snapshot")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -704,10 +710,6 @@ namespace Peers.Modules.Migrations
                                 .HasColumnType("bit")
                                 .HasColumnName("fp_non_returnable");
 
-                            b1.Property<Point>("OriginLocation")
-                                .HasColumnType("geography")
-                                .HasColumnName("fp_origin_location");
-
                             b1.Property<int?>("OutboundPaidBy")
                                 .HasColumnType("int")
                                 .HasColumnName("fp_outbound_paid_by");
@@ -715,18 +717,6 @@ namespace Peers.Modules.Migrations
                             b1.Property<int?>("ReturnPaidBy")
                                 .HasColumnType("int")
                                 .HasColumnName("fp_return_paid_by");
-
-                            b1.ComplexProperty(typeof(Dictionary<string, object>), "FreeShippingPolicy", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.FreeShippingPolicy#FreeShippingPolicy", b2 =>
-                                {
-                                    b2.Property<double>("MaxDistance")
-                                        .HasColumnType("float")
-                                        .HasColumnName("fp_fsp_max_distance");
-
-                                    b2.Property<decimal>("MinOrder")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_fsp_min_order");
-                                });
 
                             b1.ComplexProperty(typeof(Dictionary<string, object>), "OrderQtyPolicy", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.OrderQtyPolicy#OrderQtyPolicy", b2 =>
                                 {
@@ -737,38 +727,6 @@ namespace Peers.Modules.Migrations
                                     b2.Property<int>("Min")
                                         .HasColumnType("int")
                                         .HasColumnName("fp_oqp_min");
-                                });
-
-                            b1.ComplexProperty(typeof(Dictionary<string, object>), "SellerRate", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.SellerRate#SellerManagedRate", b2 =>
-                                {
-                                    b2.Property<decimal?>("BaseFee")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_sr_base_fee");
-
-                                    b2.Property<decimal?>("FlatAmount")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_sr_flat_amount");
-
-                                    b2.Property<int>("Kind")
-                                        .HasColumnType("int")
-                                        .HasColumnName("fp_sr_kind");
-
-                                    b2.Property<decimal?>("MinFee")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_sr_min_fee");
-
-                                    b2.Property<decimal?>("RatePerKg")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_sr_rate_per_kg");
-
-                                    b2.Property<decimal?>("RatePerKm")
-                                        .HasPrecision(18, 2)
-                                        .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("fp_sr_rate_per_km");
                                 });
 
                             b1.ComplexProperty(typeof(Dictionary<string, object>), "ServiceArea", "Peers.Modules.Listings.Domain.Listing.FulfillmentPreferences#FulfillmentPreferences.ServiceArea#ServiceArea", b2 =>
@@ -787,6 +745,8 @@ namespace Peers.Modules.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductTypeId");
+
+                    b.HasIndex("ShippingProfileId");
 
                     b.HasIndex("SellerId", "Hashtag")
                         .IsUnique()
@@ -1199,6 +1159,84 @@ namespace Peers.Modules.Migrations
                         .HasFilter("[state] = 0");
 
                     b.ToTable("order", (string)null);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.ShippingProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.Property<Point>("OriginLocation")
+                        .IsRequired()
+                        .HasColumnType("geography")
+                        .HasColumnName("origin_location");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "FreeShippingPolicy", "Peers.Modules.Sellers.Domain.ShippingProfile.FreeShippingPolicy#FreeShippingPolicy", b1 =>
+                        {
+                            b1.Property<double>("MaxDistance")
+                                .HasColumnType("float")
+                                .HasColumnName("fsp_max_distance");
+
+                            b1.Property<decimal>("MinOrder")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("fsp_min_order");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Rate", "Peers.Modules.Sellers.Domain.ShippingProfile.Rate#SellerManagedRate", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<decimal?>("BaseFee")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("r_base_fee");
+
+                            b1.Property<decimal?>("FlatAmount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("r_flat_amount");
+
+                            b1.Property<int>("Kind")
+                                .HasColumnType("int")
+                                .HasColumnName("r_kind");
+
+                            b1.Property<decimal?>("MinFee")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("r_min_fee");
+
+                            b1.Property<decimal?>("RatePerKg")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("r_rate_per_kg");
+
+                            b1.Property<decimal?>("RatePerKm")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("r_rate_per_km");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("shipping_profile", (string)null);
                 });
 
             modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicy", b =>
@@ -1947,6 +1985,13 @@ namespace Peers.Modules.Migrations
                     b.HasDiscriminator().HasValue(2);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Customers.Domain.Customer");
+
+                    b.ToTable("seller", (string)null);
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition");
@@ -2050,7 +2095,7 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
+                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2263,11 +2308,16 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
-                        .WithMany()
+                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
+                        .WithMany("Listings")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Peers.Modules.Sellers.Domain.ShippingProfile", "ShippingProfile")
+                        .WithMany()
+                        .HasForeignKey("ShippingProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.OwnsMany("Peers.Modules.Listings.Domain.ListingAttribute", "Attributes", b1 =>
                         {
@@ -2356,6 +2406,8 @@ namespace Peers.Modules.Migrations
                     b.Navigation("ProductType");
 
                     b.Navigation("Seller");
+
+                    b.Navigation("ShippingProfile");
                 });
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.ListingVariant", b =>
@@ -2559,7 +2611,7 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Seller")
+                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2631,6 +2683,17 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Buyer");
 
                     b.Navigation("Lines");
+
+                    b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.ShippingProfile", b =>
+                {
+                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
+                        .WithMany("ShippingProfiles")
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Seller");
                 });
@@ -2859,6 +2922,15 @@ namespace Peers.Modules.Migrations
                     b.Navigation("GroupDefinition");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", null)
+                        .WithOne()
+                        .HasForeignKey("Peers.Modules.Sellers.Domain.Seller", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
                 {
                     b.Navigation("Translations");
@@ -2936,6 +3008,13 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
                 {
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.Navigation("Listings");
+
+                    b.Navigation("ShippingProfiles");
                 });
 #pragma warning restore 612, 618
         }

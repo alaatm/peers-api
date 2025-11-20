@@ -2,6 +2,7 @@ using System.Numerics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization;
 using Peers.Modules.Catalog.Domain.Attributes;
+using Peers.Modules.Listings.Domain.Logistics;
 using static Peers.Modules.Catalog.CatalogErrors;
 
 namespace Peers.Modules.Listings;
@@ -24,6 +25,10 @@ public static class ListingErrors
     /// Product type '{0}' is not selectable for listings.
     /// </summary>
     public static DomainError ProductTypeNotSelectable(string slugPath) => new(Titles.CannotApplyOperation, "listing.product-type-not-selectable", slugPath);
+    /// <summary>
+    /// Shipping profile can only be applied to listings for physical product types.
+    /// </summary>
+    public static DomainError ShippingProfileOnlyForPhysicalProductTypes => new(Titles.CannotApplyOperation, "listing.shipping-profile-only-for-physical-product-types");
     /// <summary>
     /// A default shipping address is required to create a listing for a product that requires physical shipping or delivery.
     /// </summary>
@@ -377,9 +382,18 @@ public static class ListingErrors
         /// </summary>
         public static DomainError SellerRateNotAllowedWhenSellerPays => new(Titles.ValidationFailed, "listing.logistics.seller-rate-not-allowed-when-seller-pays");
         /// <summary>
+        /// Fulfillment method '{1}' is incompatible for physical products. Expected method: '{0}'.
+        /// </summary>
+        public static DomainError IncompatibleMethodForPhysicalProduct(FulfillmentMethod expected, FulfillmentMethod actual)
+            => new(Titles.ValidationFailed, "listing.logistics.incompatible-method-for-physical-product", expected.ToString(), actual.ToString());
+        /// <summary>
         /// Fulfillment method must be 'None' for non-physical products.
         /// </summary>
         public static DomainError MethodMustBeNoneForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.method-must-be-none-for-nonphysical");
+        /// <summary>
+        /// Shipping profile is not allowed for non-physical products.
+        /// </summary>
+        public static DomainError ShippingProfileNotAllowedForNonPhysicalProducts => new(Titles.ValidationFailed, "listing.logistics.shipping-profile-not-allowed-for-nonphysical");
         /// <summary>
         /// Shipping payer is not allowed for non-physical products.
         /// </summary>

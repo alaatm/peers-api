@@ -35,30 +35,15 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
             nav.Property(p => p.OutboundPaidBy).HasColumnName($"fp_{nameof(FulfillmentPreferences.OutboundPaidBy)}".Underscore());
             nav.Property(p => p.ReturnPaidBy).HasColumnName($"fp_{nameof(FulfillmentPreferences.ReturnPaidBy)}".Underscore());
             nav.Property(p => p.NonReturnable).HasColumnName($"fp_{nameof(FulfillmentPreferences.NonReturnable)}".Underscore());
-            nav.Property(p => p.OriginLocation).HasColumnName($"fp_{nameof(FulfillmentPreferences.OriginLocation)}".Underscore());
-            nav.ComplexProperty(p => p.FreeShippingPolicy, ob =>
+            nav.ComplexProperty(p => p.OrderQtyPolicy, p =>
             {
-                ob.Property(p => p.MinOrder).HasColumnName($"fp_fsp_{nameof(FreeShippingPolicy.MinOrder)}".Underscore());
-                ob.Property(p => p.MaxDistance).HasColumnName($"fp_fsp_{nameof(FreeShippingPolicy.MaxDistance)}".Underscore());
+                p.Property(p => p.Min).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Min)}".Underscore());
+                p.Property(p => p.Max).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Max)}".Underscore());
             });
-            nav.ComplexProperty(p => p.SellerRate, ob =>
+            nav.ComplexProperty(p => p.ServiceArea, p =>
             {
-                ob.Property(p => p.Kind).HasColumnName($"fp_sr_{nameof(SellerManagedRate.Kind)}".Underscore());
-                ob.Property(p => p.FlatAmount).HasColumnName($"fp_sr_{nameof(SellerManagedRate.FlatAmount)}".Underscore());
-                ob.Property(p => p.BaseFee).HasColumnName($"fp_sr_{nameof(SellerManagedRate.BaseFee)}".Underscore());
-                ob.Property(p => p.RatePerKg).HasColumnName($"fp_sr_{nameof(SellerManagedRate.RatePerKg)}".Underscore());
-                ob.Property(p => p.RatePerKm).HasColumnName($"fp_sr_{nameof(SellerManagedRate.RatePerKm)}".Underscore());
-                ob.Property(p => p.MinFee).HasColumnName($"fp_sr_{nameof(SellerManagedRate.MinFee)}".Underscore());
-            });
-            nav.ComplexProperty(p => p.OrderQtyPolicy, ob =>
-            {
-                ob.Property(p => p.Min).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Min)}".Underscore());
-                ob.Property(p => p.Max).HasColumnName($"fp_oqp_{nameof(OrderQtyPolicy.Max)}".Underscore());
-            });
-            nav.ComplexProperty(p => p.ServiceArea, nav =>
-            {
-                nav.Property(p => p.Center).HasColumnName($"fp_sa_{nameof(ServiceArea.Center)}".Underscore());
-                nav.Property(p => p.Radius).HasColumnName($"fp_sa_{nameof(ServiceArea.Radius)}".Underscore());
+                p.Property(p => p.Center).HasColumnName($"fp_sa_{nameof(ServiceArea.Center)}".Underscore());
+                p.Property(p => p.Radius).HasColumnName($"fp_sa_{nameof(ServiceArea.Radius)}".Underscore());
             });
         });
 
@@ -129,7 +114,7 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
 
         builder
             .HasOne(p => p.Seller)
-            .WithMany()
+            .WithMany(p => p.Listings)
             .HasForeignKey(p => p.SellerId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -137,6 +122,12 @@ internal sealed class ListingMapping : IEntityTypeConfiguration<Listing>
             .HasOne(p => p.ProductType)
             .WithMany()
             .HasForeignKey(p => p.ProductTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(p => p.ShippingProfile)
+            .WithMany()
+            .HasForeignKey(p => p.ShippingProfileId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.ToTable(nameof(Listing).Underscore(), p =>

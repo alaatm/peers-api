@@ -712,35 +712,6 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "cart",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    buyer_id = table.Column<int>(type: "int", nullable: false),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    last_touched_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_cart", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_cart_customer_buyer_id",
-                        column: x => x.buyer_id,
-                        principalTable: "customer",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_cart_customer_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "customer",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "customer_address",
                 columns: table => new
                 {
@@ -768,61 +739,6 @@ namespace Peers.Modules.Migrations
                         principalTable: "customer",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "listing",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    hashtag = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    state = table.Column<int>(type: "int", nullable: false),
-                    product_type_id = table.Column<int>(type: "int", nullable: false),
-                    product_type_version = table.Column<int>(type: "int", nullable: false),
-                    snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    fp_method = table.Column<int>(type: "int", nullable: false),
-                    fp_non_returnable = table.Column<bool>(type: "bit", nullable: true),
-                    fp_origin_location = table.Column<Point>(type: "geography", nullable: true),
-                    fp_outbound_paid_by = table.Column<int>(type: "int", nullable: true),
-                    fp_return_paid_by = table.Column<int>(type: "int", nullable: true),
-                    fp_fsp_max_distance = table.Column<double>(type: "float", nullable: true),
-                    fp_fsp_min_order = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_oqp_max = table.Column<int>(type: "int", nullable: true),
-                    fp_oqp_min = table.Column<int>(type: "int", nullable: true),
-                    fp_sr_base_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_sr_flat_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_sr_kind = table.Column<int>(type: "int", nullable: true),
-                    fp_sr_min_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_sr_rate_per_kg = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_sr_rate_per_km = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    fp_sa_center = table.Column<Point>(type: "geography", nullable: true),
-                    fp_sa_radius = table.Column<double>(type: "float", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_listing", x => x.id);
-                    table.CheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
-                    table.CheckConstraint("CK_Listing_OrderQtyPolicy", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
-                    table.ForeignKey(
-                        name: "FK_listing_customer_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "customer",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_listing_product_type_product_type_id",
-                        column: x => x.product_type_id,
-                        principalSchema: "catalog",
-                        principalTable: "product_type",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -865,38 +781,20 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "order",
+                name: "seller",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    buyer_id = table.Column<int>(type: "int", nullable: false),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    placed_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    state = table.Column<int>(type: "int", nullable: false),
-                    items_total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    cancellation_reason = table.Column<int>(type: "int", nullable: true),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_order", x => x.id);
+                    table.PrimaryKey("PK_seller", x => x.id);
                     table.ForeignKey(
-                        name: "FK_order_customer_buyer_id",
-                        column: x => x.buyer_id,
+                        name: "FK_seller_customer_id",
+                        column: x => x.id,
                         principalTable: "customer",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_order_customer_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "customer",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1057,6 +955,224 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "cart",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    last_touched_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_cart", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_cart_customer_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_cart_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "order",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    placed_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    items_total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    cancellation_reason = table.Column<int>(type: "int", nullable: true),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_order_customer_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_order_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "shipping_profile",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    origin_location = table.Column<Point>(type: "geography", nullable: false),
+                    fsp_max_distance = table.Column<double>(type: "float", nullable: true),
+                    fsp_min_order = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_base_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_flat_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_kind = table.Column<int>(type: "int", nullable: false),
+                    r_min_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_rate_per_kg = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_rate_per_km = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_shipping_profile", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_shipping_profile_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "enum_attribute_option_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_enum_attribute_option_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
+                        column: x => x.entity_id,
+                        principalTable: "enum_attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_enum_attribute_option_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "listing",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    hashtag = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    base_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    product_type_id = table.Column<int>(type: "int", nullable: false),
+                    shipping_profile_id = table.Column<int>(type: "int", nullable: true),
+                    product_type_version = table.Column<int>(type: "int", nullable: false),
+                    snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    fp_method = table.Column<int>(type: "int", nullable: false),
+                    fp_non_returnable = table.Column<bool>(type: "bit", nullable: true),
+                    fp_outbound_paid_by = table.Column<int>(type: "int", nullable: true),
+                    fp_return_paid_by = table.Column<int>(type: "int", nullable: true),
+                    fp_oqp_max = table.Column<int>(type: "int", nullable: true),
+                    fp_oqp_min = table.Column<int>(type: "int", nullable: true),
+                    fp_sa_center = table.Column<Point>(type: "geography", nullable: true),
+                    fp_sa_radius = table.Column<double>(type: "float", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing", x => x.id);
+                    table.CheckConstraint("CK_Listing_BasePrice_NonNegative", "[base_price] >= 0");
+                    table.CheckConstraint("CK_Listing_OrderQtyPolicy", "([fp_oqp_min] IS NULL OR [fp_oqp_min] >= 1)\r\nAND ([fp_oqp_max] IS NULL OR [fp_oqp_max] >= 1)\r\nAND ([fp_oqp_min] IS NULL OR [fp_oqp_max] IS NULL OR [fp_oqp_max] >= [fp_oqp_min])");
+                    table.ForeignKey(
+                        name: "FK_listing_product_type_product_type_id",
+                        column: x => x.product_type_id,
+                        principalSchema: "catalog",
+                        principalTable: "product_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_shipping_profile_shipping_profile_id",
+                        column: x => x.shipping_profile_id,
+                        principalTable: "shipping_profile",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "listing_attribute",
+                columns: table => new
+                {
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
+                    enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
+                    lookup_option_id = table.Column<int>(type: "int", nullable: true),
+                    attribute_kind = table.Column<int>(type: "int", nullable: false),
+                    value = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    position = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_listing_attribute", x => new { x.listing_id, x.attribute_definition_id });
+                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
+                    table.CheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_attribute_definition_attribute_definition_id",
+                        column: x => x.attribute_definition_id,
+                        principalSchema: "catalog",
+                        principalTable: "attribute_definition",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_enum_attribute_option_enum_attribute_option_id",
+                        column: x => x.enum_attribute_option_id,
+                        principalTable: "enum_attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_listing_attribute_lookup_option_lookup_option_id",
+                        column: x => x.lookup_option_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "listing_tr",
                 schema: "i18n",
                 columns: table => new
@@ -1115,78 +1231,6 @@ namespace Peers.Modules.Migrations
                         principalTable: "listing",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "enum_attribute_option_tr",
-                schema: "i18n",
-                columns: table => new
-                {
-                    entity_id = table.Column<int>(type: "int", nullable: false),
-                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
-                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_enum_attribute_option_tr", x => new { x.entity_id, x.lang_code });
-                    table.ForeignKey(
-                        name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
-                        column: x => x.entity_id,
-                        principalTable: "enum_attribute_option",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_enum_attribute_option_tr_language_lang_code",
-                        column: x => x.lang_code,
-                        principalSchema: "i18n",
-                        principalTable: "language",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "listing_attribute",
-                columns: table => new
-                {
-                    listing_id = table.Column<int>(type: "int", nullable: false),
-                    attribute_definition_id = table.Column<int>(type: "int", nullable: false),
-                    enum_attribute_option_id = table.Column<int>(type: "int", nullable: true),
-                    lookup_option_id = table.Column<int>(type: "int", nullable: true),
-                    attribute_kind = table.Column<int>(type: "int", nullable: false),
-                    value = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    position = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_listing_attribute", x => new { x.listing_id, x.attribute_definition_id });
-                    table.CheckConstraint("CK_LA_OnePayload", "(\r\n    [attribute_kind] IN (0,1,2,3,4) AND [value] IS NOT NULL\r\n    AND [enum_attribute_option_id] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 6 AND [enum_attribute_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [lookup_option_id] IS NULL\r\n)\r\nOR\r\n(\r\n    [attribute_kind] = 7 AND [lookup_option_id] IS NOT NULL\r\n    AND [value] IS NULL AND [enum_attribute_option_id] IS NULL\r\n)");
-                    table.CheckConstraint("CK_LA_Position_NonNegative", "[position] >= 0");
-                    table.ForeignKey(
-                        name: "FK_listing_attribute_attribute_definition_attribute_definition_id",
-                        column: x => x.attribute_definition_id,
-                        principalSchema: "catalog",
-                        principalTable: "attribute_definition",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_listing_attribute_enum_attribute_option_enum_attribute_option_id",
-                        column: x => x.enum_attribute_option_id,
-                        principalTable: "enum_attribute_option",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_listing_attribute_listing_listing_id",
-                        column: x => x.listing_id,
-                        principalTable: "listing",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_listing_attribute_lookup_option_lookup_option_id",
-                        column: x => x.lookup_option_id,
-                        principalSchema: "lookup",
-                        principalTable: "lookup_option",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1508,6 +1552,11 @@ namespace Peers.Modules.Migrations
                 filter: "[hashtag] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_listing_shipping_profile_id",
+                table: "listing",
+                column: "shipping_profile_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_listing_attribute_attribute_definition_id",
                 table: "listing_attribute",
                 column: "attribute_definition_id");
@@ -1773,6 +1822,12 @@ namespace Peers.Modules.Migrations
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_shipping_profile_seller_id_name",
+                table: "shipping_profile",
+                columns: new[] { "seller_id", "name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_terms_tr_lang_code",
                 schema: "i18n",
                 table: "terms_tr",
@@ -1975,11 +2030,17 @@ namespace Peers.Modules.Migrations
                 schema: "lookup");
 
             migrationBuilder.DropTable(
-                name: "customer");
-
-            migrationBuilder.DropTable(
                 name: "product_type",
                 schema: "catalog");
+
+            migrationBuilder.DropTable(
+                name: "shipping_profile");
+
+            migrationBuilder.DropTable(
+                name: "seller");
+
+            migrationBuilder.DropTable(
+                name: "customer");
 
             migrationBuilder.DropTable(
                 name: "app_user",

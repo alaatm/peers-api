@@ -1,4 +1,6 @@
-namespace Peers.Modules.Listings.Domain.Logistics;
+using Peers.Modules.Listings.Domain.Logistics;
+
+namespace Peers.Modules.Sellers.Domain;
 
 /// <summary>
 /// Specifies the types of seller-managed shipping rate calculations available for an order or shipment.

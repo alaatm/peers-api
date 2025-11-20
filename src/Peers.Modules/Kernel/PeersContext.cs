@@ -11,6 +11,7 @@ using Peers.Modules.Listings.Domain;
 using Peers.Modules.Lookup.Domain;
 using Peers.Modules.Media.Domain;
 using Peers.Modules.Ordering.Domain;
+using Peers.Modules.Sellers.Domain;
 using Peers.Modules.Settings.Domain;
 using Peers.Modules.SystemInfo.Domain;
 using Peers.Modules.Users.Domain;
@@ -26,6 +27,7 @@ public sealed class PeersContext : DbContextBase<AppUser>
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<Order> Orders => Set<Order>();
 
+    public DbSet<Seller> Sellers => Set<Seller>();
     public DbSet<Customer> Customers => Set<Customer>();
 
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();

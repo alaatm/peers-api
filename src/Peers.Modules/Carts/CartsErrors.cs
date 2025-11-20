@@ -18,6 +18,10 @@ public static class CartsErrors
     /// </summary>
     public static DomainError ListingSellerMismatch => new(Titles.CannotApplyOperation, "carts.listing-seller-mismatch");
     /// <summary>
+    /// All line items must have the same fulfillment method.
+    /// </summary>
+    public static DomainError FulfillmentMethodMismatch => new(Titles.CannotApplyOperation, "carts.fulfillment-method-mismatch");
+    /// <summary>
     /// The variant with key '{0}' was not found.
     /// </summary>
     public static DomainError VariantNotFound(string variantKey) => new(Titles.NotFound, "carts.variant-not-found", variantKey);

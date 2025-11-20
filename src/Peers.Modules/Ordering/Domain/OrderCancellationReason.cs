@@ -5,8 +5,4 @@ namespace Peers.Modules.Ordering.Domain;
 /// </summary>
 public enum OrderCancellationReason
 {
-    /// <summary>
-    /// Cancellation due to cart modification by the buyer.
-    /// </summary>
-    Amended,
 }

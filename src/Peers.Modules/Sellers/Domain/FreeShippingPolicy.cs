@@ -1,7 +1,7 @@
 using Peers.Core.Domain.Errors;
 using E = Peers.Modules.Listings.ListingErrors;
 
-namespace Peers.Modules.Listings.Domain.Logistics;
+namespace Peers.Modules.Sellers.Domain;
 
 /// <summary>
 /// Shipping policy that grants free shipping when both a minimum order amount

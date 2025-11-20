@@ -33,7 +33,7 @@ public partial class Listing
 
         try
         {
-            FulfillmentPreferences.Validate(ProductType.Kind);
+            FulfillmentPreferences.Validate(ProductType.Kind, ShippingProfile);
         }
         catch (DomainException ex)
         {

@@ -2,6 +2,7 @@ using Peers.Core.Domain.Errors;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain;
 using Peers.Modules.Ordering.Domain;
+using Peers.Modules.Sellers.Domain;
 using E = Peers.Modules.Carts.CartsErrors;
 
 namespace Peers.Modules.Carts.Domain;
@@ -43,7 +44,7 @@ public sealed class Cart : Entity, IAggregateRoot
     /// <summary>
     /// The customer who is selling the items.
     /// </summary>
-    public Customer Seller { get; private set; } = default!;
+    public Seller Seller { get; private set; } = default!;
     /// <summary>
     /// The list of line items in the cart.
     /// </summary>
@@ -54,22 +55,14 @@ public sealed class Cart : Entity, IAggregateRoot
     /// <summary>
     /// Creates a new cart instance for the specified buyer and seller with the given creation date.
     /// </summary>
-    /// <param name="buyer">The customer who is purchasing items. Cannot be the same as <paramref name="seller"/>.</param>
-    /// <param name="seller">The customer who is selling items. Cannot be the same as <paramref name="buyer"/>.</param>
+    /// <param name="buyer">The customer who is purchasing items.</param>
+    /// <param name="seller">The customer who is selling items.</param>
     /// <param name="date">The date and time when the cart is created. Sets both the creation and last touched timestamps.</param>
     /// <returns>A new <see cref="Cart"/> initialized with the specified buyer, seller, and creation date.</returns>
-    /// <exception cref="DomainException">Thrown if <paramref name="buyer"/> and <paramref name="seller"/> refer to the same customer.</exception>
     public static Cart Create(
         Customer buyer,
-        Customer seller,
-        DateTime date)
-    {
-        if (buyer == seller)
-        {
-            throw new DomainException(E.BuyerSellerSame);
-        }
-
-        return new()
+        Seller seller,
+        DateTime date) => new()
         {
             CreatedAt = date,
             LastTouchedAt = date,
@@ -77,7 +70,6 @@ public sealed class Cart : Entity, IAggregateRoot
             Seller = seller,
             Lines = [],
         };
-    }
 
     /// <summary>
     /// Adds a line item to the cart for the specified listing variant and quantity, or updates the quantity if the line
@@ -171,45 +163,6 @@ public sealed class Cart : Entity, IAggregateRoot
     }
 
     /// <summary>
-    /// Restores the cart to match the state of the specified order.
-    /// </summary>
-    /// <remarks>This method does not validate stock when restoring the cart. Stock validation will occur
-    /// again at checkout. This method is used to revert the cart to its state before a checkout operation took place.</remarks>
-    /// <param name="order">The order whose state is used to restore the cart. Must have the same buyer and seller as the cart and be in the
-    /// Placed state.</param>
-    /// <param name="date">The date and time when the restore operation is requested.</param>
-    /// <exception cref="DomainException">Thrown if the cart is not empty, if the order's buyer or seller does not match the cart, or if the order is not
-    /// in the Placed state.</exception>
-    public void Restore(
-        [NotNull] Order order,
-        DateTime date)
-    {
-        if (Lines.Count != 0)
-        {
-            throw new DomainException(E.CartNotEmpty);
-        }
-
-        if (order.Buyer != Buyer || order.Seller != Seller)
-        {
-            throw new DomainException(E.CustomerMismatch);
-        }
-
-        if (order.State is not OrderState.Placed)
-        {
-            throw new DomainException(E.OrderNotInPlacedState);
-        }
-
-        // Do not validate stock here, just restore the cart as it was at checkout.
-        // We will validate stock again at checkout.
-        foreach (var orderLine in order.Lines)
-        {
-            Lines.Add(new CartLine(this, orderLine.Variant, orderLine.Quantity));
-        }
-
-        LastTouchedAt = date;
-    }
-
-    /// <summary>
     /// Attempts to create an order from the current cart lines, validating each item before checkout.
     /// </summary>
     /// <remarks>If any cart line fails validation, the method does not create an order and provides error
@@ -220,7 +173,7 @@ public sealed class Cart : Entity, IAggregateRoot
     /// <param name="errors">When this method returns false, contains a dictionary mapping invalid cart lines to error
     /// codes; otherwise, null.</param>
     /// <returns>true if the checkout succeeds and an order is created; otherwise, false.</returns>
-    public bool TryCheckout(
+    public bool CreateOrder(
         DateTime date,
         [NotNullWhen(true)] out Order? order,
         [NotNullWhen(false)] out IReadOnlyDictionary<CartLine, string>? errors)
@@ -286,13 +239,40 @@ public sealed class Cart : Entity, IAggregateRoot
         }
     }
 
-    private static void ValidateLine(ListingVariant variant, int quantity)
+    private void ValidateLine(ListingVariant variant, int quantity)
     {
         var listing = variant.Listing;
 
         if (listing.State is not ListingState.Published)
         {
             throw new DomainException(E.ListingNotPublished);
+        }
+
+        // Ensure consistency among all line items in the cart regarding fulfillment method and quote-based seller-managed shipping.
+        // All line items must be one of the following:
+        // 1. Platform-managed shipping or None (digital/service)
+        // 2. Seller-managed with quote-based rates or None (digital/service)
+        // 3. Seller-managed with non-quote-based rates or None (digital/service)
+
+        if (HasPlatformManagedOrNonShippableItems() is true &&
+            !listing.IsPlatformManagedShipping &&
+            !listing.IsNonShippable)
+        {
+            throw new DomainException(E.FulfillmentMethodMismatch);
+        }
+
+        if (HasSellerManagedNonQuoteBasedOrNonShippableItems() is true &&
+            !listing.IsSellerManagedNonQuoteBasedShipping &&
+            !listing.IsNonShippable)
+        {
+            throw new DomainException(E.FulfillmentMethodMismatch);
+        }
+
+        if (HasSellerManagedQuoteBasedOrNonShippableItems() is true &&
+            !listing.IsSellerManagedQuoteBasedShipping &&
+            !listing.IsNonShippable)
+        {
+            throw new DomainException(E.FulfillmentMethodMismatch);
         }
 
         if (listing.FulfillmentPreferences.OrderQtyPolicy is { } orderQtyPolicy &&
@@ -305,5 +285,74 @@ public sealed class Cart : Entity, IAggregateRoot
         {
             throw new DomainException(E.InsufficientStock(variant.SkuCode));
         }
+    }
+
+    private bool? HasPlatformManagedOrNonShippableItems()
+    {
+        if (Lines.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var line in Lines)
+        {
+            if (line.Listing.IsPlatformManagedShipping ||
+                line.Listing.IsNonShippable)
+            {
+                continue;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool? HasSellerManagedNonQuoteBasedOrNonShippableItems()
+    {
+        if (Lines.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var line in Lines)
+        {
+            if (line.Listing.IsSellerManagedNonQuoteBasedShipping ||
+                line.Listing.IsNonShippable)
+            {
+                continue;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool? HasSellerManagedQuoteBasedOrNonShippableItems()
+    {
+        if (Lines.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var line in Lines)
+        {
+            if (line.Listing.IsSellerManagedQuoteBasedShipping ||
+                line.Listing.IsNonShippable)
+            {
+                continue;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

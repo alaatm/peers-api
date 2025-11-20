@@ -1,16 +1,15 @@
 using System.Diagnostics;
-using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
 using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
-using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
-using Peers.Modules.Listings.Domain.Translations;
 using Peers.Modules.Listings.Domain.Snapshots;
-using E = Peers.Modules.Listings.ListingErrors;
-using static Peers.Modules.Listings.Commands.SetAttributes.Command;
+using Peers.Modules.Listings.Domain.Translations;
 using Peers.Modules.Listings.Domain.Validation;
+using Peers.Modules.Sellers.Domain;
+using static Peers.Modules.Listings.Commands.SetAttributes.Command;
+using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -62,6 +61,10 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// </summary>
     public int ProductTypeId { get; private set; }
     /// <summary>
+    /// The identifier of the shipping profile associated with this listing. Only used with seller-managed shipping.
+    /// </summary>
+    public int? ShippingProfileId { get; private set; }
+    /// <summary>
     /// The version of the product type at the time the listing was created.
     /// </summary>
     public int ProductTypeVersion { get; private set; }
@@ -76,11 +79,15 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// <summary>
     /// The seller who created the listing.
     /// </summary>
-    public Customer Seller { get; private set; } = default!;
+    public Seller Seller { get; private set; } = default!;
     /// <summary>
     /// The product type associated with this listing.
     /// </summary>
     public ProductType ProductType { get; private set; } = default!;
+    /// <summary>
+    /// The shipping profile associated with this listing. Only used with seller-managed shipping.
+    /// </summary>
+    public ShippingProfile? ShippingProfile { get; set; }
     /// <summary>
     /// The list of non-variant attributes of the listing.
     /// </summary>
@@ -94,20 +101,41 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
     /// </summary>
     public List<ListingTr> Translations { get; private set; } = default!;
 
+    public bool IsNonShippable =>
+        FulfillmentPreferences.Method is FulfillmentMethod.None;
+
+    public bool IsPlatformManagedShipping =>
+        FulfillmentPreferences.Method is FulfillmentMethod.PlatformManaged;
+
+    public bool IsSellerManagedShipping =>
+        FulfillmentPreferences.Method is FulfillmentMethod.SellerManaged;
+
+    public bool IsSellerManagedNonQuoteBasedShipping =>
+        IsSellerManagedShipping &&
+        ShippingProfile!.Rate.Kind is not SellerManagedRateKind.Quote;
+
+    public bool IsSellerManagedQuoteBasedShipping =>
+        IsSellerManagedShipping &&
+        ShippingProfile!.Rate.Kind is SellerManagedRateKind.Quote;
+
     /// <summary>
     /// Creates a new draft listing for the specified seller and product type with the provided details.
     /// </summary>
-    /// <param name="seller">The customer who will be the seller of the listing.</param>
-    /// <param name="productType">The product type to associate with the listing. Must be published and selectable.</param>
     /// <param name="title">The title of the listing.</param>
+    /// <param name="seller">The seller of the listing.</param>
+    /// <param name="productType">The product type to associate with the listing. Must be published and selectable.</param>
+    /// <param name="fulfillment">The fulfillment preferences for the listing.</param>
+    /// <param name="shippingProfile">An optional shipping profile for the listing, required if using seller-managed shipping.</param>
     /// <param name="description">An optional description of the listing.</param>
     /// <param name="hashtag">An optional unique hashtag for the listing.</param>
     /// <param name="price">The base price for the listing.</param>
     /// <param name="date">The creation date and time for the listing.</param>
     public static Listing Create(
-        [NotNull] Customer seller,
-        [NotNull] ProductType productType,
         [NotNull] string title,
+        [NotNull] Seller seller,
+        [NotNull] ProductType productType,
+        [NotNull] FulfillmentPreferences fulfillment,
+        ShippingProfile? shippingProfile,
         string? description,
         string? hashtag,
         decimal price,
@@ -123,23 +151,15 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             throw new DomainException(E.ProductTypeNotSelectable(productType.SlugPath));
         }
 
-        Point? originLocation = null;
-        if (productType.Kind is ProductTypeKind.Physical)
-        {
-            if (seller.GetDefaultAddress() is not { } address)
-            {
-                throw new DomainException(E.SellerMustHaveAddress);
-            }
+        fulfillment.Validate(productType.Kind, shippingProfile);
 
-            originLocation = address.Location;
-        }
-
-        return new()
+        var listing = new Listing
         {
             Snapshot = ListingSnapshot.Create(date),
-            FulfillmentPreferences = FulfillmentPreferences.Default(originLocation),
+            FulfillmentPreferences = fulfillment,
             Seller = seller,
             ProductType = productType,
+            ShippingProfile = shippingProfile,
             ProductTypeVersion = productType.Version,
             CreatedAt = date,
             UpdatedAt = date,
@@ -151,6 +171,9 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             Attributes = [],
             Variants = [],
         };
+
+        seller.Listings.Add(listing);
+        return listing;
     }
 
     /// <summary>
@@ -694,7 +717,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             }
         }
 
-        prefs.Validate(ProductType.Kind);
+        prefs.Validate(ProductType.Kind, ShippingProfile);
         FulfillmentPreferences = prefs;
 
         UpdatedAt = DateTime.UtcNow;
@@ -800,7 +823,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
     private void ValidateForPublish()
     {
-        FulfillmentPreferences.Validate(ProductType.Kind);
+        FulfillmentPreferences.Validate(ProductType.Kind, ShippingProfile);
 
         if (ProductType.Kind is ProductTypeKind.Physical)
         {

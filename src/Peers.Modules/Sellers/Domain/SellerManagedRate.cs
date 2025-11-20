@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
-using Peers.Modules.Listings.Services;
 using E = Peers.Modules.Listings.ListingErrors;
 
-namespace Peers.Modules.Listings.Domain.Logistics;
+namespace Peers.Modules.Sellers.Domain;
 
 /// <summary>
 /// Pricing rules for seller-managed shipping: flat, weight-based, distance-based, or quote-based.
@@ -112,21 +110,16 @@ public sealed class SellerManagedRate
     /// Applies payer/free rules before pricing. For quote-based rates, a price cannot be computed at checkout.
     /// Distances are in kilometers; weights in kilograms.
     /// </summary>
-    /// <param name="distanceCalculator">The service used to measure origin → delivery distance (returns meters).</param>
-    /// <param name="prefs">The Fulfillment preferences.</param>
-    /// <param name="deliveryLocation">The delivery destination.</param>
+    /// <param name="profile">The shipping profile being used.</param>
     /// <param name="orderSubtotal">The order subtotal in store currency.</param>
     /// <param name="totalWeightKg">The total shipment weight in kilograms. Must be non-negative.</param>
-    /// <param name="ctk">Optional cancellation token.</param>
-    public async Task<decimal> ComputeBuyerChargeAsync(
-        [NotNull] IDistanceCalculator distanceCalculator,
-        [NotNull] FulfillmentPreferences prefs,
-        [NotNull] Point deliveryLocation,
+    /// <param name="distanceMeters">The delivery distance in meters. Must be non-negative.</param>
+    public decimal ComputeBuyerCharge(
+        [NotNull] ShippingProfile profile,
         decimal orderSubtotal,
         double totalWeightKg,
-        CancellationToken ctk = default)
+        double distanceMeters)
     {
-        Debug.Assert(prefs.OutboundPaidBy is ShippingCostPayer.Buyer);
         ArgumentOutOfRangeException.ThrowIfNegative(orderSubtotal);
         ArgumentOutOfRangeException.ThrowIfNegative(totalWeightKg);
 
@@ -136,19 +129,8 @@ public sealed class SellerManagedRate
             throw new DomainException(E.Logistics.CannotComputeQuoteRate);
         }
 
-        var needsDistance =
-            Kind is SellerManagedRateKind.Distance ||
-            prefs.FreeShippingPolicy is not null;
-
-        double? distanceMeters = needsDistance
-            ? await distanceCalculator.MeasureAsync(
-                prefs.OriginLocation ?? throw new InvalidOperationException("Shipping location expected but missing."),
-                deliveryLocation,
-                ctk)
-            : null;
-
-        if (prefs.FreeShippingPolicy is { } fsp &&
-            fsp.IsSatisfiedBy(orderSubtotal, Ensure(distanceMeters)))
+        if (profile.FreeShippingPolicy is { } fsp &&
+            fsp.IsSatisfiedBy(orderSubtotal, distanceMeters))
         {
             return 0m;
         }
@@ -157,7 +139,7 @@ public sealed class SellerManagedRate
         {
             SellerManagedRateKind.Flat => Ensure(FlatAmount),
             SellerManagedRateKind.Weight => ApplyMin(Ensure(BaseFee) + ((decimal)totalWeightKg * Ensure(RatePerKg))),
-            SellerManagedRateKind.Distance => ApplyMin(Ensure(BaseFee) + ((decimal)Ensure(distanceMeters) / 1000m * Ensure(RatePerKm))),
+            SellerManagedRateKind.Distance => ApplyMin(Ensure(BaseFee) + ((decimal)distanceMeters / 1000m * Ensure(RatePerKm))),
             _ => throw new UnreachableException("Invalid seller-managed rate kind."),
         };
 

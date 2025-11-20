@@ -4,6 +4,7 @@ public static class Roles
 {
     public const string Admin = "Admin";
     public const string Customer = "Customer";
+    public const string Seller = "Seller";
 
     // Represents a staff member, regardless of their role.
     public const string Staff = "Staff";
@@ -24,5 +25,6 @@ public static class Roles
         Staff,
 
         Customer,
+        Seller,
     ];
 }

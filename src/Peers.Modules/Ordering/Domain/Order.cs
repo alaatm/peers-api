@@ -63,7 +63,7 @@ public sealed class Order : Entity, IAggregateRoot
     /// <summary>
     /// The customer who is selling the items.
     /// </summary>
-    public Customer Seller { get; private set; } = default!;
+    public Seller Seller { get; private set; } = default!;
     /// <summary>
     /// The list of line items in the order.
     /// </summary>

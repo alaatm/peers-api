@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Text;
 using Peers.Modules.Carts.Domain;
-using Peers.Modules.Carts.Queries;
 using Peers.Modules.Listings.Domain;
 using Peers.Modules.Ordering.Domain;
 
@@ -57,38 +56,13 @@ internal static class CartMutationOperation
                 context.Carts.Add(cart);
             }
 
-            if (await context.Orders
-                .Include(o => o.Lines).ThenInclude(p => p.Variant)
-                .SingleOrDefaultAsync(p =>
-                    p.BuyerId == identity.Id &&
-                    p.SellerId == listing.SellerId &&
-                    p.State == OrderState.Placed, ctk) is { } placed)
-            {
-                cart.Restore(placed, timeProvider.UtcNow());
-                placed.Cancel(OrderCancellationReason.Amended);
-            }
-
             mutate(cart, listing);
 
             try
             {
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
-                var lines = new GetCart.Response.CartLineDto[cart.Lines.Count];
-                for (var i = 0; i < cart.Lines.Count; i++)
-                {
-                    var line = cart.Lines[i];
-                    lines[i] = new GetCart.Response.CartLineDto(
-                        line.ListingId,
-                        line.Variant.VariantKey,
-                        line.Listing.Title,
-                        line.Quantity,
-                        line.UnitPrice);
-                }
-
-                var response = new GetCart.Response(lines);
-                return Result.Ok(response);
+                return Result.Ok();
             }
             catch (DbUpdateConcurrencyException ex)
             {

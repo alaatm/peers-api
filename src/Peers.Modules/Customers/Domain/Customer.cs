@@ -7,7 +7,7 @@ namespace Peers.Modules.Customers.Domain;
 /// <summary>
 /// Represents a system user of type <see cref="Customer"/>.
 /// </summary>
-public sealed class Customer : Entity, ISystemUser, IAggregateRoot
+public class Customer : Entity, ISystemUser, IAggregateRoot
 {
     /// <summary>
     /// The username.
