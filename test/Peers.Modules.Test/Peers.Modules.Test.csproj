@@ -7,7 +7,7 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(DotNetExtVer)" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />
-    <PackageReference Include="Bogus" Version="35.6.3" />
+    <PackageReference Include="Bogus" Version="35.6.5" />
   </ItemGroup>
 
   <ItemGroup>

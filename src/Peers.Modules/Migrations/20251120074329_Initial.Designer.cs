@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251120071552_ProductTypeLineageFunc")]
-    partial class ProductTypeLineageFunc
+    [Migration("20251120074329_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <DotNetVer>10.0.0-rc.*</DotNetVer>
-    <DotNetExtVer>9.9.0</DotNetExtVer>
+    <DotNetVer>10.0.0</DotNetVer>
+    <DotNetExtVer>10.0.0</DotNetExtVer>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
