@@ -1,9 +1,10 @@
 using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
+using Peers.Core.GoogleServices.Maps;
+using Peers.Core.GoogleServices.Maps.Models;
 using Peers.Core.Shipping;
 using Peers.Modules.Carts.Domain;
 using Peers.Modules.Listings.Domain.Logistics;
-using Peers.Modules.Listings.Services;
 using Peers.Modules.Sellers.Domain;
 
 namespace Peers.Modules.Carts.Services;
@@ -14,15 +15,15 @@ namespace Peers.Modules.Carts.Services;
 public sealed class ShippingCalculator : IShippingCalculator
 {
     private readonly IPlatformShippingService _platform;
-    private readonly IDistanceCalculator _distance;
+    private readonly IGoogleMapsService _mapsServices;
     private const int VolumetricDivisor = 5000; // TODO: Move to configuration
 
     public ShippingCalculator(
         IPlatformShippingService platform,
-        IDistanceCalculator distance)
+        IGoogleMapsService mapsServices)
     {
         _platform = platform;
-        _distance = distance;
+        _mapsServices = mapsServices;
     }
 
     /// <summary>
@@ -126,9 +127,9 @@ public sealed class ShippingCalculator : IShippingCalculator
             var distanceMeters =
                 profile.Rate.Kind is SellerManagedRateKind.Distance ||
                 profile.FreeShippingPolicy is not null
-                    ? await _distance.MeasureAsync(
-                        profile.OriginLocation ?? throw new InvalidOperationException("Shipping location expected but missing."),
-                        deliveryLocation,
+                    ? await _mapsServices.GetDistanceAsync(
+                        LatLng.FromPoint(profile.OriginLocation ?? throw new InvalidOperationException("Shipping location expected but missing.")),
+                        LatLng.FromPoint(deliveryLocation),
                         ctk)
                     : 0;
 

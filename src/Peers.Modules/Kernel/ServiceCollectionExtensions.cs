@@ -1,10 +1,12 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Peers.Core.AzureServices;
 using Peers.Core.Background;
 using Peers.Core.Communication.Email;
 using Peers.Core.Communication.Push;
 using Peers.Core.Communication.Sms;
 using Peers.Core.Data;
+using Peers.Core.GoogleServices;
 using Peers.Core.Localization;
 using Peers.Core.Media;
 using Peers.Core.RateLimiting;
@@ -12,12 +14,12 @@ using Peers.Core.Security.Hashing;
 using Peers.Core.Security.Jwt;
 using Peers.Core.Security.Totp;
 using Peers.Modules.BackgroundJobs;
+using Peers.Modules.Carts.Services;
 using Peers.Modules.Kernel.OpenApi;
 using Peers.Modules.Kernel.Pipelines;
 using Peers.Modules.Kernel.Startup;
 using Peers.Modules.Users.Domain;
 using Peers.Modules.Users.Services;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Peers.Modules.Kernel;
 
@@ -113,9 +115,11 @@ public static class ServiceCollectionExtensions
             .AddPushNotificationProblemReporter()
             .AddDataServices<PeersContext, PeersContextScopedFactory, AppUser>(cfg)
             .AddAzureStorage(config)
+            .AddGoogleServices(config)
             .AddMessageBroker()
             .AddBackgroundJobs()
             .AddThumbnailGenerator()
+            .AddShippingCalculator()
             .TryAddSingleton(TimeProvider.System);
 
         return services;
