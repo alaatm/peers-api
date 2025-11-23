@@ -67,6 +67,7 @@ public class ServiceCollectionExtensionsTests
         var scheme = await schemeProvider.GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
         var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>();
         var options = optionsMonitor.Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(TokenIdResolver.Resolve, options.Events.OnMessageReceived);
         // Assert correct token validation parameters are set
         var expected = jwtConfig.TokenValidationParameters;
         var actual = options.TokenValidationParameters;

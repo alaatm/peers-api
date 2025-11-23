@@ -17,6 +17,12 @@ internal sealed class CustomerMapping : IEntityTypeConfiguration<Customer>
             .HasForeignKey<Customer>(p => p.Id)
             .IsRequired();
 
+        builder
+            .HasMany(p => p.PaymentMethods)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+
         builder.ToTable(nameof(Customer).Underscore());
     }
 }

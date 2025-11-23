@@ -781,6 +781,39 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "payment_method",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    type = table.Column<int>(type: "int", nullable: false),
+                    added_on = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    is_default = table.Column<bool>(type: "bit", nullable: false),
+                    is_deleted = table.Column<bool>(type: "bit", nullable: false, computedColumnSql: "CAST(CASE WHEN [deleted_on] IS NULL THEN 0 ELSE 1 END AS bit)"),
+                    deleted_on = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    customer_id = table.Column<int>(type: "int", nullable: false),
+                    is_active = table.Column<bool>(type: "bit", nullable: true),
+                    payment_id = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    brand = table.Column<int>(type: "int", nullable: true),
+                    funding = table.Column<int>(type: "int", nullable: true),
+                    first6_digits = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: true),
+                    last4_digits = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: true),
+                    expiry = table.Column<DateOnly>(type: "date", nullable: true),
+                    token = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    is_verified = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_payment_method", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_payment_method_customer_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "seller",
                 columns: table => new
                 {
@@ -999,6 +1032,7 @@ namespace Peers.Modules.Migrations
                     ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
                     delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
                     cancellation_reason = table.Column<int>(type: "int", nullable: true),
+                    payment_method_id = table.Column<int>(type: "int", nullable: true),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
@@ -1010,6 +1044,11 @@ namespace Peers.Modules.Migrations
                         principalTable: "customer",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_order_payment_method_payment_method_id",
+                        column: x => x.payment_method_id,
+                        principalTable: "payment_method",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_order_seller_seller_id",
                         column: x => x.seller_id,
@@ -1734,6 +1773,11 @@ namespace Peers.Modules.Migrations
                 filter: "[state] = 0");
 
             migrationBuilder.CreateIndex(
+                name: "IX_order_payment_method_id",
+                table: "order",
+                column: "payment_method_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_order_seller_id",
                 table: "order",
                 column: "seller_id");
@@ -1753,6 +1797,31 @@ namespace Peers.Modules.Migrations
                 name: "IX_order_line_variant_id",
                 table: "order_line",
                 column: "variant_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payment_method_customer_id",
+                table: "payment_method",
+                column: "customer_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payment_method_is_deleted",
+                table: "payment_method",
+                column: "is_deleted");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payment_method_is_verified",
+                table: "payment_method",
+                column: "is_verified");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payment_method_payment_id",
+                table: "payment_method",
+                column: "payment_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payment_method_type",
+                table: "payment_method",
+                column: "type");
 
             migrationBuilder.CreateIndex(
                 name: "IX_privacy_policy_tr_lang_code",
@@ -2024,6 +2093,9 @@ namespace Peers.Modules.Migrations
 
             migrationBuilder.DropTable(
                 name: "listing");
+
+            migrationBuilder.DropTable(
+                name: "payment_method");
 
             migrationBuilder.DropTable(
                 name: "lookup_type",

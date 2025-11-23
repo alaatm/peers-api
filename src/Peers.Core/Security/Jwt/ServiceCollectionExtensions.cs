@@ -27,6 +27,10 @@ public static class ServiceCollectionExtensions
                 // Prevent inbound claims mapping so that we can use the specified claims types for name/role in the TokenValidationParameters
                 p.MapInboundClaims = false;
                 p.TokenValidationParameters = jwtConfig.TokenValidationParameters;
+                p.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = TokenIdResolver.Resolve,
+                };
             });
 
         return services;

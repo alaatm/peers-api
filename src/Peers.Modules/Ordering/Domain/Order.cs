@@ -3,6 +3,7 @@ using Peers.Core.Security.StrongKeys;
 using Peers.Modules.Carts.Domain;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain;
+using Peers.Modules.Sellers.Domain;
 using E = Peers.Modules.Ordering.OrderingErrors;
 
 namespace Peers.Modules.Ordering.Domain;
@@ -64,6 +65,10 @@ public sealed class Order : Entity, IAggregateRoot
     /// The customer who is selling the items.
     /// </summary>
     public Seller Seller { get; private set; } = default!;
+    /// <summary>
+    /// The payment method used for the order.
+    /// </summary>
+    public PaymentMethod? PaymentMethod { get; private set; }
     /// <summary>
     /// The list of line items in the order.
     /// </summary>

@@ -1,0 +1,42 @@
+@using Microsoft.Extensions.Localization
+
+@{
+    var culture = Context.Features.Get<Microsoft.AspNetCore.Localization.IRequestCultureFeature>();
+    var dir = (culture?.RequestCulture.UICulture.TextInfo.IsRightToLeft ?? false) ? "rtl" : "ltr";
+    var lang = culture?.RequestCulture.UICulture.TwoLetterISOLanguageName ?? "en";
+}
+
+@inject IStringLocalizer<Resources.res> L
+
+<!DOCTYPE html>
+<html lang="@lang" dir="@dir">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @L["Peers"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    @if (dir == "rtl")
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.rtl.min.css" integrity="sha384-OXTEbYDqaX2ZY/BOaZV/yFGChYHtrXH2nyXJ372n2Y8abBhrqacCEe+3qhSHtLjy" crossorigin="anonymous">
+    }
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <div class="container">
+            <h1 class="text-center">@L["Peers"]</h1>
+        </div>
+    </header>
+    <hr />
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-auto">
+        <div class="container" style="text-align: center;">
+            &copy; @DateTime.UtcNow.Year - @L["Peers"]
+        </div>
+    </footer>
+</body>
+</html>

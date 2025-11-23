@@ -14,7 +14,7 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251120074428_ProductTypeLineageFunc")]
+    [Migration("20251123124254_ProductTypeLineageFunc")]
     partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
@@ -592,6 +592,56 @@ namespace Peers.Modules.Migrations
                     b.ToTable("customer_address", (string)null);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("added_on");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_on");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted")
+                        .HasComputedColumnSql("CAST(CASE WHEN [deleted_on] IS NULL THEN 0 ELSE 1 END AS bit)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("payment_method", (string)null);
+
+                    b.HasDiscriminator<int>("Type");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("Peers.Modules.I18n.Domain.Language", b =>
                 {
                     b.Property<string>("Id")
@@ -1126,6 +1176,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("number");
 
+                    b.Property<int?>("PaymentMethodId")
+                        .HasColumnType("int")
+                        .HasColumnName("payment_method_id");
+
                     b.Property<DateTime>("PlacedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("placed_at");
@@ -1154,6 +1208,8 @@ namespace Peers.Modules.Migrations
                         .HasColumnName("state");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PaymentMethodId");
 
                     b.HasIndex("SellerId");
 
@@ -1995,6 +2051,75 @@ namespace Peers.Modules.Migrations
                     b.ToTable("seller", (string)null);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.ApplePay", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Customers.Domain.PaymentMethod");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.Cash", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Customers.Domain.PaymentMethod");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.PaymentCard", b =>
+                {
+                    b.HasBaseType("Peers.Modules.Customers.Domain.PaymentMethod");
+
+                    b.Property<int?>("Brand")
+                        .HasColumnType("int")
+                        .HasColumnName("brand");
+
+                    b.Property<DateOnly?>("Expiry")
+                        .HasColumnType("date")
+                        .HasColumnName("expiry");
+
+                    b.Property<string>("First6Digits")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)")
+                        .HasColumnName("first6_digits");
+
+                    b.Property<int?>("Funding")
+                        .HasColumnType("int")
+                        .HasColumnName("funding");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_verified");
+
+                    b.Property<string>("Last4Digits")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)")
+                        .HasColumnName("last4_digits");
+
+                    b.Property<string>("PaymentId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("payment_id");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("token");
+
+                    b.HasIndex("IsVerified");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.DecimalAttributeDefinition", b =>
                 {
                     b.HasBaseType("Peers.Modules.Catalog.Domain.Attributes.NumericAttributeDefinition");
@@ -2301,6 +2426,15 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Customers.Domain.PaymentMethod", b =>
+                {
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", null)
+                        .WithMany("PaymentMethods")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
@@ -2614,8 +2748,12 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
+                    b.HasOne("Peers.Modules.Customers.Domain.PaymentMethod", "PaymentMethod")
                         .WithMany()
+                        .HasForeignKey("PaymentMethodId");
+
+                    b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
+                        .WithMany("Orders")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2686,6 +2824,8 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Buyer");
 
                     b.Navigation("Lines");
+
+                    b.Navigation("PaymentMethod");
 
                     b.Navigation("Seller");
                 });
@@ -2956,6 +3096,8 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Customers.Domain.Customer", b =>
                 {
                     b.Navigation("AddressList");
+
+                    b.Navigation("PaymentMethods");
                 });
 
             modelBuilder.Entity("Peers.Modules.Listings.Domain.Listing", b =>
@@ -3016,6 +3158,8 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
                 {
                     b.Navigation("Listings");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("ShippingProfiles");
                 });

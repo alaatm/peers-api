@@ -25,7 +25,7 @@ internal sealed class OrderMapping : IEntityTypeConfiguration<Order>
 
         builder
             .HasOne(p => p.Seller)
-            .WithMany()
+            .WithMany(p => p.Orders)
             .HasForeignKey(p => p.SellerId)
             .OnDelete(DeleteBehavior.Restrict);
 
