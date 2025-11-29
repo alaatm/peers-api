@@ -68,14 +68,14 @@ const DevicePush = () => {
         if (isError(response)) {
             antdNotification.error({
                 duration: 0,
-                message: 'Message Send Error',
+                title: 'Message Send Error',
                 description: response.detail ?? 'An unknown error occurred.',
                 placement: 'top',
             });
         } else {
             antdNotification.info({
                 duration: 0,
-                message: 'Message Sent',
+                title: 'Message Sent',
                 description: 'Your message has been dispatched with no guraantee of delivery.',
                 placement: 'top',
             });
