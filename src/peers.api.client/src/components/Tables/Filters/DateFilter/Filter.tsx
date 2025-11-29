@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { DatePicker, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { FuncDropdown, LogicalDropdown, TypedFilterProps, FunctionFilter } from '@/components/Tables';
+import { FuncDropdown, LogicalDropdown, type TypedFilterProps, type FunctionFilter } from '@/components/Tables';
 
 const Filter = ({ idx, filter, onChange, onRemove }: TypedFilterProps) => {
     const { t } = useTranslation('components');

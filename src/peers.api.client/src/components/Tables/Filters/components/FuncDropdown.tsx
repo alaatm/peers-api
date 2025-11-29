@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Dropdown, MenuProps } from 'antd';
-import { ReactNode } from 'react';
+import { Button, Dropdown, type MenuProps } from 'antd';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FunctionName, FunctionFilter } from '@/components/Tables';
+import type { FunctionName, FunctionFilter } from '@/components/Tables';
 
 type MapValue = {
     label: string;

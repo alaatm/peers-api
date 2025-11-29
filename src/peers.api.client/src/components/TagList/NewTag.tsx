@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Input, InputRef, Tag } from 'antd';
+import { Input, type InputRef, Tag } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
 type Props = {

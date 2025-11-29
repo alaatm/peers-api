@@ -1,9 +1,9 @@
-import { useState, ComponentType } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Button, Space } from 'antd';
-import { FilterDropdownProps } from 'antd/es/table/interface';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTranslation } from 'react-i18next';
-import { FilterActions, TypedFilterProps, getInitialFilterState, serializeFilters, Filter as GenericFilter } from '@/components/Tables';
+import { FilterActions, type TypedFilterProps, getInitialFilterState, serializeFilters, type Filter as GenericFilter } from '@/components/Tables';
 
 export interface BaseFilterProps extends FilterDropdownProps {
     TypedFilter: ComponentType<TypedFilterProps>;

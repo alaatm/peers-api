@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { Locale } from 'antd/es/locale';
-import { Lang } from '@/api';
+import type { Locale } from 'antd/es/locale';
+import type { Lang } from '@/api';
 
 type Props = {
     lang: Lang;

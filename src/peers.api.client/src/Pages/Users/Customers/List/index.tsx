@@ -1,9 +1,9 @@
 import { Card } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { ColumnsType } from 'antd/es/table';
+import type { ColumnsType } from 'antd/es/table';
 import { AjaxTable, DateFilter, NumericFilter, OptionsFilter, TextFilter } from '@/components/Tables';
-import { api, CustomerSummary, UserStatus } from '@/api';
+import { api, type CustomerSummary, UserStatus } from '@/api';
 import { enumToOptionsTrans } from '@/utils';
 import { FormattedDate, Ltr } from '@/components';
 import { UserStatusInfo } from '@/Pages/Users/Shared';

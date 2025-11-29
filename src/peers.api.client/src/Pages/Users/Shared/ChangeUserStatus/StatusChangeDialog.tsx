@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Input } from 'antd';
-import { api, isOk, ProblemDetails, UserStatus } from '@/api';
+import { api, isOk, type ProblemDetails, UserStatus } from '@/api';
 import { Problem } from '@/components';
 
 type Props = {

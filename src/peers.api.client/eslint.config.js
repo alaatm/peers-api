@@ -10,7 +10,7 @@ export default defineConfig([
         files: ['**/*.{js,jsx}'],
         extends: [
             js.configs.recommended,
-            reactHooks.configs['recommended-latest'],
+            reactHooks.configs.flat.recommended,
             reactRefresh.configs.vite,
         ],
         languageOptions: {
@@ -25,7 +25,7 @@ export default defineConfig([
         rules: {
             'quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }], // Use single quotes
             'jsx-quotes': ['error', 'prefer-double'], // Use double quotes in JSX
-            'no-unused-vars': ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+            'no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
         },
     },
 ]);

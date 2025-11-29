@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Descriptions, Divider } from 'antd';
-import { api, isOk, SysInfo } from '@/api';
+import { api, isOk, type SysInfo } from '@/api';
 import { FormattedDate } from '@/components';
 
 const SystemInfo = () => {

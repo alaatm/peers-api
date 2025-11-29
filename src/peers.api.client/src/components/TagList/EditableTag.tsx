@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Input, InputRef, Tag, Tooltip } from 'antd';
+import { Input, type InputRef, Tag, Tooltip } from 'antd';
 
 type Props = {
     value: string;

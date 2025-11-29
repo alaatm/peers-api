@@ -1,9 +1,9 @@
-import { useState, useEffect, JSX } from 'react';
+import { useState, useEffect, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 import { Card } from 'antd';
 import { PageTitle, Ltr } from '@/components';
-import { api, Customer, isOk } from '@/api';
+import { api, type Customer, isOk } from '@/api';
 import { ChangeUserStatus, UserStatusInfo, UserAppUsageHistory, UserDeviceList } from '@/Pages/Users/Shared';
 import DetailsBasicInfo from './DetailsBasicInfo';
 

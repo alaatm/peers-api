@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Card, Descriptions } from 'antd';
-import { ColumnsType } from 'antd/es/table';
+import type { ColumnsType } from 'antd/es/table';
 import { AjaxTable, BooleanFilter, DateFilter, OptionsFilter, TextFilter } from '@/components/Tables';
 import { FormattedDate } from '@/components';
-import { api, DeviceError } from '@/api';
+import { api, type DeviceError } from '@/api';
 import './index.css';
 
 const CrashReports = () => {

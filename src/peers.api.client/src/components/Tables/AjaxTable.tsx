@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { TablePaginationConfig, GetProp, Table, TableProps } from 'antd';
-import { ColumnType, FilterValue, SorterResult } from 'antd/es/table/interface';
-import { AnyObject } from 'antd/es/_util/type';
+import { type TablePaginationConfig, type GetProp, Table, type TableProps } from 'antd';
+import type { ColumnType, FilterValue, SorterResult } from 'antd/es/table/interface';
+import type { AnyObject } from 'antd/es/_util/type';
 import { useLang } from '@/Language';
-import { isOk, PagedQueryResponse, ProblemDetails } from '@/api';
+import { isOk, type PagedQueryResponse, type ProblemDetails } from '@/api';
 import './AjaxTable.css';
 
 export interface ColumnTypeEx<T = AnyObject> extends ColumnType<T> {

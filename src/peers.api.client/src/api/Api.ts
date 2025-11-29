@@ -1,12 +1,12 @@
-import { Key } from 'react';
+import type { Key } from 'react';
 import RestClient from './RestClient';
-import { TableParams } from '@/components/Tables';
-import { DispatchMessageCommand } from './commands';
+import type { TableParams } from '@/components/Tables';
+import type { DispatchMessageCommand } from './commands';
 import {
-    ClientTaskAcknowledgeResponse, ClientTaskRequestResponse, ClientTaskRequestTaskType, Customer, CustomerSummary, DeviceSummary, UserStatus,
-    DeviceError, Lang, PushNotificationProblem, ClientApp,
-    AppUsageHistorySummary,
-    SysInfo
+    type ClientTaskAcknowledgeResponse, type ClientTaskRequestResponse, ClientTaskRequestTaskType, type Customer, type CustomerSummary, type DeviceSummary, UserStatus,
+    type DeviceError, type Lang, type PushNotificationProblem, type ClientApp,
+    type AppUsageHistorySummary,
+    type SysInfo
 } from './types';
 
 class Api extends RestClient {
@@ -80,14 +80,14 @@ class Api extends RestClient {
         };
     }
 
-    private createFormData(data: object, file?: File) {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(data));
-        if (file) {
-            formData.append('file', file, file.name);
-        }
-        return formData;
-    }
+    // private createFormData(data: object, file?: File) {
+    //     const formData = new FormData();
+    //     formData.append('data', JSON.stringify(data));
+    //     if (file) {
+    //         formData.append('file', file, file.name);
+    //     }
+    //     return formData;
+    // }
 }
 
 export default new Api();

@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { PageHeader, PageHeaderProps } from '@ant-design/pro-components';
+import { PageHeader, type PageHeaderProps } from '@ant-design/pro-components';
 import BackButton from '../BackButton';
 
 type Props = {

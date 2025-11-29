@@ -1,6 +1,6 @@
 import { Alert, Divider, Space, Typography } from 'antd';
-import { ProblemDetails } from '@/api';
-import { JSX } from 'react';
+import type { ProblemDetails } from '@/api';
+import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type Props = {

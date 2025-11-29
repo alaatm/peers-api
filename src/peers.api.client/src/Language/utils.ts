@@ -1,4 +1,4 @@
-import { Lang } from '@/api';
+import type { Lang } from '@/api';
 
 const appName = import.meta.env.VITE_APP_NAME!;
 const langKey = `ijaza.${appName}.lang`;

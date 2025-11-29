@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Descriptions } from 'antd';
-import { Customer, UserStatus } from '@/api';
+import { type Customer, UserStatus } from '@/api';
 import { FormattedDate, Ltr } from '@/components';
 import { te } from '@/utils';
 

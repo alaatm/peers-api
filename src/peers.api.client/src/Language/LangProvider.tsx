@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Locale } from 'antd/es/locale';
+import type { Locale } from 'antd/es/locale';
 import arEG from 'antd/locale/ar_EG';
 import i18n from './i18n';
 import LangContext from './LangContext';
-import { api, Lang } from '@/api';
+import { api, type Lang } from '@/api';
 import { getStoredLangOrBrowserLang, setStoredLang } from './utils';
 
 const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Col, DatePicker, InputNumber, Row, Select, Space } from 'antd';
 import { PeriodKind } from '@/api';
 import { enumToOptionsTrans } from '@/utils';
-import { getPickerForKind, initialPeriodData, isInitialPeriodData, isSamePeriodData, PeriodData } from '../common';
+import { getPickerForKind, initialPeriodData, isInitialPeriodData, isSamePeriodData, type PeriodData } from '../common';
 import './index.css';
 
 type Props = {

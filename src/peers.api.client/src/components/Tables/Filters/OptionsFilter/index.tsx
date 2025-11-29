@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Checkbox, Select, Space } from 'antd';
-import { FilterDropdownProps } from 'antd/es/table/interface';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
 import { useTranslation } from 'react-i18next';
 import { FilterActions, deserializeFilters, serializeFilters } from '@/components/Tables';
 

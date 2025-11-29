@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, ImageProps, } from 'antd';
+import { Image, type ImageProps, } from 'antd';
 
 const ThumbImage = ({ src, ...rest }: ImageProps) => {
     const [visible, setVisible] = useState(false);

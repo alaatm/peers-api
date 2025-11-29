@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Key } from 'react';
+import type { Key } from 'react';
 
 export const enum GrantType {
     Password = 1,

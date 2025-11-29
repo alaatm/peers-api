@@ -1,9 +1,9 @@
-import { Key, useEffect, useState } from 'react';
-import { ListProps, List, TablePaginationConfig } from 'antd';
-import { PaginationConfig } from 'antd/es/pagination';
-import { AnyObject } from 'antd/es/_util/type';
-import { isOk, PagedQueryResponse, ProblemDetails } from '@/api';
-import { TableParams } from '../Tables/AjaxTable';
+import { type Key, useEffect, useState } from 'react';
+import { type ListProps, List, type TablePaginationConfig } from 'antd';
+import type { PaginationConfig } from 'antd/es/pagination';
+import type { AnyObject } from 'antd/es/_util/type';
+import { isOk, type PagedQueryResponse, type ProblemDetails } from '@/api';
+import type { TableParams } from '../Tables/AjaxTable';
 import './index.css';
 
 export interface AjaxListProps<T, R extends PagedQueryResponse<T> = PagedQueryResponse<T>> extends ListProps<T> {

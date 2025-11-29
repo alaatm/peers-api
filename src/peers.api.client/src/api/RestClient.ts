@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import JwtInfo from './JwtInfo';
 import TimeZone from './TimeZone';
-import { Args, DateArg, GrantType, HttpMethod, JwtResponse, PagedQueryResponse, ProblemDetails } from './baseTypes';
+import { type Args, type DateArg, GrantType, type HttpMethod, type JwtResponse, type PagedQueryResponse, type ProblemDetails } from './baseTypes';
 
 class RestClient {
     #currentLang: string | null = null;

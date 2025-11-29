@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card } from 'antd';
-import { ColumnsType } from 'antd/es/table';
-import { api, FirebaseErrorCode, FirebaseMessagingErrorCode, PushNotificationProblem } from '@/api';
+import type { ColumnsType } from 'antd/es/table';
+import { api, FirebaseErrorCode, FirebaseMessagingErrorCode, type PushNotificationProblem } from '@/api';
 import { AjaxTable, DateFilter, OptionsFilter, TextFilter } from '@/components/Tables';
 import { FormattedDate } from '@/components';
 import { enumToOptionsTrans } from '@/utils';

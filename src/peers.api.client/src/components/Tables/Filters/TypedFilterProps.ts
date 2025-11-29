@@ -1,4 +1,4 @@
-import { Filter as GenericFilter } from './utils';
+import type { Filter as GenericFilter } from './utils';
 
 export type TypedFilterProps = {
     idx: number;

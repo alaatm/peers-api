@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
-import { api, AppUsageHistorySummary } from '@/api';
+import { api, type AppUsageHistorySummary } from '@/api';
 import { FormattedDate } from '@/components';
 import { AjaxTable } from '@/components/Tables';
 

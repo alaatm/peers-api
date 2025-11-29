@@ -1,6 +1,6 @@
 import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { isValidFilter, Filter as GenericFilter } from '@/components/Tables';
+import { isValidFilter, type Filter as GenericFilter } from '@/components/Tables';
 
 type Props = {
     filters: GenericFilter[];

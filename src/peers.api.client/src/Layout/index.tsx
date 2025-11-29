@@ -8,7 +8,6 @@ import UserMenu from './UserMenu';
 import LanguageSelector from './LanguageSelector';
 import BreadcrumbNav from './BreadcrumbNav';
 import { useLang } from '@/Language';
-import { api } from '@/api';
 
 import logo from '@/assets/logo2.png';
 import './index.css';
@@ -38,7 +37,7 @@ const MainLayout = () => {
                 }}>
                 <div className="logo">
                     <img src={logo} alt="logo" />
-                    <span>{api.tenantName}</span>
+                    <span>Peers</span>
                 </div>
                 <Space size="small" split={<Divider type="vertical" />}>
                     <LanguageSelector />

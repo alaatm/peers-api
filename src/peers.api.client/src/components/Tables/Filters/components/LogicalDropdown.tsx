@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Select, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { LogicalFilter, LogicalOperation } from '@/components/Tables';
+import type { LogicalFilter, LogicalOperation } from '@/components/Tables';
 
 type Props = {
     value: LogicalFilter;

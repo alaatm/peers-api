@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Descriptions } from 'antd';
 import ClientTasks from '@/Pages/Users/Shared/ClientTasks';
 import { AjaxTable } from '@/components/Tables';
-import { api, DeviceSummary } from '@/api';
-import { ColumnsType } from 'antd/es/table';
+import { api, type DeviceSummary } from '@/api';
+import type { ColumnsType } from 'antd/es/table';
 import { FormattedDate } from '@/components';
 
 type Props = {

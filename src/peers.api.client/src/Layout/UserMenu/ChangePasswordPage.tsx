@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Form, Input, Modal } from 'antd';
-import { api, isError, ProblemDetails } from '@/api';
+import { api, isError, type ProblemDetails } from '@/api';
 import { Problem } from '@/components';
 import { useAuth } from '@/Auth';
 

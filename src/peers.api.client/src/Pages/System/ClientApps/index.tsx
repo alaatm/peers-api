@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Table } from 'antd';
-import { api, ClientApp, isOk } from '@/api';
-import { ColumnsType } from 'antd/es/table';
+import { api, type ClientApp, isOk } from '@/api';
+import type { ColumnsType } from 'antd/es/table';
 
 const ClientApps = () => {
     const { t } = useTranslation();

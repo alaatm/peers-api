@@ -1,6 +1,6 @@
 import React from 'react';
-import { Form, Input, FormItemProps } from 'antd';
-import { Lang } from '@/api';
+import { Form, Input, type FormItemProps } from 'antd';
+import type { Lang } from '@/api';
 import { useTranslation } from 'react-i18next';
 import { supportedLangs } from '@/Language';
 

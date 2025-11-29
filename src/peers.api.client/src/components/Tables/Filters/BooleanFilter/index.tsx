@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Radio, Space } from 'antd';
-import { FilterDropdownProps } from 'antd/es/table/interface';
-import { RadioChangeEvent } from 'antd/es/radio';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
+import type { RadioChangeEvent } from 'antd/es/radio';
 import { useTranslation } from 'react-i18next';
-import { FilterActions, serializeFilters, deserializeFilters, FunctionFilter } from '@/components/Tables';
+import { FilterActions, serializeFilters, deserializeFilters, type FunctionFilter } from '@/components/Tables';
 
 /*
  * selectedKeys in this component will be following this pattern:

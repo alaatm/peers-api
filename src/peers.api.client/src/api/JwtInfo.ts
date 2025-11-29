@@ -1,4 +1,4 @@
-import { JwtResponse } from './baseTypes';
+import type { JwtResponse } from './baseTypes';
 
 export default class JwtInfo {
     #appName = import.meta.env.VITE_APP_NAME!;

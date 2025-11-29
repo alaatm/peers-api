@@ -1,5 +1,5 @@
 import { UserStatus } from '@/api';
-import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon, type FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import { Space } from 'antd';
 
 type Props = {

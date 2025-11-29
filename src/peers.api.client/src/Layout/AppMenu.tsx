@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Menu, MenuProps } from 'antd';
+import { Menu, type MenuProps } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 type MenuItem = Required<MenuProps>['items'][number];

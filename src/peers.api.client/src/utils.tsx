@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import { TFunction } from 'i18next';
-import { DateArg } from '@/api';
+import type { TFunction } from 'i18next';
+import type { DateArg } from '@/api';
 
 export function humanize(str: string) {
     return str.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
