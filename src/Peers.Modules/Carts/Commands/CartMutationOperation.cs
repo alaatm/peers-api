@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Text;
 using Peers.Modules.Carts.Domain;
 using Peers.Modules.Listings.Domain;
-using Peers.Modules.Ordering.Domain;
 
 namespace Peers.Modules.Carts.Commands;
 

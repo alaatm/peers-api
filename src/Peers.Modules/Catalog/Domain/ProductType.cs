@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Localization.Infrastructure;
-using Peers.Modules;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Catalog.Domain.Translations;
 using Peers.Modules.Catalog.Utils;

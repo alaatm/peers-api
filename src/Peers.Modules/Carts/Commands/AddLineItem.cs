@@ -1,12 +1,11 @@
 using Peers.Core.Cqrs.Pipeline;
-using Peers.Modules.Ordering.Domain;
 
 namespace Peers.Modules.Carts.Commands;
 
 public static class AddLineItem
 {
     /// <summary>
-    /// Places an order for a specific product variant and quantity.
+    /// Adds a line item for a specific product variant and quantity to the shopping cart.
     /// </summary>
     /// <param name="ListingId">The unique identifier of the product listing to order.</param>
     /// <param name="VariantKey">The key that identifies the specific variant of the product to order. Cannot be null or empty.</param>

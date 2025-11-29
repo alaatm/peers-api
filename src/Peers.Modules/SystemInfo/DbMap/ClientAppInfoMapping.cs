@@ -1,5 +1,4 @@
 using Humanizer;
-using Peers.Modules;
 using Peers.Modules.SystemInfo.Domain;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

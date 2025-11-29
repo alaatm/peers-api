@@ -1,6 +1,5 @@
 using Humanizer;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Peers.Modules.Catalog.Domain.Translations;
 using Peers.Modules.I18n.DbMap;
 using Peers.Modules.Lookup.Domain;
 using Peers.Modules.Lookup.Domain.Translations;

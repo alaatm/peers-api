@@ -1,5 +1,4 @@
 using Peers.Core.Domain.Errors;
-using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Listings.Domain.Validation;
 
 namespace Peers.Modules.Listings.Domain;

@@ -1,5 +1,4 @@
 using Peers.Core.Cqrs.Pipeline;
-using Peers.Modules.Ordering.Domain;
 
 namespace Peers.Modules.Carts.Commands;
 

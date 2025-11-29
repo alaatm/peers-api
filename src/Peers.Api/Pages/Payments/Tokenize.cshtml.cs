@@ -9,7 +9,6 @@ using Peers.Core;
 using Peers.Core.Identity;
 using Peers.Core.Payments;
 using Peers.Core.Payments.Providers.ClickPay;
-using Peers.Core.Payments.Providers.ClickPay.Models;
 using Peers.Core.Payments.Providers.Moyasar;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 using Peers.Core.Security.Jwt;
