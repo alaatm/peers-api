@@ -1,6 +1,5 @@
 using Humanizer;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Peers.Modules;
 using Peers.Modules.Catalog.Domain;
 
 namespace Peers.Modules.Migrations;

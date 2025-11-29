@@ -1017,6 +1017,29 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "nafath_info",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    national_id = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    first_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    last_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    first_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    last_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    gender = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_nafath_info", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_nafath_info_seller_id",
+                        column: x => x.id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "order",
                 columns: table => new
                 {
@@ -1298,13 +1321,13 @@ namespace Peers.Modules.Migrations
                         column: x => x.listing_id,
                         principalTable: "listing",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_cart_line_listing_variant_variant_id",
                         column: x => x.variant_id,
                         principalTable: "listing_variant",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1372,13 +1395,13 @@ namespace Peers.Modules.Migrations
                         column: x => x.listing_id,
                         principalTable: "listing",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_order_line_listing_variant_variant_id",
                         column: x => x.variant_id,
                         principalTable: "listing_variant",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_order_line_order_order_id",
                         column: x => x.order_id,
@@ -1998,6 +2021,9 @@ namespace Peers.Modules.Migrations
             migrationBuilder.DropTable(
                 name: "media_file",
                 schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "nafath_info");
 
             migrationBuilder.DropTable(
                 name: "order_line");

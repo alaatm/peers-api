@@ -9,6 +9,7 @@ using Peers.Core.Data;
 using Peers.Core.GoogleServices;
 using Peers.Core.Localization;
 using Peers.Core.Media;
+using Peers.Core.Nafath;
 using Peers.Core.RateLimiting;
 using Peers.Core.Security.Hashing;
 using Peers.Core.Security.Jwt;
@@ -120,6 +121,7 @@ public static class ServiceCollectionExtensions
             .AddBackgroundJobs()
             .AddThumbnailGenerator()
             .AddShippingCalculator()
+            .AddNafath(config)
             .TryAddSingleton(TimeProvider.System);
 
         return services;

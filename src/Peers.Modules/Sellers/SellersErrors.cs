@@ -21,4 +21,13 @@ public static class SellersErrors
     /// Shipping location is required.
     /// </summary>
     public static DomainError OriginLocationRequired => new(Titles.ValidationFailed, "sellers.shipping-location-required");
+
+    /// <summary>
+    /// Invalid Nafath enrollment request. Please verify the provided national ID/Iqama number.
+    /// </summary>
+    public static string InvalidNafathEnrollmentRequest => "sellers.invalid-nafath-enrollment-request";
+    /// <summary>
+    /// An error has occured while processing Nafath enrollment request. Please try again later.
+    /// </summary>
+    public static string NafathEnrollmentError => "sellers.nafath-enrollment-error";
 }

@@ -1,0 +1,11 @@
+@NafathProxy_HostAddress = http://localhost:5165
+
+POST {{NafathProxy_HostAddress}}/nafath-callback/
+Accept: application/json
+Content-Type: application/json
+{
+  "token": "eyJraWQiOiJqd2stMTIzNCIsImFsZyI6IlJTMjU2In0.eyJhdWQiOiJTUF9OQU1FIiwibmJmIjoxNjYxMTU1OTE0LCJ0cmFuc0lkIjoiM2E0YTNiMjYtM2I4Zi00ZDRmLTkwZmUtZDFhNGVmODM0ZThkIiwiaXNzIjoiTmFmYXRoIEFwcCIsImV4cCI6MTY2MTE1NTkxNCwiaWF0IjoxNjYxMTU1NjE0LCJzdGF0dXMiOiJXQUlUSU5HIn0.ntTgX1GGRRdRnZ0XlzJehpsyqMnhN5jIH_0a_P6FdPDodxLz-nRHlkyNLRvHBq9W8YIxDAMQshOcBbThpYgjYszg6IBnvltdX81rjQ_7Yl4e5AK_kDugdh9MmBB5UWaWp8aQ6EALnjcmXKvQ-bIKmoxw4TQb_PasNQ99gENdA3Wc4GDz6qw-OgeqLCJFLzcM2blq0RfdTjm5q_ArhwGGn9FAERhoKteafBH64AYgBmzOO6eabQTvokiFCBb90UkO2auCG9RJlqt_Vtobhk4_ZQPjNKN4B-q3fy5LD4OGNTBfKMmZ7jRDTuizXGK-PoqMcbDnS8mPMQtCrzWvxua9wA",
+  "transId": "3a4a3b26-3b8f-4d4f-90fe-d1a4ef834e8d",
+  "requestId": "0000000f-0fef-4f6a-b398-46805def5d6b"
+}
+###

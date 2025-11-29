@@ -1,13 +1,16 @@
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
 using Peers.Core.Localization;
 using Peers.Core.Middlewares.RobotsTxt;
+using Peers.Core.Nafath;
 using Peers.Core.RateLimiting;
 using Peers.Modules.Customers.Endpoints;
 using Peers.Modules.I18n.Endpoints;
 using Peers.Modules.Media.Endpoints;
+using Peers.Modules.Sellers;
+using Peers.Modules.Sellers.Endpoints;
 using Peers.Modules.SystemInfo.Endpoints;
 using Peers.Modules.Users.Endpoints;
-using Microsoft.AspNetCore.Diagnostics;
 using Scalar.AspNetCore;
 
 namespace Peers.Modules.Kernel;
@@ -32,7 +35,7 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.MapScalarApiReference();
+            app.MapScalarApiReference(p => p.Title = "Peers API Reference");
         }
         else
         {
@@ -71,6 +74,7 @@ public static class WebApplicationExtensions
             .MapAccountEndpoints()
             .MapI18nEndpoints()
             .MapCustomerEndpoints()
+            .MapSellerEndpoints()
             .MapMediaEndpoints()
             .MapSystemEndpoints()
             .RequireRateLimiting(GenericRateLimiter.PerUserRateLimitPolicyName)
@@ -78,6 +82,7 @@ public static class WebApplicationExtensions
 
         publicGroup
             .MapPublicAccountEndpoints()
+            .MapNafathCallbackEndpoint(app.Configuration, NafathCallback.Handler)
             .WithTags("Public");
 
         app.MapRazorPages();

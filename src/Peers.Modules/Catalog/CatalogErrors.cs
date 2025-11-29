@@ -312,5 +312,6 @@ public static class CatalogErrors
         public const string CannotApplyOperation = "error.cannot_apply_operation";
         public const string NotFound = "error.not_found";
         public const string ResourceConflict = "error.resource_conflict";
+        public const string OperationFailed = "error.operation_failed";
     }
 }

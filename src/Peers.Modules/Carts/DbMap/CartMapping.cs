@@ -41,13 +41,13 @@ internal sealed class CartMapping : IEntityTypeConfiguration<Cart>
                 .HasOne(p => p.Listing)
                 .WithMany()
                 .HasForeignKey(p => p.ListingId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             nav
                 .HasOne(p => p.Variant)
                 .WithMany()
                 .HasForeignKey(p => p.VariantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             nav.ToTable(nameof(CartLine).Underscore());
         });

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -21,7 +21,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peers.Modules.Test", "test\
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "peers.api.client", "src\peers.api.client\peers.api.client.esproj", "{B00604D6-BE82-0890-CFB0-C0B562ACD986}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peers.Api.Server", "src\Peers.Api\Peers.Api.csproj", "{A908E715-5D8C-4681-B4A7-5158E6D52AAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peers.Api", "src\Peers.Api\Peers.Api.csproj", "{A908E715-5D8C-4681-B4A7-5158E6D52AAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NafathProxy", "src\NafathProxy\NafathProxy.csproj", "{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{A908E715-5D8C-4681-B4A7-5158E6D52AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A908E715-5D8C-4681-B4A7-5158E6D52AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A908E715-5D8C-4681-B4A7-5158E6D52AAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{0C0601E2-AB9E-494A-2B5D-84D2A8787470} = {0C88DD14-F956-CE84-757C-A364CCF449FC}
 		{B00604D6-BE82-0890-CFB0-C0B562ACD986} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{A908E715-5D8C-4681-B4A7-5158E6D52AAA} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{76E5A2A7-A5B4-A4E6-5C4A-372B5736ADFE} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {614D5EC8-6154-4198-BA52-EA5CCAFCE1A3}

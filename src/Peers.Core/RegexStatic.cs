@@ -22,4 +22,6 @@ public static partial class RegexStatic
     public static partial Regex ClientVersionRegex();
     [GeneratedRegex(@"^[a-z0-9_]+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex IsSnakeCaseRegex();
+    [GeneratedRegex(@"^[12]\d{9}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex NationalIdRegex();
 }

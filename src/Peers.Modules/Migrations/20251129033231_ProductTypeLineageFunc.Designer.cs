@@ -14,7 +14,7 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251123124254_ProductTypeLineageFunc")]
+    [Migration("20251129033231_ProductTypeLineageFunc")]
     partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
@@ -2276,13 +2276,13 @@ namespace Peers.Modules.Migrations
                             b1.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
                                 .WithMany()
                                 .HasForeignKey("ListingId")
-                                .OnDelete(DeleteBehavior.Cascade)
+                                .OnDelete(DeleteBehavior.Restrict)
                                 .IsRequired();
 
                             b1.HasOne("Peers.Modules.Listings.Domain.ListingVariant", "Variant")
                                 .WithMany()
                                 .HasForeignKey("VariantId")
-                                .OnDelete(DeleteBehavior.Cascade)
+                                .OnDelete(DeleteBehavior.Restrict)
                                 .IsRequired();
 
                             b1.Navigation("Cart");
@@ -2802,7 +2802,7 @@ namespace Peers.Modules.Migrations
                             b1.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
                                 .WithMany()
                                 .HasForeignKey("ListingId")
-                                .OnDelete(DeleteBehavior.Cascade)
+                                .OnDelete(DeleteBehavior.Restrict)
                                 .IsRequired();
 
                             b1.WithOwner("Order")
@@ -2811,7 +2811,7 @@ namespace Peers.Modules.Migrations
                             b1.HasOne("Peers.Modules.Listings.Domain.ListingVariant", "Variant")
                                 .WithMany()
                                 .HasForeignKey("VariantId")
-                                .OnDelete(DeleteBehavior.Cascade)
+                                .OnDelete(DeleteBehavior.Restrict)
                                 .IsRequired();
 
                             b1.Navigation("Listing");
@@ -3071,6 +3071,54 @@ namespace Peers.Modules.Migrations
                         .WithOne()
                         .HasForeignKey("Peers.Modules.Sellers.Domain.Seller", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Peers.Modules.Sellers.Domain.NafathInfo", "Nafath", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("FirstNameAr")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("first_name_ar");
+
+                            b1.Property<string>("FirstNameEn")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("first_name_en");
+
+                            b1.Property<string>("Gender")
+                                .HasMaxLength(1)
+                                .HasColumnType("nvarchar(1)")
+                                .HasColumnName("gender");
+
+                            b1.Property<string>("LastNameAr")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("last_name_ar");
+
+                            b1.Property<string>("LastNameEn")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("last_name_en");
+
+                            b1.Property<string>("NationalId")
+                                .IsRequired()
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("national_id");
+
+                            b1.HasKey("Id");
+
+                            b1.ToTable("nafath_info", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("Id");
+                        });
+
+                    b.Navigation("Nafath")
                         .IsRequired();
                 });
 

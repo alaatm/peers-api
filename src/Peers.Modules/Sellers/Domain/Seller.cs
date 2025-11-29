@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
+using Peers.Core.Nafath.Models;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain;
 using Peers.Modules.Users.Domain;
@@ -10,6 +11,10 @@ namespace Peers.Modules.Sellers.Domain;
 
 public sealed class Seller : Customer, IAggregateRoot
 {
+    /// <summary>
+    /// The Nafath identity information of the seller.
+    /// </summary>
+    public NafathInfo Nafath { get; set; } = default!;
     /// <summary>
     /// The list of shipping profiles associated with the seller.
     /// </summary>
@@ -23,8 +28,11 @@ public sealed class Seller : Customer, IAggregateRoot
     /// Creates a new instance of <see cref="Seller"/>.
     /// </summary>
     /// <param name="user">The database user.</param>
+    /// <param name="nafathIdentity">The verified nafath identity.</param>
     /// <returns></returns>
-    public static Seller Create([NotNull] AppUser user)
+    public static Seller Create(
+        [NotNull] AppUser user,
+        [NotNull] NafathIdentity nafathIdentity)
     {
         Debug.Assert(user.UserName is not null);
 
@@ -32,6 +40,7 @@ public sealed class Seller : Customer, IAggregateRoot
         {
             User = user,
             Username = user.UserName,
+            Nafath = NafathInfo.FromNafathIdentity(nafathIdentity),
             ShippingProfiles = [],
             Listings = [],
         };
