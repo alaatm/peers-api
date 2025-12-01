@@ -1,5 +1,4 @@
 using Microsoft.IdentityModel.Tokens;
-using Peers.Core.Nafath.Configuration;
 using Peers.Core.Nafath.Models;
 using Peers.Core.Nafath.Utils;
 using System.Diagnostics.CodeAnalysis;
@@ -12,14 +11,9 @@ public static class EndpointRouteBuilderExtensions
 {
     public static RouteGroupBuilder MapNafathCallbackEndpoint(
         [NotNull] this RouteGroupBuilder builder,
-        [NotNull] IConfiguration config,
         [NotNull] Func<IServiceProvider, int, NafathIdentity?, Task> callback)
     {
-        var callbackUri = config
-            .GetSection(NafathConfig.ConfigSection)
-            .Get<NafathConfig>()!
-            .CallbackUri
-            .ToString();
+        var callbackUri = NafathService.CallbackUri.ToString();
 
         builder
             .MapPost(callbackUri, async (HttpContext context) =>

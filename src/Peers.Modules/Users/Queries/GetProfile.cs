@@ -8,7 +8,7 @@ public static class GetProfile
     public sealed record Query(int? Id) : IQuery;
 
     public sealed record Response(
-        string Firstname,
+        string? Firstname,
         string? Lastname,
         string Phone,
         string? Email,
@@ -47,7 +47,7 @@ public static class GetProfile
                 .Select(p => new Response(
                     p.Firstname,
                     p.Lastname,
-                    p.UserName!,
+                    p.PhoneNumber!,
                     p.UpdatedEmail ?? p.Email,
                     p.EmailConfirmed,
                     p.PreferredLanguage))

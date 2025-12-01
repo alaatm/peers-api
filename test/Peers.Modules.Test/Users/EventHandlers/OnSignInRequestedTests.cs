@@ -12,16 +12,22 @@ namespace Peers.Modules.Test.Users.EventHandlers;
 public class OnSignInRequestedTests : IntegrationTestBase
 {
     [SkippableTheory(typeof(PlatformNotSupportedException))]
-    [InlineData("en")]
-    [InlineData("ar")]
-    [InlineData("ru")]
-    public async Task Sends_localized_otp_sms_to_user(string langCode)
+    [InlineData(true, "en")]
+    [InlineData(true, "ar")]
+    [InlineData(true, "ru")]
+    [InlineData(false, "en")]
+    [InlineData(false, "ar")]
+    [InlineData(false, "ru")]
+    public async Task Sends_localized_otp_sms_to_user(bool byUsername, string langCode)
     {
         // Arrange
         var customer = await EnrollCustomer();
         var totpProviderMoq = new Mock<ITotpTokenProvider>(MockBehavior.Strict);
         var smsMoq = new Mock<ISmsService>(MockBehavior.Strict);
         var otp = "1234";
+
+        var username = byUsername ? customer.User.UserName : null;
+        var phoneNumber = byUsername ? null : customer.User.PhoneNumber;
 
         totpProviderMoq
             .Setup(p => p.TryGenerate(
@@ -32,7 +38,7 @@ public class OnSignInRequestedTests : IntegrationTestBase
             .Verifiable();
 
         smsMoq
-            .Setup(s => s.SendAsync(customer.Username, $"{langCode}:Your Peers verification code is: {otp}"))
+            .Setup(s => s.SendAsync(customer.User.PhoneNumber, $"{langCode}:Your Peers verification code is: {otp}"))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
@@ -40,7 +46,7 @@ public class OnSignInRequestedTests : IntegrationTestBase
         await ExecuteDbContextAsync(async context =>
         {
             var handler = new OnSignInRequested(context, totpProviderMoq.Object, smsMoq.Object, new SLCultureMoq<res>());
-            await handler.Handle(new SignInRequested(Mock.Of<IIdentityInfo>(), "platform", customer.Username, langCode), default);
+            await handler.Handle(new SignInRequested(Mock.Of<IIdentityInfo>(), "platform", username, phoneNumber, langCode), default);
         });
 
         // Assert
@@ -69,7 +75,7 @@ public class OnSignInRequestedTests : IntegrationTestBase
         await ExecuteDbContextAsync(async context =>
         {
             var handler = new OnSignInRequested(context, totpProviderMoq.Object, smsMoq.Object, new SLCultureMoq<res>());
-            await handler.Handle(new SignInRequested(Mock.Of<IIdentityInfo>(), "platform", customer.Username, "en"), default);
+            await handler.Handle(new SignInRequested(Mock.Of<IIdentityInfo>(), "platform", customer.Username, null, "en"), default);
         });
 
         // Assert

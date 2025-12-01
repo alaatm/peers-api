@@ -17,7 +17,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// The first name.
     /// </summary>
     /// <value></value>
-    public string Firstname { get; set; } = default!;
+    public string? Firstname { get; set; }
     /// <summary>
     /// The last name.
     /// </summary>
@@ -82,22 +82,23 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// Creates an account that supports two factor login via SMS.
     /// </summary>
     /// <param name="date">The date when the user registered.</param>
+    /// <param name="username">The username.</param>
     /// <param name="phoneNumber">The phone number.</param>
-    /// <param name="firstname">The first name.</param>
-    /// <param name="lastname">The last name.</param>
     /// <param name="preferredLanguage">The preferred language for this user.</param>
     /// <returns></returns>
     public static AppUser CreateTwoFactorAccount(
         DateTime date,
+        string username,
         string phoneNumber,
-        string firstname,
-        string lastname,
         string preferredLanguage)
     {
+        ArgumentNullException.ThrowIfNull(username);
         ArgumentNullException.ThrowIfNull(phoneNumber);
-        ArgumentException.ThrowIfNullOrWhiteSpace(firstname);
-        ArgumentException.ThrowIfNullOrWhiteSpace(lastname);
         ArgumentException.ThrowIfNullOrWhiteSpace(preferredLanguage);
+        if (!RegexStatic.UsernameRegex().IsMatch(username))
+        {
+            throw new ArgumentException("Invalid username format.", nameof(username));
+        }
         if (!RegexStatic.PhoneNumberRegex().IsMatch(phoneNumber))
         {
             throw new ArgumentException("Invalid phone number format.", nameof(phoneNumber));
@@ -107,9 +108,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
         {
             Status = UserStatus.Active,
             RegisteredOn = date,
-            UserName = phoneNumber,
-            Firstname = firstname.Trim(),
-            Lastname = lastname.Trim(),
+            UserName = username,
             PreferredLanguage = preferredLanguage.Trim(),
             PhoneNumber = phoneNumber,
             PhoneNumberConfirmed = true,
@@ -184,8 +183,7 @@ public sealed class AppUser : IdentityUserBase, IAggregateRoot
     /// Returns the active refresh token for this user or throws if none exist.
     /// </summary>
     /// <returns></returns>
-    public RefreshToken GetActiveRefreshToken() => RefreshTokens.Find(p => p.IsActive) ??
-        throw new InvalidOperationException($"No active refresh token found for user '{UserName}'.");
+    public RefreshToken GetActiveRefreshToken() => RefreshTokens.Single(p => p.IsActive);
 
     /// <summary>
     /// Returns the currently active refresh token if found. Otherwise,

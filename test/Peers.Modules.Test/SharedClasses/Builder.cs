@@ -1,26 +1,28 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Bogus;
 using Bogus.DataSets;
+using Microsoft.Extensions.Localization;
 using Peers.Core.Http;
 using Peers.Core.Localization;
 using Peers.Core.Security.Hashing;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Users.Commands;
 using Peers.Modules.Users.Domain;
-using Microsoft.Extensions.Localization;
 
 namespace Peers.Modules.Test.SharedClasses;
 
-public static class EntityBuilder
+public static partial class EntityBuilder
 {
+    public static string TestUsername() => UsernameFixerRegex().Replace(new Internet().UserName(), "_");
     public static string TestPhoneNumber() => new PhoneNumbers().PhoneNumber("+9665########");
+    public static string TestNationalId() => new Randomizer().Replace("1#########");
 
     public static Faker<AppUser> Test2FUser(
         DateTime? date = null,
+        string username = null,
         string phoneNumber = null,
-        string firstName = null,
-        string lastName = null,
         bool? isBanned = null,
         bool registerDevice = true,
         bool addToken = true) => new Faker<AppUser>()
@@ -30,9 +32,8 @@ public static class EntityBuilder
 
             var user = AppUser.CreateTwoFactorAccount(
                 date.Value,
+                username ?? TestUsername(),
                 phoneNumber ?? TestPhoneNumber(),
-                firstName ?? p.Name.FirstName(),
-                lastName ?? p.Name.LastName(),
                 Lang.EnLangCode);
 
             user.Status = (isBanned ?? false) ? UserStatus.Banned : user.Status;
@@ -76,14 +77,13 @@ public static class EntityBuilder
 
     public static Faker<Customer> TestCustomer(
         DateTime? date = null,
+        string username = null,
         string phoneNumber = null,
-        string firstName = null,
-        string lastName = null,
         string secret = null,
         bool? isBanned = null) => new Faker<Customer>()
         .CustomInstantiator(p =>
         {
-            var user = Test2FUser(date ?? DateTime.UtcNow, phoneNumber, firstName, lastName, isBanned).Generate();
+            var user = Test2FUser(date ?? DateTime.UtcNow, username, phoneNumber, isBanned).Generate();
             var customer = Customer.Create(user, secret ?? new HmacHash().GenerateKey());
             return customer;
         });
@@ -112,6 +112,9 @@ public static class EntityBuilder
         var checkDigits = (98 - (decimal.Parse(iban, CultureInfo.InvariantCulture) % 97)).ToString("00", CultureInfo.InvariantCulture);
         return $"SA{checkDigits}{bankCode}{accountNumber}";
     }
+
+    [GeneratedRegex("[^A-Za-z0-9_]")]
+    private static partial Regex UsernameFixerRegex();
 }
 
 public static class CommandBuilder
@@ -134,30 +137,33 @@ public static class CommandBuilder
     public static Faker<Enroll.Command> TestEnroll() => new Faker<Enroll.Command>()
         .CustomInstantiator(p =>
         {
-            var username = TestPhoneNumber();
-            return new Enroll.Command(username, null);
+            var username = TestUsername();
+            var phoneNumber = TestPhoneNumber();
+            return new Enroll.Command(username, phoneNumber, null);
         });
 
     public static Faker<EnrollConfirm.Command> TestEnrollConfirm() => new Faker<EnrollConfirm.Command>()
         .CustomInstantiator(p =>
         {
             string username = null;
+            string phoneNumber = null;
             string password = null;
 
-            username = TestPhoneNumber();
+            username = TestUsername();
+            phoneNumber = TestPhoneNumber();
 
             return new EnrollConfirm.Command(
                 p.Random.String2(4, "0123456789"),
                 username,
+                phoneNumber,
                 password,
-                p.Name.FirstName(),
-                p.Name.LastName(),
                 Lang.EnLangCode);
         });
 
-    public static Faker<SignIn.Command> TestSignIn() => new RecordFaker<SignIn.Command>()
+    public static Faker<SignIn.Command> TestSignIn(bool byUsername = false) => new RecordFaker<SignIn.Command>()
         .StrictMode(true)
-        .RuleFor(p => p.PhoneNumber, p => TestPhoneNumber())
+        .RuleFor(p => p.Username, p => byUsername ? TestUsername() : null)
+        .RuleFor(p => p.PhoneNumber, p => byUsername ? null : TestPhoneNumber())
         .RuleFor(p => p.Platform, p => null);
 
     public static Faker<CreateToken.Command> TestCreateToken(CreateToken.GrantType grantType) => new Faker<CreateToken.Command>()
@@ -169,7 +175,7 @@ public static class CommandBuilder
             switch (grantType)
             {
                 case CreateToken.GrantType.Mfa:
-                    username = TestPhoneNumber();
+                    username = TestUsername();
                     password = p.Random.String2(6, "0123456789");
                     break;
                 case CreateToken.GrantType.Password:
@@ -177,7 +183,7 @@ public static class CommandBuilder
                     password = p.Internet.Password(6);
                     break;
                 case CreateToken.GrantType.RefreshToken:
-                    username = TestPhoneNumber(); // or email
+                    username = TestUsername(); // or email
                     password = Guid.NewGuid().ToString();
                     break;
                 default:

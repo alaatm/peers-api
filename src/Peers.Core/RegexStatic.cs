@@ -4,6 +4,8 @@ namespace Peers.Core;
 
 public static partial class RegexStatic
 {
+    [GeneratedRegex(@"^[A-Za-z][A-Za-z0-9_]{3,}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex UsernameRegex();
     [GeneratedRegex(@"^\d{4}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex OtpRegex();
     [GeneratedRegex(@"^(?<func>startswith|contains|endswith|lt|le|eq|ge|gt|ne)\((?<arg>[^)]+)\)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]

@@ -35,6 +35,8 @@ public sealed class NafathService : INafathService
     private readonly NafathConfig _config;
     private readonly IMemoryCache _cache;
 
+    public static readonly Uri CallbackUri = new("/nafath-callback", UriKind.Relative);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="NafathService"/> class.
     /// </summary>

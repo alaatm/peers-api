@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Peers.Modules.Users.Commands;
-using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Domain;
 
 namespace Peers.Modules.Test.Users.Commands.Handlers;
@@ -48,7 +47,7 @@ public class ResetPasswordConfirmTests : IntegrationTestBase
         string otp = null;
         OnEmail = (_, otp_, _) => otp = otp_.Split(':')[1].Trim();
 
-        var result = Assert.IsType<Accepted<OtpResponse>>(await SendAsync(new ResetPassword.Command(manager.UserName)));
+        var result = Assert.IsType<Accepted>(await SendAsync(new ResetPassword.Command(manager.UserName)));
         var cmd = TestResetPasswordConfirm with { Otp = otp, Username = manager.UserName };
 
         // Act

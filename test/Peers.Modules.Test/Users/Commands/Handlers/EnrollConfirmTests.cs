@@ -31,11 +31,11 @@ public class EnrollConfirmTests : IntegrationTestBase
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Returns_Conflict_when_user_already_exist()
+    public async Task Returns_Conflict_when_username_already_exist()
     {
         // Arrange
         var cmd = TestEnrollConfirm().Generate();
-        await EnrollCustomer(cmd.Username);
+        await EnrollCustomer(username: cmd.Username);
 
         // Act
         var result = await SendAsync(cmd);
@@ -43,7 +43,23 @@ public class EnrollConfirmTests : IntegrationTestBase
         // Assert
         var conflict = Assert.IsType<Conflict<ProblemDetails>>(result);
         var problem = conflict.Value;
-        Assert.Equal("User already exist.", problem.Detail);
+        Assert.Equal("Username or phone number already exist.", problem.Detail);
+    }
+
+    [SkippableFact(typeof(PlatformNotSupportedException))]
+    public async Task Returns_Conflict_when_phoneNumber_already_exist()
+    {
+        // Arrange
+        var cmd = TestEnrollConfirm().Generate();
+        await EnrollCustomer(phoneNumber: cmd.PhoneNumber);
+
+        // Act
+        var result = await SendAsync(cmd);
+
+        // Assert
+        var conflict = Assert.IsType<Conflict<ProblemDetails>>(result);
+        var problem = conflict.Value;
+        Assert.Equal("Username or phone number already exist.", problem.Detail);
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
@@ -76,13 +92,13 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
         ProducerMoq
             .Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>()))
             .Callback(() =>
-                Services.GetRequiredService<IMemoryCache>().Set(cmd.Username, DefaultOtp, TimeSpan.FromDays(1)));
+                Services.GetRequiredService<IMemoryCache>().Set($"{cmd.Username}:{cmd.PhoneNumber}", DefaultOtp, TimeSpan.FromDays(1)));
 
         HmacHashMoq
             .Setup(p => p.GenerateKey())
             .Returns(userSecret);
 
-        await SendAsync(TestEnroll().Generate() with { Username = cmd.Username });
+        await SendAsync(TestEnroll().Generate() with { Username = cmd.Username, PhoneNumber = cmd.PhoneNumber });
 
         // Act
         var result = await SendAsync(cmd with { Otp = DefaultOtp });
@@ -90,13 +106,11 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
         // Assert
         var objResult = Assert.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
-        Assert.Equal(cmd.FirstName, response.Name);
         Assert.Equal(cmd.Username, response.Username);
         Assert.NotEmpty(response.Token);
 
         var customer = await FindAsync<Customer>(p => p.Username == cmd.Username, "User.RefreshTokens");
         var user = customer.User;
-        Assert.Equal(user.Firstname, response.Name);
         Assert.Equal(userSecret, customer.Secret);
         Assert.Equal(cmd.PreferredLanguage, user.PreferredLanguage);
         Assert.Equal(user.RefreshTokens.Single().Token, response.RefreshToken);
@@ -113,13 +127,13 @@ public class EnrollConfirmMfaTests : IntegrationTestBase
         var cmd = TestEnrollConfirm().Generate();
 
         ProducerMoq.Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>())).Callback(() =>
-            Services.GetRequiredService<IMemoryCache>().Set(cmd.Username, DefaultOtp, TimeSpan.FromDays(1)));
+            Services.GetRequiredService<IMemoryCache>().Set($"{cmd.Username}:{cmd.PhoneNumber}", DefaultOtp, TimeSpan.FromDays(1)));
 
         HmacHashMoq
             .Setup(p => p.GenerateKey())
             .Returns(Guid.NewGuid().ToString("N"));
 
-        await SendAsync(TestEnroll().Generate() with { Username = cmd.Username });
+        await SendAsync(TestEnroll().Generate() with { Username = cmd.Username, PhoneNumber = cmd.PhoneNumber });
 
         // Act
         var result = await SendAsync(cmd with { Otp = DefaultOtp });

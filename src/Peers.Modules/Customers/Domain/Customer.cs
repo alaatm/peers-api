@@ -58,6 +58,7 @@ public class Customer : Entity, ISystemUser, IAggregateRoot
             Secret = secret,
             AddressList = [],
             PaymentMethods = [],
+            Orders = [],
         };
 
         return customer;

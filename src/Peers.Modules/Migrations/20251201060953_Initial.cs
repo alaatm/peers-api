@@ -45,7 +45,7 @@ namespace Peers.Modules.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false),
                     registered_on = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    firstname = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    firstname = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     lastname = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     preferred_language = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     status = table.Column<int>(type: "int", nullable: false),
@@ -53,7 +53,7 @@ namespace Peers.Modules.Migrations
                     is_deleted = table.Column<bool>(type: "bit", nullable: false),
                     deleted_on = table.Column<DateTime>(type: "datetime2", nullable: true),
                     original_deleted_username = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    user_name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    user_name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     normalized_user_name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     normalized_email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -345,6 +345,26 @@ namespace Peers.Modules.Migrations
                     table.ForeignKey(
                         name: "FK_refresh_token_app_user_user_id",
                         column: x => x.user_id,
+                        principalSchema: "id",
+                        principalTable: "app_user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "seller",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    username = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_seller", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_seller_app_user_id",
+                        column: x => x.id,
                         principalSchema: "id",
                         principalTable: "app_user",
                         principalColumn: "id",
@@ -814,18 +834,82 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "seller",
+                name: "cart",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    last_touched_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_seller", x => x.id);
+                    table.PrimaryKey("PK_cart", x => x.id);
                     table.ForeignKey(
-                        name: "FK_seller_customer_id",
-                        column: x => x.id,
+                        name: "FK_cart_customer_buyer_id",
+                        column: x => x.buyer_id,
                         principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_cart_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "nafath_info",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    national_id = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    first_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    last_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    first_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    last_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    gender = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_nafath_info", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_nafath_info_seller_id",
+                        column: x => x.id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "shipping_profile",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    origin_location = table.Column<Point>(type: "geography", nullable: false),
+                    fsp_max_distance = table.Column<double>(type: "float", nullable: true),
+                    fsp_min_order = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_base_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_flat_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_kind = table.Column<int>(type: "int", nullable: false),
+                    r_min_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_rate_per_kg = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    r_rate_per_km = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_shipping_profile", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_shipping_profile_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -988,58 +1072,6 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "cart",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    buyer_id = table.Column<int>(type: "int", nullable: false),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    last_touched_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_cart", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_cart_customer_buyer_id",
-                        column: x => x.buyer_id,
-                        principalTable: "customer",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_cart_seller_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "seller",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "nafath_info",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false),
-                    national_id = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    first_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    last_name_ar = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    first_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    last_name_en = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    gender = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_nafath_info", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_nafath_info_seller_id",
-                        column: x => x.id,
-                        principalTable: "seller",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "order",
                 columns: table => new
                 {
@@ -1078,62 +1110,6 @@ namespace Peers.Modules.Migrations
                         principalTable: "seller",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "shipping_profile",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    origin_location = table.Column<Point>(type: "geography", nullable: false),
-                    fsp_max_distance = table.Column<double>(type: "float", nullable: true),
-                    fsp_min_order = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    r_base_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    r_flat_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    r_kind = table.Column<int>(type: "int", nullable: false),
-                    r_min_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    r_rate_per_kg = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    r_rate_per_km = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_shipping_profile", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_shipping_profile_seller_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "seller",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "enum_attribute_option_tr",
-                schema: "i18n",
-                columns: table => new
-                {
-                    entity_id = table.Column<int>(type: "int", nullable: false),
-                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
-                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_enum_attribute_option_tr", x => new { x.entity_id, x.lang_code });
-                    table.ForeignKey(
-                        name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
-                        column: x => x.entity_id,
-                        principalTable: "enum_attribute_option",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_enum_attribute_option_tr_language_lang_code",
-                        column: x => x.lang_code,
-                        principalSchema: "i18n",
-                        principalTable: "language",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1187,6 +1163,33 @@ namespace Peers.Modules.Migrations
                         principalTable: "shipping_profile",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "enum_attribute_option_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_enum_attribute_option_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
+                        column: x => x.entity_id,
+                        principalTable: "enum_attribute_option",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_enum_attribute_option_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1429,6 +1432,14 @@ namespace Peers.Modules.Migrations
                 column: "is_deleted");
 
             migrationBuilder.CreateIndex(
+                name: "IX_app_user_phone_number",
+                schema: "id",
+                table: "app_user",
+                column: "phone_number",
+                unique: true,
+                filter: "[phone_number] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_app_user_status",
                 schema: "id",
                 table: "app_user",
@@ -1439,8 +1450,7 @@ namespace Peers.Modules.Migrations
                 schema: "id",
                 table: "app_user",
                 column: "user_name",
-                unique: true,
-                filter: "[user_name] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -1914,6 +1924,12 @@ namespace Peers.Modules.Migrations
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_seller_username",
+                table: "seller",
+                column: "username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_shipping_profile_seller_id_name",
                 table: "shipping_profile",
                 columns: new[] { "seller_id", "name" },
@@ -2135,10 +2151,10 @@ namespace Peers.Modules.Migrations
                 name: "shipping_profile");
 
             migrationBuilder.DropTable(
-                name: "seller");
+                name: "customer");
 
             migrationBuilder.DropTable(
-                name: "customer");
+                name: "seller");
 
             migrationBuilder.DropTable(
                 name: "app_user",

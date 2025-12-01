@@ -25,7 +25,7 @@ public class SignInTests : IntegrationTestBase
 
         ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
             p.Platform == cmd.Platform &&
-            p.Username == cmd.PhoneNumber &&
+            p.PhoneNumber == cmd.PhoneNumber &&
             p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -34,7 +34,7 @@ public class SignInTests : IntegrationTestBase
     {
         // Arrange
         var cmd = TestSignIn().Generate();
-        var customer = await EnrollCustomer(cmd.PhoneNumber);
+        var customer = await EnrollCustomer(phoneNumber: cmd.PhoneNumber);
         AssertX.IsType<NoContent>(await SendAsync(new DeleteAccount.Command(), customer));
 
         // Restore post-fixed username so that we can pass phone number validation for this test
@@ -55,7 +55,7 @@ public class SignInTests : IntegrationTestBase
 
         ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
             p.Platform == cmd.Platform &&
-            p.Username == cmd.PhoneNumber &&
+            p.PhoneNumber == cmd.PhoneNumber &&
             p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -64,30 +64,36 @@ public class SignInTests : IntegrationTestBase
     {
         // Arrange
         var cmd = TestSignIn().Generate();
-        await EnrollCustomer(cmd.PhoneNumber, isBanned: true);
+        await EnrollCustomer(phoneNumber: cmd.PhoneNumber, isBanned: true);
 
         // Act
         var result = await SendAsync(cmd);
 
         // Assert
-        Assert.IsType<ForbiddenHttpResult<ProblemDetails>>(result);
+        AssertX.IsType<ForbiddenHttpResult<ProblemDetails>>(result);
     }
 
-    [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Publishes_SignInRequested_event_when_customer_exist_and_returns_accepted()
+    [SkippableTheory(typeof(PlatformNotSupportedException))]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Publishes_SignInRequested_event_when_customer_exist_and_returns_accepted(bool byUsername)
     {
         // Arrange
-        var cmd = TestSignIn().Generate();
-        await EnrollCustomer(cmd.PhoneNumber);
+        var cmd = TestSignIn(byUsername: byUsername).Generate();
+        var username = byUsername ? cmd.Username : TestUsername();
+        var phoneNumber = byUsername ? TestPhoneNumber() : cmd.PhoneNumber;
+
+        await EnrollCustomer(username: username, phoneNumber: phoneNumber);
 
         // Act
         var result = await SendAsync(cmd);
 
         // Assert
-        Assert.IsType<Accepted>(result);
+        AssertX.IsType<Accepted>(result);
         ProducerMoq.Verify(p => p.PublishAsync(It.Is<SignInRequested>(p =>
             p.Platform == cmd.Platform &&
-            p.Username == cmd.PhoneNumber &&
+            p.Username == cmd.Username &&
+            p.PhoneNumber == cmd.PhoneNumber &&
             p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

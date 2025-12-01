@@ -1,3 +1,5 @@
+using Peers.Modules.Ordering.Domain;
+
 namespace Peers.Modules.Users.Commands;
 
 public static class DeleteAccount
@@ -23,6 +25,11 @@ public static class DeleteAccount
 
         public async Task<IResult> Handle([NotNull] Command cmd, CancellationToken ctk)
         {
+            if (_identity.IsSeller)
+            {
+                return Result.Forbidden();
+            }
+
             var user = await _context
                 .Users
                 .Include(p => p.RefreshTokens)
@@ -32,6 +39,8 @@ public static class DeleteAccount
 
             var customer = await _context
                 .Customers
+                .Include(p => p.PaymentMethods)
+                .Include(p => p.Orders.Where(p => p.State != OrderState.Closed && p.State != OrderState.Cancelled))
                 .FirstAsync(p => p.Id == user.Id, ctk);
 
             customer.DeleteAccount(_timeProvider.UtcNow());

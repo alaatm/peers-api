@@ -89,7 +89,7 @@ public static class SendEmailVerification
                 <p>Phone number: <b>{2}</b></p>
                 <br/>
                 <a href='{3}'>Confirm email</a>
-                """, user.Firstname, user.UpdatedEmail, user.PhoneNumber?.Replace("+", "", StringComparison.Ordinal) ?? "", url];
+                """, user.UserName!, user.UpdatedEmail, user.PhoneNumber?.Replace("+", "", StringComparison.Ordinal) ?? "", url];
 
             await _emailService.SendAsync(
                 _l["Please confirm your new email address"],

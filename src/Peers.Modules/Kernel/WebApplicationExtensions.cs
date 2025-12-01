@@ -82,7 +82,7 @@ public static class WebApplicationExtensions
 
         publicGroup
             .MapPublicAccountEndpoints()
-            .MapNafathCallbackEndpoint(app.Configuration, NafathCallback.Handler)
+            .MapNafathCallbackEndpoint(NafathCallback.Handler)
             .WithTags("Public");
 
         app.MapRazorPages();

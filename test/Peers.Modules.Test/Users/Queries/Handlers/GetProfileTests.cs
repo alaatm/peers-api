@@ -102,7 +102,7 @@ public class GetProfileTests : IntegrationTestBase
     {
         Assert.Equal(user.Firstname, response.Firstname);
         Assert.Equal(user.Lastname, response.Lastname);
-        Assert.Equal(user.UserName, response.Phone);
+        Assert.Equal(user.PhoneNumber, response.Phone);
         Assert.Equal(user.Email, response.Email);
         Assert.Equal(user.PreferredLanguage, response.PreferredLanguage);
     }

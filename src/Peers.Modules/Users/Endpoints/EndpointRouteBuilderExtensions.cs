@@ -136,21 +136,21 @@ public static class EndpointRouteBuilderExtensions
 
         gAccounts.MapPost("/enroll", EnrollCommandSwitcher)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces<OtpResponse>(StatusCodes.Status202Accepted)
+            .Produces(StatusCodes.Status202Accepted)
             .Produces<JwtResponse>(StatusCodes.Status200OK);
 
         gOAuth.MapPost("/token", TokenCommandSwitcher)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
-            .Produces<OtpResponse>(StatusCodes.Status202Accepted)
+            .Produces(StatusCodes.Status202Accepted)
             .Produces<JwtResponse>(StatusCodes.Status200OK);
 
         gAccounts.MapPut("/password", PasswordCommandSwitcher)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<OtpResponse>(StatusCodes.Status202Accepted);
+            .Produces(StatusCodes.Status202Accepted);
 
         gDevices.MapPost("/{deviceId:guid}/crash-reports", (string key, Guid deviceId, IMediator mediator, ReportDeviceError.Command cmd)
             => mediator.Send(cmd with { Key = key, DeviceId = deviceId }))
@@ -204,12 +204,44 @@ public static class EndpointRouteBuilderExtensions
             _ => await mediator.Send(cmd.ChangePassword),
         };
 
+    /// <summary>
+    /// Authenticates a user and generates a JWT token for subsequent requests.
+    ///
+    /// ### Authentication flow
+    ///
+    /// #### When a valid refresh token is available
+    ///    1. Use the `createToken` command with the refresh token to obtain a new JWT token.
+    ///       - The `grantType` should be set to `RefreshToken` (value `2`).
+    ///       - The `password` should be set to the refresh token string.
+    ///
+    /// #### When no valid refresh token is available
+    ///    1. Use the `signIn` command with the user's credentials to obtain a new JWT token.
+    ///    2. The backend sends an enrollment OTP to the user's phone number.
+    ///    3. Send another request and use the `createToken` command with the OTP to complete enrollment.
+    ///       - The `grantType` should be set to `Mfa` (value `0`).
+    ///       - The `password` should be set to the OTP string.
+    ///       
+    /// **Note:** Upon successful authentication, a new refresh token is issued and returned alongside the JWT token.
+    /// You should securely store this refresh token for future JWT issuance without requiring re-authentication.
+    /// </summary>
     public sealed class Login
     {
         public SignIn.Command? SignIn { get; set; }
         public CreateToken.Command? CreateToken { get; set; }
     }
 
+    /// <summary>
+    /// Enrolls a new user in the system.
+    /// 
+    /// ### Enrollment flow
+    ///
+    /// 1. Use the `enroll` command to start the enrollment process.
+    /// 2. The backend sends an enrollment OTP to the user's phone number.
+    /// 3. Use the `enrollConfirm` command with the OTP to complete enrollment.
+    ///       
+    /// **Note:** Upon successful enrollment, a refresh token is issued and returned alongside the JWT token.
+    /// You should securely store this refresh token for future JWT issuance without requiring re-authentication.
+    /// </summary>
     public sealed class Register
     {
         public Enroll.Command? Enroll { get; set; }

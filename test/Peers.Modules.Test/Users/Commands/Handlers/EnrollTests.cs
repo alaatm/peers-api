@@ -23,11 +23,11 @@ public class EnrollTests : IntegrationTestBase
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
-    public async Task Returns_Conflict_when_user_already_exist()
+    public async Task Returns_Conflict_when_username_already_exist()
     {
         // Arrange
         var cmd = TestEnroll().Generate();
-        await EnrollCustomer(cmd.Username);
+        await EnrollCustomer(username: cmd.Username);
 
         // Act
         var result = await SendAsync(cmd);
@@ -35,7 +35,23 @@ public class EnrollTests : IntegrationTestBase
         // Assert
         var conflict = Assert.IsType<Conflict<ProblemDetails>>(result);
         var problem = conflict.Value;
-        Assert.Equal("User already exist.", problem.Detail);
+        Assert.Equal("Username or phone number already exist.", problem.Detail);
+    }
+
+    [SkippableFact(typeof(PlatformNotSupportedException))]
+    public async Task Returns_Conflict_when_phoneNumber_already_exist()
+    {
+        // Arrange
+        var cmd = TestEnroll().Generate();
+        await EnrollCustomer(phoneNumber: cmd.PhoneNumber);
+
+        // Act
+        var result = await SendAsync(cmd);
+
+        // Assert
+        var conflict = Assert.IsType<Conflict<ProblemDetails>>(result);
+        var problem = conflict.Value;
+        Assert.Equal("Username or phone number already exist.", problem.Detail);
     }
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
@@ -51,6 +67,7 @@ public class EnrollTests : IntegrationTestBase
         // Assert
         ProducerMoq.Verify(p => p.PublishAsync(It.Is<EnrollRequested>(p =>
             p.Username == cmd.Username &&
+            p.PhoneNumber == cmd.PhoneNumber &&
             p.LangCode == cmd.Lang), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

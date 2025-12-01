@@ -19,13 +19,13 @@ internal sealed class OrderMapping : IEntityTypeConfiguration<Order>
 
         builder
             .HasOne(p => p.Buyer)
-            .WithMany()
+            .WithMany(p => p.Orders)
             .HasForeignKey(p => p.BuyerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasOne(p => p.Seller)
-            .WithMany(p => p.Orders)
+            .WithMany(p => p.ReceivedOrders)
             .HasForeignKey(p => p.SellerId)
             .OnDelete(DeleteBehavior.Restrict);
 

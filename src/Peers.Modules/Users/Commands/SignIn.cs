@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Humanizer;
 using Peers.Core.Background;
 using Peers.Core.Cqrs.Pipeline;
@@ -9,20 +10,36 @@ namespace Peers.Modules.Users.Commands;
 public static class SignIn
 {
     /// <summary>
-    /// The command.
+    /// Request to sign in an existing user by either `username` or `phoneNumber`.
     /// </summary>
-    /// <param name="PhoneNumber">The phone number.</param>
+    /// <param name="Username">The username. If set, it will be used to sign in the user.</param>
+    /// <param name="PhoneNumber">The phone number. Used to sign in the user if the `username` is not provided.</param>
     /// <param name="Platform">The platform (iOS or Android)</param>
     public sealed record Command(
-        string PhoneNumber,
+        string? Username,
+        string? PhoneNumber,
         string Platform) : LocalizedCommand, IValidatable;
 
     public sealed class Validator : AbstractValidator<Command>
     {
+        private static readonly string _username = nameof(Command.Username).Humanize();
         private static readonly string _phoneNumber = nameof(Command.PhoneNumber).Humanize();
 
         public Validator([NotNull] IStrLoc l)
-            => RuleFor(p => p.PhoneNumber).NotEmpty().PhoneNumber(l).WithName(l[_phoneNumber]);
+        {
+            RuleFor(p => p)
+                .Must(p => !string.IsNullOrWhiteSpace(p.Username) ||
+                           !string.IsNullOrWhiteSpace(p.PhoneNumber))
+                .WithMessage(l["Either 'username' or 'phoneNumber' must be provided."]);
+
+            RuleFor(p => p.Username)
+                .Username(l).WithName(l[_username])
+                .When(x => !string.IsNullOrWhiteSpace(x.Username));
+
+            RuleFor(p => p.PhoneNumber)
+                .PhoneNumber(l).WithName(l[_phoneNumber])
+                .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+        }
     }
 
     public sealed class Handler : ICommandHandler<Command>
@@ -49,12 +66,21 @@ public static class SignIn
 
         public async Task<IResult> Handle([NotNull] Command cmd, CancellationToken ctk)
         {
-            if (await _context
-                .Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.UserName == cmd.PhoneNumber, ctk) is not AppUser user || user.IsDeleted)
+            var q = _context.Users.AsNoTracking();
+
+            if (cmd.Username is not null)
             {
-                _log.NoAccountLogin(cmd.PhoneNumber);
+                q = q.Where(p => p.UserName == cmd.Username);
+            }
+            else
+            {
+                Debug.Assert(cmd.PhoneNumber is not null);
+                q = q.Where(p => p.PhoneNumber == cmd.PhoneNumber);
+            }
+
+            if (await q.FirstOrDefaultAsync(ctk) is not AppUser user || user.IsDeleted)
+            {
+                _log.NoAccountLogin((cmd.Username ?? cmd.PhoneNumber)!);
                 return Result.BadRequest(_l["Account does not exist."]);
             }
 
@@ -66,6 +92,7 @@ public static class SignIn
             await _producer.PublishAsync(new SignInRequested(
                 _identity,
                 cmd.Platform,
+                cmd.Username,
                 cmd.PhoneNumber,
                 cmd.Lang), ctk);
 

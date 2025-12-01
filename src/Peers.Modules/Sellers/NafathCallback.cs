@@ -18,9 +18,10 @@ public static class NafathCallback
         var l = services.GetRequiredService<IStrLoc>();
         var context = services.GetRequiredService<PeersContext>();
         var push = services.GetRequiredService<IPushNotificationService>();
+        var timeProvider = services.GetRequiredService<TimeProvider>();
 
         var user = await context.Users
-            .AsNoTracking()
+            .Include(p => p.DeviceList)
             .Where(p => p.Id == userId)
             .FirstAsync();
 
@@ -40,7 +41,7 @@ public static class NafathCallback
             var um = services.GetRequiredService<UserManager<AppUser>>();
             if (await um.AddToRoleAsync(user, Roles.Seller) is { Succeeded: true })
             {
-                context.Sellers.Add(Seller.Create(user, nafathIdentity));
+                context.Sellers.Add(Seller.Create(user, nafathIdentity, timeProvider.UtcNow()));
                 await context.SaveChangesAsync();
                 await push.DispatchAsync(notification.Generate());
             }

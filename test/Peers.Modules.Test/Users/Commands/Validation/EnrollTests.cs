@@ -7,7 +7,8 @@ public class EnrollTests : CommandValidatorTestBase<Enroll.Command, Enroll.Valid
     [Fact]
     public void ValidateTest()
     {
-        CheckPhone(p => p.Username);
+        CheckNotEmpty(p => p.Username);
+        CheckPhone(p => p.PhoneNumber);
         CheckOk();
     }
 

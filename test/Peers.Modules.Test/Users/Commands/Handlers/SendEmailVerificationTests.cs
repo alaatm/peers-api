@@ -127,7 +127,7 @@ public class SendEmailVerificationTests : IntegrationTestBase
         HttpContextAccessorMoq.VerifyAll();
         LinkGeneratorMoq.VerifyAll();
         Assert.Equal("Please confirm your new email address", subject);
-        Assert.Contains(user.Firstname, body);
+        Assert.Contains(user.UserName, body);
         Assert.Contains("new@example.com", body);
         Assert.Contains(user.PhoneNumber.Replace("+", ""), body);
         Assert.Contains("abs/path", body);

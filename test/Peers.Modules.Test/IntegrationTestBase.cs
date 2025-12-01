@@ -31,10 +31,13 @@ using Peers.Core.Domain.Rules;
 using Peers.Core.Http;
 using Peers.Core.Identity;
 using Peers.Core.Localization;
+using Peers.Core.Nafath.Models;
 using Peers.Core.Security.Hashing;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Kernel.Pipelines;
 using Peers.Modules.Migrations;
+using Peers.Modules.Sellers;
+using Peers.Modules.Sellers.Domain;
 using Peers.Modules.Users.Commands;
 using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Domain;
@@ -70,10 +73,20 @@ public abstract partial class IntegrationTestBase
             { "Logging:Console:LogLevel:Default", "None" },
             { "ConnectionStrings:Default", ConnStr },
             { "azure:storageConnectionString", "UseDevelopmentStorage=true" },
+            { "nafath:useSandbox", "true" },
+            { "nafath:appId", "<nafathAppId>" },
+            { "nafath:appKey", "<nafathAppKey>" },
+            { "nafath:issuer", "<nafathIssuer>" },
+            { "nafath:audience", "<nafathAudience>" },
+            { "paymentGateway:provider", "ClickPay" },
+            { "clickPayPaymentProvider:ProfileId", "<clickPayProfileId>" },
+            { "clickPayPaymentProvider:Key", "<clickPayKey>" },
+            { "clickPayPaymentProvider:PayoutAccountId", "<clickPayPayoutAccountId>" },
+            { "google:apiKey", "<googleApiKey>" },
+            { "firebase:serviceAccountKey", TestFirebaseServiceAccount },
             { "jwt:issuer", "https://integration-tests.com/iss" },
             { "jwt:key", Convert.ToBase64String(new byte[32]) },
             { "jwt:durationInMinutes", $"{JwtDuration}" },
-            { "firebase:serviceAccountKey", TestFirebaseServiceAccount },
             { "totp:useDefaultOtp", "false" },
             { "totp:duration", "00:03:00" },
             { "sms:sender", "Peers" },
@@ -274,21 +287,23 @@ public abstract partial class IntegrationTestBase
 
     public async Task<Customer> EnrollCustomer(
         string username = null,
+        string phoneNumber = null,
         bool isBanned = false,
         bool isSuspended = false,
         bool registerDevice = true)
     {
-        username ??= TestPhoneNumber();
+        username ??= TestUsername();
+        phoneNumber ??= TestPhoneNumber();
 
         ProducerMoq.Setup(p => p.PublishAsync(It.IsAny<EnrollRequested>(), It.IsAny<CancellationToken>())).Callback(() =>
-            Services.GetRequiredService<IMemoryCache>().Set(username, DefaultOtp, TimeSpan.FromDays(1)));
+            Services.GetRequiredService<IMemoryCache>().Set($"{username}:{phoneNumber}", DefaultOtp, TimeSpan.FromDays(1)));
 
         HmacHashMoq
             .Setup(p => p.GenerateKey())
             .Returns(new HmacHash().GenerateKey());
 
-        AssertX.IsType<Accepted<OtpResponse>>(await SendAsync(TestEnroll().Generate() with { Username = username }));
-        AssertX.IsType<Ok<JwtResponse>>(await SendAsync(TestEnrollConfirm().Generate() with { Username = username, Otp = DefaultOtp }));
+        AssertX.IsType<Accepted>(await SendAsync(TestEnroll().Generate() with { Username = username, PhoneNumber = phoneNumber }));
+        AssertX.IsType<Ok<JwtResponse>>(await SendAsync(TestEnrollConfirm().Generate() with { Username = username, PhoneNumber = phoneNumber, Otp = DefaultOtp }));
 
         var customer = await FindAsync<Customer>(p => p.Username == username, "User");
         if (registerDevice)
@@ -308,6 +323,32 @@ public abstract partial class IntegrationTestBase
 
         customer = await FindAsync<Customer>(p => p.Username == username, "User", "User.RefreshTokens", "User.DeviceList");
         return customer;
+    }
+
+    public async Task<Seller> EnrollSeller(
+        string username = null,
+        string phoneNumber = null,
+        string nationalId = null,
+        bool isBanned = false,
+        bool isSuspended = false,
+        bool registerDevice = true)
+    {
+        var customer = await EnrollCustomer(
+            username: username,
+            phoneNumber: phoneNumber,
+            isBanned: isBanned,
+            isSuspended: isSuspended,
+            registerDevice: registerDevice);
+
+        await ExecuteScopeAsync(async sp =>
+        {
+            var nafath = new NafathIdentity(nationalId ?? TestNationalId(), null, null, null, null, null);
+            await NafathCallback.Handler(sp, customer.Id, nafath);
+        });
+
+        _rolesCache.Remove(customer.Id);
+        var seller = await FindAsync<Seller>(p => p.Username == customer.Username, "User", "User.RefreshTokens", "User.DeviceList");
+        return seller;
     }
 
     private async Task Ban(int id)

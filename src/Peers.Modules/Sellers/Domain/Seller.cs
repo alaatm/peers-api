@@ -2,15 +2,27 @@ using System.Diagnostics;
 using NetTopologySuite.Geometries;
 using Peers.Core.Domain.Errors;
 using Peers.Core.Nafath.Models;
-using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain;
+using Peers.Modules.Ordering.Domain;
 using Peers.Modules.Users.Domain;
 using E = Peers.Modules.Sellers.SellersErrors;
 
 namespace Peers.Modules.Sellers.Domain;
 
-public sealed class Seller : Customer, IAggregateRoot
+public sealed class Seller : Entity, ISystemUser, IAggregateRoot
 {
+    /// <summary>
+    /// The username.
+    /// </summary>
+    public string Username { get; set; } = default!;
+    /// <summary>
+    /// The date and time when the seller was created.
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+    /// <summary>
+    /// The linked database user.
+    /// </summary>
+    public AppUser User { get; set; } = default!;
     /// <summary>
     /// The Nafath identity information of the seller.
     /// </summary>
@@ -23,16 +35,22 @@ public sealed class Seller : Customer, IAggregateRoot
     /// The list of listings associated with the seller.
     /// </summary>
     public List<Listing> Listings { get; set; } = default!;
+    /// <summary>
+    /// The list of orders received by the seller.
+    /// </summary>
+    public List<Order> ReceivedOrders { get; set; } = default!;
 
     /// <summary>
     /// Creates a new instance of <see cref="Seller"/>.
     /// </summary>
     /// <param name="user">The database user.</param>
     /// <param name="nafathIdentity">The verified nafath identity.</param>
+    /// <param name="date">The date and time when the seller was created.</param>
     /// <returns></returns>
     public static Seller Create(
         [NotNull] AppUser user,
-        [NotNull] NafathIdentity nafathIdentity)
+        [NotNull] NafathIdentity nafathIdentity,
+        DateTime date)
     {
         Debug.Assert(user.UserName is not null);
 
@@ -40,9 +58,11 @@ public sealed class Seller : Customer, IAggregateRoot
         {
             User = user,
             Username = user.UserName,
+            CreatedAt = date,
             Nafath = NafathInfo.FromNafathIdentity(nafathIdentity),
             ShippingProfiles = [],
             Listings = [],
+            ReceivedOrders = [],
         };
 
         return seller;

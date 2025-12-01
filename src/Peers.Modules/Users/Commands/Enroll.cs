@@ -1,7 +1,6 @@
 using Humanizer;
 using Peers.Core.Background;
 using Peers.Core.Cqrs.Pipeline;
-using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Events;
 
 namespace Peers.Modules.Users.Commands;
@@ -9,22 +8,31 @@ namespace Peers.Modules.Users.Commands;
 public static class Enroll
 {
     /// <summary>
-    /// The command.
+    /// Request to enroll a new user.
     /// </summary>
     /// <param name="Username">The username.</param>
+    /// <param name="PhoneNumber">The phone number.</param>
     /// <param name="Platform">The platform (iOS or Android)</param>
     public sealed record Command(
         string Username,
+        string PhoneNumber,
         string? Platform) : LocalizedCommand, IValidatable;
 
     public sealed class Validator : AbstractValidator<Command>
     {
         private static readonly string _username = nameof(Command.Username).Humanize();
+        private static readonly string _phoneNumber = nameof(Command.PhoneNumber).Humanize();
 
         public Validator([NotNull] IStrLoc l)
-            => RuleFor(p => p.Username)
-                .NotEmpty()
-                .PhoneNumber(l).WithName(l[_username]);
+        {
+            RuleFor(p => p.Username)
+                .Username(l)
+                .WithName(l[_username]);
+
+            RuleFor(p => p.PhoneNumber)
+                .PhoneNumber(l)
+                .WithName(l[_phoneNumber]);
+        }
     }
 
     public sealed class Handler : ICommandHandler<Command>
@@ -53,17 +61,23 @@ public static class Enroll
                 return Result.BadRequest(_l["You are already authenticated."]);
             }
 
-            if (await _context.Users.AnyAsync(p => p.UserName == cmd.Username.Trim(), ctk))
+            var normalizedUsername = cmd.Username.Trim();
+            var normalizedPhoneNumber = cmd.PhoneNumber.Trim();
+
+            if (await _context.Users.AnyAsync(p =>
+                p.UserName == normalizedUsername ||
+                p.PhoneNumber == normalizedPhoneNumber, ctk))
             {
-                return Result.Conflict(_l["User already exist."]);
+                return Result.Conflict(_l["Username or phone number already exist."]);
             }
 
             await _producer.PublishAsync(new EnrollRequested(
                 _identity,
-                cmd.Username,
+                normalizedUsername,
+                normalizedPhoneNumber,
                 cmd.Lang), ctk);
 
-            return Result.Accepted(value: new OtpResponse(cmd.Username));
+            return Result.Accepted();
         }
     }
 }

@@ -33,7 +33,7 @@ public static class CreateToken
     }
 
     /// <summary>
-    /// The command.
+    /// Request to create a JWT token for an existing user.
     /// </summary>
     /// <param name="Username">The username.</param>
     /// <param name="Password">The password.</param>
@@ -136,7 +136,7 @@ public static class CreateToken
                 try
                 {
                     await _context.SaveChangesAsync(ctk);
-                    return Result.Ok(new JwtResponse(user.Firstname, cmd.Username, token, refreshToken.Token, tokenExpiry, roles));
+                    return Result.Ok(new JwtResponse(cmd.Username, token, refreshToken.Token, tokenExpiry, roles));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -157,7 +157,7 @@ public static class CreateToken
                         .FirstAsync(p => p.Id == user.Id, ctk);
                     refreshToken = user.GetActiveRefreshToken();
 
-                    return Result.Ok(new JwtResponse(user.Firstname, cmd.Username, token, refreshToken.Token, tokenExpiry, roles));
+                    return Result.Ok(new JwtResponse(cmd.Username, token, refreshToken.Token, tokenExpiry, roles));
                 }
             }
 

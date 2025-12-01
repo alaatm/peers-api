@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Peers.Core.Http;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Users.Commands;
 
@@ -21,7 +22,7 @@ public class DeleteAccountTests : IntegrationTestBase
         var result = await SendAsync(new DeleteAccount.Command(), customer);
 
         // Assert
-        Assert.IsType<NoContent>(result);
+        AssertX.IsType<NoContent>(result);
 
         customer = await FindAsync<Customer>(customer.Id, "User");
         Assert.True(customer.User.IsDeleted);
@@ -39,9 +40,22 @@ public class DeleteAccountTests : IntegrationTestBase
         var result = await SendAsync(new DeleteAccount.Command(), customer);
 
         // Assert
-        Assert.IsType<NoContent>(result);
+        AssertX.IsType<NoContent>(result);
 
         customer = await FindAsync<Customer>(customer.Id, "User");
         Assert.True(customer.User.IsDeleted);
+    }
+
+    [SkippableFact(typeof(PlatformNotSupportedException))]
+    public async Task Returns_Forbidden_when_seller_account()
+    {
+        // Arrange
+        var seller = await EnrollSeller();
+
+        // Act
+        var result = await SendAsync(new DeleteAccount.Command(), seller);
+
+        // Assert
+        AssertX.IsType<ForbiddenHttpResult<ProblemDetails>>(result);
     }
 }

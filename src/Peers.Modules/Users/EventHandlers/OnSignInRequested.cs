@@ -30,14 +30,16 @@ public sealed class OnSignInRequested : INotificationHandler<SignInRequested>
         var user = await _context
             .Users
             .AsNoTracking()
-            .FirstAsync(p => p.UserName == notification.Username, cancellationToken);
+            .FirstAsync(p =>
+                p.UserName == notification.Username ||
+                p.PhoneNumber == notification.PhoneNumber, cancellationToken);
 
         var uiCulture = Thread.CurrentThread.CurrentUICulture;
         Thread.CurrentThread.CurrentUICulture = new CultureInfo(notification.LangCode);
 
         if (_totpProvider.TryGenerate(user, TotpPurpose.SignInPurpose, out var otp))
         {
-            await _sms.SendAsync(notification.Username, _l["Your Peers verification code is: {0}", otp]);
+            await _sms.SendAsync(user.PhoneNumber!, _l["Your Peers verification code is: {0}", otp]);
         }
 
         Thread.CurrentThread.CurrentUICulture = uiCulture;

@@ -115,7 +115,6 @@ public class CreateTokenMfaTests : IntegrationTestBase
         var objResult = AssertX.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
         var user = (await FindAsync<Customer>(p => p.Username == cmd.Username, "User.RefreshTokens")).User;
-        Assert.Equal(user.Firstname, response.Name);
         Assert.Equal(cmd.Username, response.Username);
         Assert.NotEmpty(response.Token);
         Assert.Equal(user.RefreshTokens.Single().Token, response.RefreshToken);
@@ -164,7 +163,6 @@ public class CreateTokenPasswordTests : IntegrationTestBase
         var objResult = AssertX.IsType<Ok<JwtResponse>>(result);
         var response = objResult.Value;
         var user = await FindAsync<AppUser>(p => p.UserName == manager.UserName, "RefreshTokens");
-        Assert.Equal(user.Firstname, response.Name);
         Assert.Equal(manager.UserName, response.Username);
         Assert.NotEmpty(response.Token);
         Assert.Equal(user.RefreshTokens.Single().Token, response.RefreshToken);

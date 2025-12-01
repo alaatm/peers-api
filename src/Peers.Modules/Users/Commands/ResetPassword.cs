@@ -1,7 +1,6 @@
 using Humanizer;
 using Peers.Core.Communication.Email;
 using Peers.Core.Cqrs.Pipeline;
-using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Domain;
 
 namespace Peers.Modules.Users.Commands;
@@ -44,7 +43,6 @@ public static class ResetPassword
             {
                 var otp = await _userManager.GeneratePasswordResetTokenAsync(user);
                 await _email.SendAsync(_l["Password Reset"], _l["Your password reset code is: {0}", otp], user.Email!);
-                return Result.Accepted(value: new OtpResponse(cmd.Username));
             }
 
             // Always return accepted even when not found to prevent

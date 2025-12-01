@@ -1,9 +1,10 @@
 using System.Globalization;
+using Microsoft.Extensions.Caching.Memory;
 using Peers.Core.Communication.Sms;
 using Peers.Core.Security.StrongKeys;
 using Peers.Core.Security.Totp.Configuration;
+using Peers.Modules.Users.Commands;
 using Peers.Modules.Users.Events;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Peers.Modules.Users.EventHandlers;
 
@@ -35,7 +36,9 @@ public sealed class OnEnrollRequested : INotificationHandler<EnrollRequested>
 
         if (!otpExists)
         {
-            await _sms.SendAsync(notification.Username, _l["Your Peers verification code is: {0}", otp]);
+            await _sms.SendAsync(
+                notification.PhoneNumber,
+                _l["Your Peers verification code is: {0}", otp]);
         }
 
         Thread.CurrentThread.CurrentUICulture = uiCulture;
@@ -43,8 +46,9 @@ public sealed class OnEnrollRequested : INotificationHandler<EnrollRequested>
 
     private bool TryGetOrCreateOtp(EnrollRequested notification, TimeSpan expiry, out string otp)
     {
-        var otpExists = _cache.TryGetValue(notification.Username, out string? otpValue);
-        otpValue ??= _cache.Set(notification.Username, _config.UseDefaultOtp ? _config.DefaultOtp : KeyGenerator.Create(4, true), expiry);
+        var cacheKey = string.Format(CultureInfo.InvariantCulture, EnrollConfirm.Handler.OtpCacheKeyFormat, notification.Username, notification.PhoneNumber);
+        var otpExists = _cache.TryGetValue(cacheKey, out string? otpValue);
+        otpValue ??= _cache.Set(cacheKey, _config.UseDefaultOtp ? _config.DefaultOtp : KeyGenerator.Create(4, true), expiry);
 
         otp = otpValue;
         return otpExists;

@@ -1,4 +1,7 @@
+using System.Globalization;
+using System.Text;
 using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using Peers.Core.Cqrs.Pipeline;
 using Peers.Core.Data.Identity;
 using Peers.Core.Security.Hashing;
@@ -6,49 +9,52 @@ using Peers.Core.Security.Jwt;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Users.Commands.Responses;
 using Peers.Modules.Users.Domain;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Peers.Modules.Users.Commands;
 
 public static class EnrollConfirm
 {
     /// <summary>
-    /// The command.
+    /// Completes the enrollment of a new user.
     /// </summary>
     /// <param name="Otp">The one time password.</param>
     /// <param name="Username">The username.</param>
+    /// <param name="PhoneNumber">The phone number.</param>
     /// <param name="Password">The password (Used only for 'Password' enroll type).</param>
-    /// <param name="FirstName">The first name.</param>
-    /// <param name="LastName">The last name.</param>
     /// <param name="PreferredLanguage">The preferred language for this user.</param>
     public sealed record Command(
         string Otp,
         string Username,
+        string PhoneNumber,
         string? Password,
-        string FirstName,
-        string LastName,
         string PreferredLanguage) : ICommand, IValidatable;
 
     public sealed class Validator : AbstractValidator<Command>
     {
         private static readonly string _otp = nameof(Command.Otp).Humanize();
         private static readonly string _username = nameof(Command.Username).Humanize();
-        private static readonly string _firstName = nameof(Command.FirstName).Humanize();
-        private static readonly string _lastName = nameof(Command.LastName).Humanize();
+        private static readonly string _phoneNumber = nameof(Command.PhoneNumber).Humanize();
         private static readonly string _preferredLanguage = nameof(Command.PreferredLanguage).Humanize();
 
         public Validator([NotNull] IStrLoc l)
         {
             RuleFor(p => p.Otp).NotEmpty().Length(4, 4).WithName(l[_otp]);
-            RuleFor(p => p.FirstName).NotEmpty().WithName(l[_firstName]);
-            RuleFor(p => p.LastName).NotEmpty().WithName(l[_lastName]);
+            RuleFor(p => p.Username)
+                .Username(l)
+                .WithName(l[_username]);
+
+            RuleFor(p => p.PhoneNumber)
+                .PhoneNumber(l)
+                .WithName(l[_phoneNumber]);
+
             RuleFor(p => p.PreferredLanguage).NotEmpty().MinimumLength(2).MaximumLength(5).WithName(l[_preferredLanguage]);
-            RuleFor(p => p.Username).PhoneNumber(l).WithName(l[_username]);
         }
     }
 
     public sealed class Handler : ICommandHandler<Command>
     {
+        internal static readonly CompositeFormat OtpCacheKeyFormat = CompositeFormat.Parse("{0}:{1}");
+
         private readonly PeersContext _context;
         private readonly IdentityUserManager<AppUser, PeersContext> _userManager;
         private readonly TimeProvider _timeProvider;
@@ -85,18 +91,24 @@ public static class EnrollConfirm
                 return Result.BadRequest(_l["You are already authenticated."]);
             }
 
-            if (await _context.Users.AnyAsync(p => p.UserName == cmd.Username, ctk))
+            var normalizedUsername = cmd.Username.Trim();
+            var normalizedPhoneNumber = cmd.PhoneNumber.Trim();
+
+            if (await _context.Users.AnyAsync(p =>
+                p.UserName == normalizedUsername ||
+                p.PhoneNumber == normalizedPhoneNumber, ctk))
             {
-                return Result.Conflict(_l["User already exist."]);
+                return Result.Conflict(_l["Username or phone number already exist."]);
             }
 
-            if (cmd.Otp != _cache.Get<string>(cmd.Username))
+            var cacheKey = string.Format(CultureInfo.InvariantCulture, OtpCacheKeyFormat, normalizedUsername, normalizedPhoneNumber);
+            if (cmd.Otp != _cache.Get<string>(cacheKey))
             {
                 return Result.BadRequest(_l["Invalid verification code."]);
             }
 
             var userRoles = new string[] { Roles.Customer };
-            var user = AppUser.CreateTwoFactorAccount(_timeProvider.UtcNow(), cmd.Username, cmd.FirstName, cmd.LastName, cmd.PreferredLanguage);
+            var user = AppUser.CreateTwoFactorAccount(_timeProvider.UtcNow(), normalizedUsername, normalizedPhoneNumber, cmd.PreferredLanguage);
             var customer = Customer.Create(user, _hmacHash.GenerateKey());
 
             // CreateUserAsync will append additional claims (userId and username) and returns all claims.
@@ -111,7 +123,7 @@ public static class EnrollConfirm
             // will cause EFCore to skip 1 id number when using HiLo which we are using for the AppUser entity.
             _context.Attach(customer);
             await _context.SaveChangesAsync(ctk);
-            return Result.Ok(new JwtResponse(cmd.FirstName, cmd.Username, token, refreshToken.Token, tokenExpiry, userRoles));
+            return Result.Ok(new JwtResponse(normalizedUsername, token, refreshToken.Token, tokenExpiry, userRoles));
         }
     }
 }

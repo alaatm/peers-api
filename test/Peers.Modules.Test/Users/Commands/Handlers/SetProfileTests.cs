@@ -10,7 +10,7 @@ public class SetProfileTests : IntegrationTestBase
 {
     [SkippableFact(typeof(PlatformNotSupportedException))]
     public async Task Requires_customer_role()
-        => await AssertCommandAccess(TestQuery(), [Roles.Customer]);
+        => await AssertCommandAccess(TestCommand(), [Roles.Customer]);
 
     [SkippableFact(typeof(PlatformNotSupportedException))]
     public async Task Returns_conflict_when_email_is_already_taken()
@@ -21,7 +21,7 @@ public class SetProfileTests : IntegrationTestBase
         var customer = await EnrollCustomer();
 
         // Act
-        var result = await SendAsync(TestQuery(email: email), customer);
+        var result = await SendAsync(TestCommand(email: email), customer);
 
         // Assert
         var conflictResult = AssertX.IsType<Conflict<ProblemDetails>>(result);
@@ -34,10 +34,9 @@ public class SetProfileTests : IntegrationTestBase
     {
         // Arrange
         var customer = await EnrollCustomer();
-        var phone = customer.Username;
 
         // Act
-        var result = await SendAsync(TestQuery("John", "Doe", "email@example.com", "ar"), customer);
+        var result = await SendAsync(TestCommand("John", "Doe", "email@example.com", "ar"), customer);
 
         // Assert
         var okResult = AssertX.IsType<Ok<GetProfile.Response>>(result);
@@ -51,7 +50,7 @@ public class SetProfileTests : IntegrationTestBase
 
         Assert.Equal("John", response.Firstname);
         Assert.Equal("Doe", response.Lastname);
-        Assert.Equal(phone, response.Phone);
+        Assert.Equal(customer.User.PhoneNumber, response.Phone);
         Assert.Equal("email@example.com", response.Email);
         Assert.False(response.IsVerifiedEmail);
         Assert.Equal("ar", response.PreferredLanguage);
@@ -71,7 +70,7 @@ public class SetProfileTests : IntegrationTestBase
         });
 
         // Act
-        var result = await SendAsync(TestQuery(email: "new@example.com"), customer);
+        var result = await SendAsync(TestCommand(email: "new@example.com"), customer);
 
         // Assert
         var okResult = AssertX.IsType<Ok<GetProfile.Response>>(result);
@@ -86,6 +85,6 @@ public class SetProfileTests : IntegrationTestBase
         Assert.False(response.IsVerifiedEmail);
     }
 
-    private static SetProfile.Command TestQuery(string firstname = null, string lastname = null, string email = null, string preferredLang = null)
+    private static SetProfile.Command TestCommand(string firstname = null, string lastname = null, string email = null, string preferredLang = null)
         => new(firstname, lastname, email, preferredLang);
 }

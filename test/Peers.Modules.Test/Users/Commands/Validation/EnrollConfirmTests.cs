@@ -8,10 +8,10 @@ public class EnrollConfirmTests : CommandValidatorTestBase<EnrollConfirm.Command
     public void ValidateTest()
     {
         CheckLen(p => p.Otp, 4);
-        CheckNotEmpty(p => p.FirstName);
         CheckNotEmpty(p => p.PreferredLanguage);
         CheckLen(p => p.PreferredLanguage, 2, 5);
-        CheckPhone(p => p.Username);
+        CheckNotEmpty(p => p.Username);
+        CheckPhone(p => p.PhoneNumber);
         CheckOk();
     }
 

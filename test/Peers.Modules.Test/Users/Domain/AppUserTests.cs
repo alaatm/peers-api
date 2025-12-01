@@ -7,10 +7,18 @@ namespace Peers.Modules.Test.Users.Domain;
 public class AppUserTests : DomainEntityTestBase
 {
     [Fact]
+    public void CreateTwoFactorAccount_throws_on_invalid_username()
+    {
+        // Arrange, act & assert
+        var ex = Assert.Throws<ArgumentException>(() => AppUser.CreateTwoFactorAccount(DateTime.UtcNow, "++", "+966511111111", "en"));
+        Assert.Equal("Invalid username format. (Parameter 'username')", ex.Message);
+    }
+
+    [Fact]
     public void CreateTwoFactorAccount_throws_on_invalid_phoneNumber()
     {
         // Arrange, act & assert
-        var ex = Assert.Throws<ArgumentException>(() => AppUser.CreateTwoFactorAccount(DateTime.UtcNow, "invalid", "firstname", "lastname", "en"));
+        var ex = Assert.Throws<ArgumentException>(() => AppUser.CreateTwoFactorAccount(DateTime.UtcNow, "Dapp", "invalid", "en"));
         Assert.Equal("Invalid phone number format. (Parameter 'phoneNumber')", ex.Message);
     }
 
@@ -19,23 +27,20 @@ public class AppUserTests : DomainEntityTestBase
     {
         // Arrange
         var date = DateTime.UtcNow;
+        var username = TestUsername();
         var phoneNumber = TestPhoneNumber();
-        var firstname = $" {new Bogus.DataSets.Name().FirstName()} ";
-        var lastname = $" {new Bogus.DataSets.Name().LastName()} ";
         var lang = Lang.EnLangCode;
 
         // Act
-        var user = AppUser.CreateTwoFactorAccount(date, phoneNumber, firstname, lastname, lang);
+        var user = AppUser.CreateTwoFactorAccount(date, username, phoneNumber, lang);
 
         // Assert
         Assert.Equal(UserStatus.Active, user.Status);
-        Assert.Equal(phoneNumber, user.UserName);
+        Assert.Equal(username, user.UserName);
         Assert.Equal(phoneNumber, user.PhoneNumber);
         Assert.True(user.PhoneNumberConfirmed);
         Assert.True(user.TwoFactorEnabled);
         Assert.Equal(date, user.RegisteredOn);
-        Assert.Equal(firstname.Trim(), user.Firstname);
-        Assert.Equal(lastname.Trim(), user.Lastname);
         Assert.Equal(lang, user.PreferredLanguage);
 
         Assert.Null(user.Email);

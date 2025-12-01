@@ -14,8 +14,8 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20251129033231_ProductTypeLineageFunc")]
-    partial class ProductTypeLineageFunc
+    [Migration("20251201060953_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -496,8 +496,6 @@ namespace Peers.Modules.Migrations
                         .IsUnique();
 
                     b.ToTable("customer", (string)null);
-
-                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("Peers.Modules.Customers.Domain.CustomerAddress", b =>
@@ -1220,6 +1218,30 @@ namespace Peers.Modules.Migrations
                     b.ToTable("order", (string)null);
                 });
 
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("username");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("seller", (string)null);
+                });
+
             modelBuilder.Entity("Peers.Modules.Sellers.Domain.ShippingProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -1493,7 +1515,6 @@ namespace Peers.Modules.Migrations
                         .HasColumnName("email_confirmed");
 
                     b.Property<string>("Firstname")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("firstname");
@@ -1571,6 +1592,7 @@ namespace Peers.Modules.Migrations
                         .HasColumnName("updated_email");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)")
                         .HasColumnName("user_name");
@@ -1587,11 +1609,14 @@ namespace Peers.Modules.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[normalized_user_name] IS NOT NULL");
 
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[phone_number] IS NOT NULL");
+
                     b.HasIndex("Status");
 
                     b.HasIndex("UserName")
-                        .IsUnique()
-                        .HasFilter("[user_name] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("app_user", "id");
                 });
@@ -2042,13 +2067,6 @@ namespace Peers.Modules.Migrations
                         });
 
                     b.HasDiscriminator().HasValue(2);
-                });
-
-            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
-                {
-                    b.HasBaseType("Peers.Modules.Customers.Domain.Customer");
-
-                    b.ToTable("seller", (string)null);
                 });
 
             modelBuilder.Entity("Peers.Modules.Customers.Domain.ApplePay", b =>
@@ -2743,7 +2761,7 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Ordering.Domain.Order", b =>
                 {
                     b.HasOne("Peers.Modules.Customers.Domain.Customer", "Buyer")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2753,7 +2771,7 @@ namespace Peers.Modules.Migrations
                         .HasForeignKey("PaymentMethodId");
 
                     b.HasOne("Peers.Modules.Sellers.Domain.Seller", "Seller")
-                        .WithMany("Orders")
+                        .WithMany("ReceivedOrders")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2828,6 +2846,65 @@ namespace Peers.Modules.Migrations
                     b.Navigation("PaymentMethod");
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.HasOne("Peers.Modules.Users.Domain.AppUser", "User")
+                        .WithOne()
+                        .HasForeignKey("Peers.Modules.Sellers.Domain.Seller", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Peers.Modules.Sellers.Domain.NafathInfo", "Nafath", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("FirstNameAr")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("first_name_ar");
+
+                            b1.Property<string>("FirstNameEn")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("first_name_en");
+
+                            b1.Property<string>("Gender")
+                                .HasMaxLength(1)
+                                .HasColumnType("nvarchar(1)")
+                                .HasColumnName("gender");
+
+                            b1.Property<string>("LastNameAr")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("last_name_ar");
+
+                            b1.Property<string>("LastNameEn")
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("last_name_en");
+
+                            b1.Property<string>("NationalId")
+                                .IsRequired()
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("national_id");
+
+                            b1.HasKey("Id");
+
+                            b1.ToTable("nafath_info", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("Id");
+                        });
+
+                    b.Navigation("Nafath")
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Peers.Modules.Sellers.Domain.ShippingProfile", b =>
@@ -3065,63 +3142,6 @@ namespace Peers.Modules.Migrations
                     b.Navigation("GroupDefinition");
                 });
 
-            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
-                {
-                    b.HasOne("Peers.Modules.Customers.Domain.Customer", null)
-                        .WithOne()
-                        .HasForeignKey("Peers.Modules.Sellers.Domain.Seller", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("Peers.Modules.Sellers.Domain.NafathInfo", "Nafath", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .HasColumnType("int")
-                                .HasColumnName("id");
-
-                            b1.Property<string>("FirstNameAr")
-                                .HasMaxLength(64)
-                                .HasColumnType("nvarchar(64)")
-                                .HasColumnName("first_name_ar");
-
-                            b1.Property<string>("FirstNameEn")
-                                .HasMaxLength(64)
-                                .HasColumnType("nvarchar(64)")
-                                .HasColumnName("first_name_en");
-
-                            b1.Property<string>("Gender")
-                                .HasMaxLength(1)
-                                .HasColumnType("nvarchar(1)")
-                                .HasColumnName("gender");
-
-                            b1.Property<string>("LastNameAr")
-                                .HasMaxLength(64)
-                                .HasColumnType("nvarchar(64)")
-                                .HasColumnName("last_name_ar");
-
-                            b1.Property<string>("LastNameEn")
-                                .HasMaxLength(64)
-                                .HasColumnType("nvarchar(64)")
-                                .HasColumnName("last_name_en");
-
-                            b1.Property<string>("NationalId")
-                                .IsRequired()
-                                .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)")
-                                .HasColumnName("national_id");
-
-                            b1.HasKey("Id");
-
-                            b1.ToTable("nafath_info", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("Id");
-                        });
-
-                    b.Navigation("Nafath")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
                 {
                     b.Navigation("Translations");
@@ -3144,6 +3164,8 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Customers.Domain.Customer", b =>
                 {
                     b.Navigation("AddressList");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("PaymentMethods");
                 });
@@ -3174,6 +3196,15 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Original");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
+                {
+                    b.Navigation("Listings");
+
+                    b.Navigation("ReceivedOrders");
+
+                    b.Navigation("ShippingProfiles");
+                });
+
             modelBuilder.Entity("Peers.Modules.Settings.Domain.PrivacyPolicy", b =>
                 {
                     b.Navigation("Translations");
@@ -3201,15 +3232,6 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.GroupAttributeDefinition", b =>
                 {
                     b.Navigation("Members");
-                });
-
-            modelBuilder.Entity("Peers.Modules.Sellers.Domain.Seller", b =>
-                {
-                    b.Navigation("Listings");
-
-                    b.Navigation("Orders");
-
-                    b.Navigation("ShippingProfiles");
                 });
 #pragma warning restore 612, 618
         }
