@@ -10,6 +10,7 @@ using Peers.Core.GoogleServices;
 using Peers.Core.Localization;
 using Peers.Core.Media;
 using Peers.Core.Nafath;
+using Peers.Core.Payments;
 using Peers.Core.RateLimiting;
 using Peers.Core.Security.Hashing;
 using Peers.Core.Security.Jwt;
@@ -104,6 +105,7 @@ public static class ServiceCollectionExtensions
             .AddPushNotifications(config)
             .AddSms(config)
             .AddEmail(config)
+            .AddPaymentGateway(config)
             .AddIdentityInfo()
             .AddJwt(config)
             .AddHmacHash()

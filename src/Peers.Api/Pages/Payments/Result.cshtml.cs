@@ -29,7 +29,6 @@ public class ResultModel : PageModel
     private readonly IMemoryCache _cache;
 
     public bool Success { get; private set; }
-    public int? PaymentCardId { get; private set; }
     public string? Message { get; private set; }
 
     public ResultModel(
@@ -72,12 +71,10 @@ public class ResultModel : PageModel
             Success = status == "authorized";
             Message = message;
 
-            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(paymentId: id);
+            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(id);
 
             if (Success)
             {
-                PaymentCardId = tokenizedCard.Id;
-
                 // Void the tokenization payment.
                 await _paymentProvider.VoidPaymentAsync(tokenizedCard.PaymentId, 1, "Void tokenization payment", null);
 
@@ -88,7 +85,7 @@ public class ResultModel : PageModel
             }
             else
             {
-                customer.DeletePaymentCard(tokenizedCard, _timeProvider.UtcNow());
+                customer.DeletePaymentCard(tokenizedCard, _timeProvider.UtcNow(), force: true);
                 await _context.SaveChangesAsync();
             }
         }
@@ -111,16 +108,14 @@ public class ResultModel : PageModel
         var form = Request.Form;
         var respMessage = form["respMessage"];
         var respStatus = form["respStatus"];
-        var token = form["token"];
+        var paymentId = form["tranRef"];
 
         Success = respStatus == "A";
         Message = respMessage;
 
         if (Success)
         {
-            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(token: token);
-
-            PaymentCardId = tokenizedCard.Id;
+            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(paymentId);
 
             // Void the tokenization payment.
             await _paymentProvider.VoidPaymentAsync(tokenizedCard.PaymentId, 1, "Void tokenization payment", null);
@@ -192,7 +187,7 @@ public class ResultModel : PageModel
         return CryptographicOperations.FixedTimeEquals(computedBytes, incomingBytes);
     }
 
-    private async Task<(Customer customer, PaymentCard tokenizedCard)> GetCustomerAndCardAsync(string? paymentId = null, string? token = null)
+    private async Task<(Customer customer, PaymentCard tokenizedCard)> GetCustomerAndCardAsync(string? paymentId)
     {
         var customer = await _context
             .Customers
@@ -209,14 +204,9 @@ public class ResultModel : PageModel
             var tokenizedCard = cards.Single(p => p.PaymentId == paymentId);
             return (customer, tokenizedCard);
         }
-        else if (token is not null)
-        {
-            var tokenizedCard = cards.Single(p => p.Token == token);
-            return (customer, tokenizedCard);
-        }
         else
         {
-            Debug.Assert(false, "Either paymentId or token must be provided.");
+            Debug.Assert(false, "paymentId is null.");
             return (null!, null!);
         }
     }

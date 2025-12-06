@@ -64,6 +64,7 @@ public static class WebApplicationExtensions
         app.UseAuthentication();
         //app.UseOutputCache();
         app.UseRateLimiter();
+        app.UseAuthorization();
         app.UseLocalization();
 
         var all = app.MapGroup("/api/v1");

@@ -10,7 +10,7 @@ namespace Peers.Modules.Customers.Domain;
 /// <summary>
 /// Represents a system user of type <see cref="Customer"/>.
 /// </summary>
-public class Customer : Entity, ISystemUser, IAggregateRoot
+public sealed class Customer : Entity, ISystemUser, IAggregateRoot
 {
     /// <summary>
     /// The username.
@@ -235,7 +235,11 @@ public class Customer : Entity, ISystemUser, IAggregateRoot
     /// </summary>
     /// <param name="cardToDelete">The payment method to delete.</param>
     /// <param name="date">The date when the payment method was deleted.</param>
-    public void DeletePaymentCard(PaymentCard cardToDelete, DateTime date)
+    /// <param name="force">
+    /// If set to true, by-passes checks for pending payments.
+    /// This is only forced when deleting a just created payment card that failed verification.
+    /// </param>
+    public void DeletePaymentCard(PaymentCard cardToDelete, DateTime date, bool force = false)
     {
         if (cardToDelete is null ||
             !PaymentMethods.Where(p => !p.IsDeleted).Contains(cardToDelete))
@@ -243,7 +247,7 @@ public class Customer : Entity, ISystemUser, IAggregateRoot
             throw new DomainException(E.PaymentCardNotFound);
         }
 
-        if (Orders.Any(p =>
+        if (!force && Orders.Any(p =>
             p.PaymentMethod == cardToDelete &&
             p.State is not OrderState.Closed and not OrderState.Cancelled))
         {
