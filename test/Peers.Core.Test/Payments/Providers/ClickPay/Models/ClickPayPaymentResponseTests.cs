@@ -5,6 +5,30 @@ namespace Peers.Core.Test.Payments.Providers.ClickPay.Models;
 
 public class ClickPayPaymentResponseTests
 {
+    [Theory]
+    [InlineData("A", true)]
+    [InlineData("a", false)]
+    [InlineData("E", false)]
+    public void ToGeneric_sets_IsSuccessful_based_on_ResponseStatus(string responseStatus, bool expectedIsSuccessful)
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var paymentResponse = new ClickPayPaymentResponse
+        {
+            TranRef = "123",
+            TranType = ClickPayPaymentResponse.StatusPaid,
+            CartAmount = "100.50",
+            CartCurrency = "USD",
+            PaymentResult = new ClickPayPaymentResult { TransactionTime = now, ResponseStatus = responseStatus },
+        };
+
+        // Act
+        var result = paymentResponse.ToGeneric();
+
+        // Assert
+        Assert.Equal(expectedIsSuccessful, result.IsSuccessful);
+    }
+
     [Fact]
     public void ToGeneric_returns_correct_PaymentResponse_for_Payment()
     {
@@ -28,6 +52,7 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -53,6 +78,7 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -78,6 +104,7 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -103,6 +130,7 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -128,6 +156,7 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -153,5 +182,6 @@ public class ClickPayPaymentResponseTests
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 }

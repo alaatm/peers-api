@@ -112,7 +112,7 @@ public interface IPaymentProvider
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
     /// <returns></returns>
-    Task<object?> FetchPaymentAsync(string paymentId);
+    Task<PaymentResponse?> FetchPaymentAsync(string paymentId);
     /// <summary>
     /// Fetches payment card details by the token id.
     /// </summary>

@@ -28,6 +28,8 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(100.00m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -53,6 +55,8 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(100.00m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -79,6 +83,8 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(100.00m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -106,6 +112,8 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(100.00m, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -131,6 +139,8 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(0, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(now, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
     }
 
     [Fact]
@@ -155,5 +165,27 @@ public class MoyasarPaymentResponseTests
         Assert.Equal(0, result.Amount);
         Assert.Equal("USD", result.Currency);
         Assert.Equal(DateTime.MinValue, result.Timestamp);
+        Assert.True(result.IsSuccessful);
+        Assert.Same(paymentResponse, result.ProviderSpecificResponse);
+    }
+
+    [Fact]
+    public void ToGeneric_sets_IsSuccessfull_to_false_when_status_is_failed()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var paymentResponse = new MoyasarPaymentResponse
+        {
+            Id = "123",
+            Amount = 20000,
+            Currency = "USD",
+            Status = MoyasarPaymentResponse.StatusFailed,
+        };
+
+        // Act
+        var result = paymentResponse.ToGeneric();
+
+        // Assert
+        Assert.False(result.IsSuccessful);
     }
 }

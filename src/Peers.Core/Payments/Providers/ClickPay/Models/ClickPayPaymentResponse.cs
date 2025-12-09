@@ -81,6 +81,8 @@ public sealed class ClickPayPaymentResponse
             _ => PaymentOperationType.Unknown,
         };
 
+        var isSuccessful = PaymentResult.ResponseStatus is "A";
+
         return new PaymentResponse
         {
             PaymentId = TranRef,
@@ -89,6 +91,8 @@ public sealed class ClickPayPaymentResponse
             Amount = decimal.Parse(CartAmount, CultureInfo.InvariantCulture),
             Currency = CartCurrency,
             Timestamp = PaymentResult.TransactionTime,
+            IsSuccessful = isSuccessful,
+            ProviderSpecificResponse = this,
         };
     }
 }

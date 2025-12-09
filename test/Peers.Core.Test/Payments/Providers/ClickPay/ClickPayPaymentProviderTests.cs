@@ -767,7 +767,7 @@ public class ClickPayPaymentProviderTests
         var provider = new ClickPayPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = (ClickPayPaymentResponse)await provider.FetchPaymentAsync(paymentId);
+        var result = (ClickPayPaymentResponse)(await provider.FetchPaymentAsync(paymentId)).ProviderSpecificResponse;
 
         // Assert
         Assert.Equal(paymentResponse.TranRef, result.TranRef);

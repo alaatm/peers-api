@@ -236,11 +236,15 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
     /// <returns></returns>
-    public async Task<object?> FetchPaymentAsync(string paymentId)
-        => await SendRequestAsync<ClickPayPaymentResponse>(
+    public async Task<PaymentResponse?> FetchPaymentAsync(string paymentId)
+    {
+        var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentQueryEndpoint,
             ClickPayTransactionRequest.CreateQuery(_config.ProfileId, paymentId));
+
+        return response?.ToGeneric();
+    }
 
     /// <summary>
     /// Fetches payment card details by the token id.

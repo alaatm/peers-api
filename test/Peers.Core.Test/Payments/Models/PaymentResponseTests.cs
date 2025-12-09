@@ -11,8 +11,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", nullParent ? null : "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", nullParent ? null : "000", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", nullParent ? null : "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", nullParent ? null : "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -28,8 +28,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("456", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("456", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -45,8 +45,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "111", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "111", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -62,8 +62,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Refund, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Refund, 100.00m, "USD", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -79,8 +79,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 200.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 200.00m, "USD", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -96,8 +96,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "EUR", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "EUR", now, default);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -113,8 +113,25 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now.AddMinutes(1));
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now.AddMinutes(1), default);
+
+        // Act
+        var result1 = paymentResponse1.Equals(paymentResponse2);
+        var result2 = paymentResponse1.Equals((object)paymentResponse2);
+
+        // Assert
+        Assert.False(result1);
+        Assert.False(result2);
+    }
+
+    [Fact]
+    public void Equals_ShouldReturnFalse_WhenIsSuccessfulAreDifferent()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, true);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, false);
 
         // Act
         var result1 = paymentResponse1.Equals(paymentResponse2);
@@ -130,7 +147,7 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
         PaymentResponse typedNull = null;
         object objNull = null;
 
@@ -148,8 +165,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -164,8 +181,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("456", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("456", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -180,8 +197,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "111", PaymentOperationType.Payment, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "111", PaymentOperationType.Payment, 100.00m, "USD", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -196,8 +213,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Refund, 100.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Refund, 100.00m, "USD", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -212,8 +229,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 200.00m, "USD", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 200.00m, "USD", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -228,8 +245,8 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "EUR", now);
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "EUR", now, default);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -244,8 +261,24 @@ public class PaymentResponseTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now);
-        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now.AddMinutes(1));
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, default);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now.AddMinutes(1), default);
+
+        // Act
+        var hashCode1 = paymentResponse1.GetHashCode();
+        var hashCode2 = paymentResponse2.GetHashCode();
+
+        // Assert
+        Assert.NotEqual(hashCode1, hashCode2);
+    }
+
+    [Fact]
+    public void GetHashCode_ShouldReturnDifferentValues_WhenIsSuccessfulAreDifferent()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var paymentResponse1 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, true);
+        var paymentResponse2 = TestPaymentResponse("123", "000", PaymentOperationType.Payment, 100.00m, "USD", now, false);
 
         // Act
         var hashCode1 = paymentResponse1.GetHashCode();
@@ -261,7 +294,8 @@ public class PaymentResponseTests
         PaymentOperationType operation,
         decimal amount,
         string currency,
-        DateTime timestamp) => new()
+        DateTime timestamp,
+        bool isSuccessful) => new()
         {
             PaymentId = paymentId,
             ParentPaymentId = parentPaymentId,
@@ -269,5 +303,7 @@ public class PaymentResponseTests
             Amount = amount,
             Currency = currency,
             Timestamp = timestamp,
+            IsSuccessful = isSuccessful,
+            ProviderSpecificResponse = null!,
         };
 }

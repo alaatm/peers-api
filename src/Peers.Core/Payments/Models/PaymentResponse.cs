@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Peers.Core.Payments.Models;
 
 /// <summary>
@@ -35,9 +37,18 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
     /// </summary>
     public required DateTime Timestamp { get; init; }
     /// <summary>
+    /// Indicates whether the payment operation was successful.
+    /// </summary>
+    public required bool IsSuccessful { get; init; }
+    /// <summary>
+    /// The raw response object from the payment provider.
+    /// </summary>
+    [NotMapped]
+    public object? ProviderSpecificResponse { get; set; }
+    /// <summary>
     /// User-defined errors that occurred after attempting to post-process the payment.
     /// </summary>
-    public ICollection<string>? Errors { get; set; }
+    public List<string>? Errors { get; set; }
 
     public bool Equals(PaymentResponse? other) =>
         other is not null &&
@@ -46,11 +57,12 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
         Operation == other.Operation &&
         Amount == other.Amount &&
         Currency == other.Currency &&
-        Timestamp == other.Timestamp;
+        Timestamp == other.Timestamp &&
+        IsSuccessful == other.IsSuccessful;
 
     public override bool Equals(object? obj)
         => obj is PaymentResponse other && Equals(other);
 
     public override int GetHashCode()
-        => HashCode.Combine(PaymentId, ParentPaymentId, Operation, Amount, Currency, Timestamp);
+        => HashCode.Combine(PaymentId, ParentPaymentId, Operation, Amount, Currency, Timestamp, IsSuccessful);
 }

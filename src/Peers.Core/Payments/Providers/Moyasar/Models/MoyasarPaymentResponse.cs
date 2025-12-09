@@ -8,11 +8,13 @@ namespace Peers.Core.Payments.Providers.Moyasar.Models;
 /// </summary>
 public class MoyasarPaymentResponse
 {
+    public const string StatusInitiated = "initiated";
     public const string StatusPaid = "paid";
     public const string StatusAuth = "authorized";
     public const string StatusCapture = "captured";
     public const string StatusRefund = "refunded";
     public const string StatusVoid = "voided";
+    public const string StatusFailed = "failed";
 
     [JsonPropertyName("id")]
     public string Id { get; set; } = default!;
@@ -92,6 +94,8 @@ public class MoyasarPaymentResponse
             _ => (PaymentOperationType.Unknown, 0, DateTime.MinValue),
         };
 
+        var isSuccessful = Status is not StatusFailed;
+
         return new PaymentResponse
         {
             PaymentId = Id,
@@ -99,6 +103,8 @@ public class MoyasarPaymentResponse
             Amount = amount / 100m,
             Currency = Currency,
             Timestamp = timestamp,
+            IsSuccessful = isSuccessful,
+            ProviderSpecificResponse = this,
         };
     }
 }

@@ -277,11 +277,15 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
     /// <returns></returns>
-    public async Task<object?> FetchPaymentAsync(string paymentId)
-        => await SendRequestAsync<MoyasarPaymentResponse>(
+    public async Task<PaymentResponse?> FetchPaymentAsync(string paymentId)
+    {
+        var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Get,
             Format(FetchPaymentEndpoint, paymentId),
             null);
+
+        return response?.ToGeneric();
+    }
 
     /// <summary>
     /// Fetches payment card details by the token id.

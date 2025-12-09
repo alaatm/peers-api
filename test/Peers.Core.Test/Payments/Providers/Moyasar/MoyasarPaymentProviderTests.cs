@@ -680,7 +680,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = (MoyasarPaymentResponse)await provider.FetchPaymentAsync(paymentId);
+        var result = (MoyasarPaymentResponse)(await provider.FetchPaymentAsync(paymentId)).ProviderSpecificResponse;
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.Id);
