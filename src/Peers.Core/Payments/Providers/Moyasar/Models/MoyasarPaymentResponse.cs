@@ -96,9 +96,13 @@ public class MoyasarPaymentResponse
 
         var isSuccessful = Status is not StatusFailed;
 
+        string? orderId = null;
+        Metadata?.TryGetValue(PaymentInfo.OrderIdKey, out orderId);
+
         return new PaymentResponse
         {
             PaymentId = Id,
+            OrderId = orderId,
             Operation = operation,
             Amount = amount / 100m,
             Currency = Currency,

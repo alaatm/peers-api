@@ -21,13 +21,14 @@ public class WebApplicationExtensionsTestsBase
 
         // Assert
         var middlewareList = GetMiddlewareList(app);
-        Assert.Equal(6, middlewareList.Count);
+        Assert.Equal(7, middlewareList.Count);
         Assert.Equal("DefaultFilesMiddleware", middlewareList[0].Name);
         Assert.Equal("HttpsRedirectionMiddleware", middlewareList[1].Name);
         Assert.Contains("MapWhenExtension", middlewareList[2].FullName); // RobotsTxtMiddleware
         Assert.Contains("AuthenticationMiddleware", middlewareList[3].FullName);
         Assert.Equal("RateLimitingMiddleware", middlewareList[4].Name);
-        Assert.Equal("RequestLocalizationMiddleware", middlewareList[5].Name);
+        Assert.Contains("AuthorizationMiddleware", middlewareList[5].FullName);
+        Assert.Equal("RequestLocalizationMiddleware", middlewareList[6].Name);
     }
 
     [Fact]
@@ -41,14 +42,15 @@ public class WebApplicationExtensionsTestsBase
 
         // Assert
         var middlewareList = GetMiddlewareList(app);
-        Assert.Equal(7, middlewareList.Count);
+        Assert.Equal(8, middlewareList.Count);
         Assert.Equal("DefaultFilesMiddleware", middlewareList[0].Name);
         Assert.Contains("ExceptionHandlerExtensions", middlewareList[1].ToString());
         Assert.Equal("HttpsRedirectionMiddleware", middlewareList[2].Name);
         Assert.Contains("MapWhenExtension", middlewareList[3].FullName); // RobotsTxtMiddleware
         Assert.Contains("AuthenticationMiddleware", middlewareList[4].FullName);
         Assert.Equal("RateLimitingMiddleware", middlewareList[5].Name);
-        Assert.Equal("RequestLocalizationMiddleware", middlewareList[6].Name);
+        Assert.Contains("AuthorizationMiddleware", middlewareList[6].FullName);
+        Assert.Equal("RequestLocalizationMiddleware", middlewareList[7].Name);
     }
 
     private static WebApplication BuildApp(string environmentName)

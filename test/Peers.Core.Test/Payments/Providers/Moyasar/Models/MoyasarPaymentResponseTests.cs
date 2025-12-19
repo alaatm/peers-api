@@ -1,3 +1,4 @@
+using Peers.Core.Payments;
 using Peers.Core.Payments.Models;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 
@@ -5,6 +6,30 @@ namespace Peers.Core.Test.Payments.Providers.Moyasar.Models;
 
 public class MoyasarPaymentResponseTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ToGeneric_sets_null_orderId_when_no_matching_metadata_entry_exist(bool metadataExist)
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var paymentResponse = new MoyasarPaymentResponse
+        {
+            Id = "123",
+            Amount = 10000,
+            Currency = "USD",
+            CreatedAt = now,
+            Status = MoyasarPaymentResponse.StatusPaid,
+            Metadata = metadataExist ? [] : null,
+        };
+
+        // Act
+        var result = paymentResponse.ToGeneric();
+
+        // Assert
+        Assert.Null(result.OrderId);
+    }
+
     [Fact]
     public void ToGeneric_returns_correct_PaymentResponse_for_Payment()
     {
@@ -17,6 +42,7 @@ public class MoyasarPaymentResponseTests
             Currency = "USD",
             CreatedAt = now,
             Status = MoyasarPaymentResponse.StatusPaid,
+            Metadata = new Dictionary<string, string> { [PaymentInfo.OrderIdKey] = "ORD123" },
         };
 
         // Act
@@ -24,6 +50,7 @@ public class MoyasarPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Payment, result.Operation);
         Assert.Equal(100.00m, result.Amount);
         Assert.Equal("USD", result.Currency);

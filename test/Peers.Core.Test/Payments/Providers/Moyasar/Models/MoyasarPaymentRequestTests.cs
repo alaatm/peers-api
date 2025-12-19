@@ -1,3 +1,4 @@
+using Peers.Core.Payments;
 using Peers.Core.Payments.Models;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 
@@ -6,18 +7,25 @@ namespace Peers.Core.Test.Payments.Providers.Moyasar.Models;
 public class MoyasarPaymentRequestTests
 {
     [Fact]
-    public void Create_with_amount_with_more_than_two_decimal_places__throws_ArgumentException()
+    public void Create_initializes_metadata_if_not_already_set()
     {
         // Arrange
-        var amount = 1.234m;
+        var amount = 1.23m;
+        var token = Guid.NewGuid().ToString();
+        var description = "description";
+        var info = PaymentInfo.ForTransactionApi(amount, "orderId", description, metadata: null);
+
+        var expectedMetadata = new Dictionary<string, string>()
+        {
+            { PaymentInfo.OrderIdKey, "orderId" },
+        };
 
         // Act
-        var exception = Record.Exception(() => MoyasarPaymentRequest.Create(default, amount, default, default, default, default));
+        var paymentRequest = MoyasarPaymentRequest.Create(PaymentSourceType.TokenizedCard, true, token, info);
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
-        Assert.Equal("Amount must be in SAR and have a maximum of 2 decimal places. (Parameter 'amount')", exception.Message);
+        Assert.NotNull(paymentRequest);
+        Assert.Equal(expectedMetadata, paymentRequest.Metadata);
     }
 
     [Theory]
@@ -30,15 +38,22 @@ public class MoyasarPaymentRequestTests
         var token = Guid.NewGuid().ToString();
         var description = "description";
         var metadata = new Dictionary<string, string>() { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "orderId", description, metadata: metadata);
+
+        var expectedMetadata = new Dictionary<string, string>()
+        {
+            { "k", "v" },
+            { PaymentInfo.OrderIdKey, "orderId" },
+        };
 
         // Act
-        var paymentRequest = MoyasarPaymentRequest.Create(PaymentSourceType.ApplePay, amount, immediateCapture, token, description, metadata);
+        var paymentRequest = MoyasarPaymentRequest.Create(PaymentSourceType.ApplePay, immediateCapture, token, info);
 
         // Assert
         Assert.NotNull(paymentRequest);
         Assert.Equal(123, paymentRequest.Amount);
         Assert.Equal(description, paymentRequest.Description);
-        Assert.Equal(metadata, paymentRequest.Metadata);
+        Assert.Equal(expectedMetadata, paymentRequest.Metadata);
 
         var source = Assert.IsType<MoyasarApplePayPaymentSource>(paymentRequest.Source);
         Assert.Equal(immediateCapture ? "false" : "true", source.Manual);
@@ -55,15 +70,22 @@ public class MoyasarPaymentRequestTests
         var token = Guid.NewGuid().ToString();
         var description = "description";
         var metadata = new Dictionary<string, string>() { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "orderId", description, metadata: metadata);
+
+        var expectedMetadata = new Dictionary<string, string>()
+        {
+            { "k", "v" },
+            { PaymentInfo.OrderIdKey, "orderId" },
+        };
 
         // Act
-        var paymentRequest = MoyasarPaymentRequest.Create(PaymentSourceType.TokenizedCard, amount, immediateCapture, token, description, metadata);
+        var paymentRequest = MoyasarPaymentRequest.Create(PaymentSourceType.TokenizedCard, immediateCapture, token, info);
 
         // Assert
         Assert.NotNull(paymentRequest);
         Assert.Equal(123, paymentRequest.Amount);
         Assert.Equal(description, paymentRequest.Description);
-        Assert.Equal(metadata, paymentRequest.Metadata);
+        Assert.Equal(expectedMetadata, paymentRequest.Metadata);
 
         var source = Assert.IsType<MoyasarTokenPaymentSource>(paymentRequest.Source);
         Assert.Equal(immediateCapture ? "false" : "true", source.Manual);
@@ -79,9 +101,10 @@ public class MoyasarPaymentRequestTests
         var token = Guid.NewGuid().ToString();
         var description = "description";
         var metadata = new Dictionary<string, string>() { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "orderId", description, metadata: metadata);
 
         // Act
-        var exception = Record.Exception(() => MoyasarPaymentRequest.Create((PaymentSourceType)int.MaxValue, amount, false, token, description, metadata));
+        var exception = Record.Exception(() => MoyasarPaymentRequest.Create((PaymentSourceType)int.MaxValue, false, token, info));
 
         // Assert
         Assert.NotNull(exception);

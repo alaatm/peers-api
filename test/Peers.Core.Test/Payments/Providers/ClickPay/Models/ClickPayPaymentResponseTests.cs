@@ -38,6 +38,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = ClickPayPaymentResponse.StatusPaid,
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -48,6 +49,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Payment, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
@@ -64,6 +66,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = ClickPayPaymentResponse.StatusAuth,
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -74,6 +77,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Authorization, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
@@ -90,6 +94,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = ClickPayPaymentResponse.StatusCapture,
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -100,6 +105,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Capture, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
@@ -116,6 +122,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = ClickPayPaymentResponse.StatusRefund,
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -126,6 +133,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Refund, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
@@ -142,6 +150,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = ClickPayPaymentResponse.StatusVoid,
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -152,6 +161,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Void, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);
@@ -168,6 +178,7 @@ public class ClickPayPaymentResponseTests
         {
             TranRef = "123",
             TranType = "?",
+            CartId = "ORD123",
             CartAmount = "100.50",
             CartCurrency = "USD",
             PaymentResult = new ClickPayPaymentResult { TransactionTime = now },
@@ -178,6 +189,7 @@ public class ClickPayPaymentResponseTests
 
         // Assert
         Assert.Equal("123", result.PaymentId);
+        Assert.Equal("ORD123", result.OrderId);
         Assert.Equal(PaymentOperationType.Unknown, result.Operation);
         Assert.Equal(100.50m, result.Amount);
         Assert.Equal("USD", result.Currency);

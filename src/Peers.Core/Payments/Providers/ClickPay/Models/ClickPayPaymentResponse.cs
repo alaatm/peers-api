@@ -87,6 +87,7 @@ public sealed class ClickPayPaymentResponse
         {
             PaymentId = TranRef,
             ParentPaymentId = PreviousTranRef,
+            OrderId = CartId,
             Operation = operation,
             Amount = decimal.Parse(CartAmount, CultureInfo.InvariantCulture),
             Currency = CartCurrency,

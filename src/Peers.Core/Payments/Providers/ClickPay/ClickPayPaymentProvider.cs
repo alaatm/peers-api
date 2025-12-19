@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.Net.Http.Headers;
 using Peers.Core.Common;
 using Peers.Core.Payments.Models;
@@ -47,71 +46,66 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// </summary>
     /// <param name="returnUrl">The return URL.</param>
     /// <param name="callbackUrl">The callback URL.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <param name="language">The desired language of the hosted page.</param>
-    /// <param name="customerPhone">The customer phone number.</param>
-    /// <param name="customerEmail">The customer email address.</param>
     /// <returns></returns>
     public Task<HostedPagePaymentInitResponse> InitiateHostedPageTokenizationAsync(
-        Uri returnUrl,
-        Uri callbackUrl,
-        string language,
-        string customerPhone,
-        string? customerEmail) => InitiateHostedPagePaymentAsync(
-            1,
+        [NotNull] Uri returnUrl,
+        [NotNull] Uri callbackUrl,
+        [NotNull] PaymentInfo paymentInfo,
+        string language)
+    {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.Tokenization)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be Tokenization for hosted page tokenization requests.");
+        }
+
+        paymentInfo.PromoteToHppIntent();
+
+        return InitiateHostedPagePaymentAsync(
             returnUrl,
             callbackUrl,
+            paymentInfo,
             true,
             true,
-            language,
-            customerPhone,
-            customerEmail,
-            "Tokenize customer card",
-            new Dictionary<string, string>
-            {
-                ["customer"] = customerPhone,
-            });
+            language);
+    }
 
     /// <summary>
     /// Initiates a hosted page payment request with the given details.
     /// </summary>
-    /// <param name="amount">The payment amount.</param>
     /// <param name="returnUrl">The return URL.</param>
     /// <param name="callbackUrl">The callback URL.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <param name="authOnly">True for authorization only; otherwise for immediate capture.</param>
-    /// <param name="tokenize">True to tokenize customer card; otherwise false.</param>
+    /// <param name="tokenize">True to tokenize customer card; otheriwse false.</param>
     /// <param name="language">The desired language of the hosted page.</param>
-    /// <param name="customerPhone">The customer phone number.</param>
-    /// <param name="customerEmail">The customer email address.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
     /// <returns></returns>
     public async Task<HostedPagePaymentInitResponse> InitiateHostedPagePaymentAsync(
-        decimal amount,
-        Uri returnUrl,
-        Uri callbackUrl,
+        [NotNull] Uri returnUrl,
+        [NotNull] Uri callbackUrl,
+        [NotNull] PaymentInfo paymentInfo,
         bool authOnly,
         bool tokenize,
-        string language,
-        string customerPhone,
-        string? customerEmail,
-        string description,
-        [NotNull] Dictionary<string, string> metadata)
+        string language)
     {
-        if (amount.GetDecimalPlaces() > 2)
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.HostedPaymentPage)
         {
-            throw new ArgumentException("Amount must be in SAR and have a maximum of 2 decimal places.", nameof(amount));
+            throw new InvalidOperationException("PaymentInfo intent must be HostedPaymentPage for hosted page payment requests.");
         }
 
         ArgumentNullException.ThrowIfNull(returnUrl, nameof(returnUrl));
         ArgumentNullException.ThrowIfNull(callbackUrl, nameof(callbackUrl));
         ArgumentException.ThrowIfNullOrWhiteSpace(language, nameof(language));
-        ArgumentException.ThrowIfNullOrWhiteSpace(customerEmail, nameof(customerEmail));
-        ArgumentException.ThrowIfNullOrWhiteSpace(customerPhone, nameof(customerPhone));
 
         var response = await SendRequestAsync<ClickPayHostedPagePaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayHostedPagePaymentRequest.Create(_config.ProfileId, description, language, amount, authOnly, tokenize, customerPhone, customerEmail, returnUrl, callbackUrl, metadata));
+            ClickPayHostedPagePaymentRequest.Create(_config.ProfileId, language, authOnly, tokenize, returnUrl, callbackUrl, paymentInfo));
 
         return response is not null
             ? new HostedPagePaymentInitResponse { RedirectUrl = response.RedirectUrl }
@@ -122,17 +116,22 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Creates a payment that will be captured immediately with the given details.
     /// </summary>
     /// <param name="paymentType">The payment source type.</param>
-    /// <param name="amount">The payment amount.</param>
     /// <param name="token">The source token.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> CreatePaymentAsync(PaymentSourceType paymentType, decimal amount, string token, string description, Dictionary<string, string>? metadata = null)
+    public async Task<PaymentResponse> CreatePaymentAsync(PaymentSourceType paymentType, string token, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayTransactionRequest.CreateSale(_config.ProfileId, amount, token, description, metadata ?? []));
+            ClickPayTransactionRequest.CreateSale(_config.ProfileId, token, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -142,17 +141,22 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Authorizes a payment with the given details.
     /// </summary>
     /// <param name="paymentType">The payment source type.</param>
-    /// <param name="amount">The authorize amount.</param>
     /// <param name="token">The source token.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> AuthorizePaymentAsync(PaymentSourceType paymentType, decimal amount, string token, string description, Dictionary<string, string>? metadata = null)
+    public async Task<PaymentResponse> AuthorizePaymentAsync(PaymentSourceType paymentType, string token, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayTransactionRequest.CreateAuthorization(_config.ProfileId, amount, token, description, metadata ?? []));
+            ClickPayTransactionRequest.CreateAuthorization(_config.ProfileId, token, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -161,16 +165,21 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Captures the specified amount from the authorized amount of the specified payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to capture.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> CapturePaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> CapturePaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayTransactionRequest.CreateCapture(_config.ProfileId, paymentId, amount, description, metadata));
+            ClickPayTransactionRequest.CreateCapture(_config.ProfileId, paymentId, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -179,16 +188,21 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Voids an authorized payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to void.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> VoidPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> VoidPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayTransactionRequest.CreateVoid(_config.ProfileId, paymentId, amount, description, metadata));
+            ClickPayTransactionRequest.CreateVoid(_config.ProfileId, paymentId, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -197,16 +211,21 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Refunds the specified amount from the captured amount of the specified payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to refund.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> RefundPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> RefundPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<ClickPayPaymentResponse>(
             HttpMethod.Post,
             PaymentRequestEndpoint,
-            ClickPayTransactionRequest.CreateRefund(_config.ProfileId, paymentId, amount, description, metadata));
+            ClickPayTransactionRequest.CreateRefund(_config.ProfileId, paymentId, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -215,19 +234,17 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
     /// Attempts to void a payment, if it's not possible, it refunds it.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to void or refund.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> VoidOrRefundPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> VoidOrRefundPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
         try
         {
-            return await VoidPaymentAsync(paymentId, amount, description, metadata);
+            return await VoidPaymentAsync(paymentId, paymentInfo);
         }
         catch (ClickPayException)
         {
-            return await RefundPaymentAsync(paymentId, amount, description, metadata);
+            return await RefundPaymentAsync(paymentId, paymentInfo);
         }
     }
 
@@ -296,19 +313,7 @@ public sealed class ClickPayPaymentProvider : IPaymentProvider
             return null;
         }
 
-        var responseObj = await response.Content.ReadFromJsonAsync<TResponse>(ClickPayJsonSourceGenContext.Default.Options);
-        if (responseObj is ClickPayPaymentResponse paymentResponse &&
-            paymentResponse.PaymentResult.ResponseStatus is "E" or "D" or "X")
-        {
-            var error = new ClickPayErrorResponse
-            {
-                Code = int.Parse(paymentResponse.PaymentResult.ResponseCode, CultureInfo.InvariantCulture),
-                Message = $"{paymentResponse.PaymentResult.ResponseStatus}: {paymentResponse.PaymentResult.ResponseMessage}",
-            };
-            throw new ClickPayException("ClickPay API call failed.", error);
-        }
-
-        return responseObj;
+        return await response.Content.ReadFromJsonAsync<TResponse>(ClickPayJsonSourceGenContext.Default.Options);
     }
 
     private Task<HttpResponseMessage> SendRequestAsync(HttpMethod method, string url, object body)

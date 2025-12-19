@@ -44,7 +44,7 @@ public class TokenIdResolverTests
     {
         // Arrange
         var context = new DefaultHttpContext();
-        context.Request.Path = "/payments/tokenize";
+        context.Request.Path = "/payments/pay";
         var msgReceivedContext = GetMessageReceivedContext(context);
 
         // Act
@@ -59,7 +59,7 @@ public class TokenIdResolverTests
     {
         // Arrange
         var context = new DefaultHttpContext();
-        context.Request.Path = "/payments/tokenize";
+        context.Request.Path = "/payments/pay";
         context.Request.QueryString = new QueryString($"?{TokenIdResolver.TokenIdQueryKey}=");
         var msgReceivedContext = GetMessageReceivedContext(context);
 
@@ -86,7 +86,7 @@ public class TokenIdResolverTests
                 .AddSingleton<IMemoryCache>(cache)
                 .BuildServiceProvider(),
         };
-        context.Request.Path = "/payments/tokenize";
+        context.Request.Path = "/payments/pay";
         context.Request.QueryString = new QueryString($"?{TokenIdResolver.TokenIdQueryKey}={tokenId}");
         var msgReceivedContext = GetMessageReceivedContext(context);
 

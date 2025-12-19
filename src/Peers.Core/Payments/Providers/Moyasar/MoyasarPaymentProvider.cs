@@ -60,78 +60,84 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// </summary>
     /// <param name="returnUrl">The return URL.</param>
     /// <param name="callbackUrl">The callback URL.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <param name="language">The desired language of the hosted page.</param>
-    /// <param name="customerPhone">The customer phone number.</param>
-    /// <param name="customerEmail">The customer email address.</param>
     /// <returns></returns>
     public Task<HostedPagePaymentInitResponse> InitiateHostedPageTokenizationAsync(
-        Uri returnUrl,
-        Uri callbackUrl,
-        string language,
-        string customerPhone,
-        string? customerEmail) => InitiateHostedPagePaymentAsync(
-            1,
+        [NotNull] Uri returnUrl,
+        [NotNull] Uri callbackUrl,
+        [NotNull] PaymentInfo paymentInfo,
+        string language)
+    {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.Tokenization)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be Tokenization for hosted page tokenization requests.");
+        }
+
+        paymentInfo.PromoteToHppIntent();
+
+        return InitiateHostedPagePaymentAsync(
             returnUrl,
             callbackUrl,
+            paymentInfo,
             true,
             true,
-            language,
-            customerPhone,
-            customerEmail,
-            "Tokenize customer card",
-            new Dictionary<string, string>
-            {
-                ["customer"] = customerPhone,
-            });
+            language);
+    }
 
     /// <summary>
     /// Initiates a hosted page payment request with the given details.
     /// </summary>
-    /// <param name="amount">The payment amount.</param>
     /// <param name="returnUrl">The return URL.</param>
     /// <param name="callbackUrl">The callback URL.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <param name="authOnly">True for authorization only; otherwise for immediate capture.</param>
-    /// <param name="tokenize">True to tokenize customer card; otherwise false.</param>
+    /// <param name="tokenize">True to tokenize customer card; otheriwse false.</param>
     /// <param name="language">The desired language of the hosted page.</param>
-    /// <param name="customerPhone">The customer phone number.</param>
-    /// <param name="customerEmail">The customer email address.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
     /// <returns></returns>
     public Task<HostedPagePaymentInitResponse> InitiateHostedPagePaymentAsync(
-        decimal amount,
-        Uri returnUrl,
-        Uri callbackUrl,
+        [NotNull] Uri returnUrl,
+        [NotNull] Uri callbackUrl,
+        [NotNull] PaymentInfo paymentInfo,
         bool authOnly,
         bool tokenize,
-        string language,
-        string customerPhone,
-        string? customerEmail,
-        string description,
-        Dictionary<string, string> metadata)
+        string language)
     {
-        if (amount.GetDecimalPlaces() > 2)
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.HostedPaymentPage)
         {
-            throw new ArgumentException("Amount must be in SAR and have a maximum of 2 decimal places.", nameof(amount));
+            throw new InvalidOperationException("PaymentInfo intent must be HostedPaymentPage for hosted page payment requests.");
         }
 
         ArgumentNullException.ThrowIfNull(returnUrl, nameof(returnUrl));
         ArgumentNullException.ThrowIfNull(callbackUrl, nameof(callbackUrl));
         ArgumentException.ThrowIfNullOrWhiteSpace(language, nameof(language));
 
+        var metadata = paymentInfo.Metadata ?? [];
+        metadata[PaymentInfo.OrderIdKey] = paymentInfo.OrderId;
+
         var script = $$"""
             Moyasar.init({
                 element: '.payment-form',
                 language: '{{language}}',
                 publishable_api_key: '{{_config.PublishableKey}}',
-                amount: {{(int)(amount * 100)}},
+                amount: {{(int)(paymentInfo.Amount * 100)}},
                 currency: 'SAR',
                 methods: ['creditcard'],
                 credit_card: { save_card: {{JsonSerializer.Serialize(tokenize)}}, manual: {{JsonSerializer.Serialize(authOnly)}} },
-                description: {{JsonSerializer.Serialize(description)}},
+                description: {{JsonSerializer.Serialize(paymentInfo.Description)}},
                 metadata: {{JsonSerializer.Serialize(metadata)}},
                 callback_url: '{{returnUrl}}',
-                on_completed: '{{callbackUrl}}',
+                on_completed: async function (payment) {
+                    await fetch("{{callbackUrl}}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payment),
+                    });
+                },
             });
             """;
 
@@ -145,17 +151,22 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Creates a payment that will be captured immediately with the given details.
     /// </summary>
     /// <param name="paymentType">The payment source type.</param>
-    /// <param name="amount">The payment amount.</param>
     /// <param name="token">The source token.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> CreatePaymentAsync(PaymentSourceType paymentType, decimal amount, string token, string description, Dictionary<string, string>? metadata = null)
+    public async Task<PaymentResponse> CreatePaymentAsync(PaymentSourceType paymentType, string token, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Post,
             PaymentsEndpoint,
-            MoyasarPaymentRequest.Create(paymentType, amount, true, token, description, metadata));
+            MoyasarPaymentRequest.Create(paymentType, true, token, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -164,17 +175,22 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Authorizes a payment with the given details.
     /// </summary>
     /// <param name="paymentType">The payment source type.</param>
-    /// <param name="amount">The authorize amount.</param>
     /// <param name="token">The source token.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> AuthorizePaymentAsync(PaymentSourceType paymentType, decimal amount, string token, string description, Dictionary<string, string>? metadata = null)
+    public async Task<PaymentResponse> AuthorizePaymentAsync(PaymentSourceType paymentType, string token, [NotNull] PaymentInfo paymentInfo)
     {
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
         var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Post,
             PaymentsEndpoint,
-            MoyasarPaymentRequest.Create(paymentType, amount, false, token, description, metadata));
+            MoyasarPaymentRequest.Create(paymentType, false, token, paymentInfo));
 
         return response!.ToGeneric();
     }
@@ -183,18 +199,23 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Captures the specified amount from the authorized amount of the specified payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to capture.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> CapturePaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> CapturePaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
-        await UpdatePaymentMetadataAsync(paymentId, description, metadata);
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
+        await UpdatePaymentMetadataAsync(paymentId, paymentInfo.Description, paymentInfo.Metadata);
 
         var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Post,
             Format(CapturePaymentEndpoint, paymentId),
-            MoyasarCaptureRequest.Create(amount));
+            MoyasarCaptureRequest.Create(paymentInfo.Amount));
 
         return response!.ToGeneric();
     }
@@ -203,13 +224,18 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Voids an authorized payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">Not used for this provider</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> VoidPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> VoidPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
-        await UpdatePaymentMetadataAsync(paymentId, description, metadata);
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
+        await UpdatePaymentMetadataAsync(paymentId, paymentInfo.Description, paymentInfo.Metadata);
 
         var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Post,
@@ -223,18 +249,23 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Refunds the specified amount from the captured amount of the specified payment.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to refund.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> RefundPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> RefundPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
-        await UpdatePaymentMetadataAsync(paymentId, description, metadata);
+        ArgumentNullException.ThrowIfNull(paymentInfo, nameof(paymentInfo));
+
+        if (paymentInfo.Intent is not PaymentInfoIntent.TransactionApi)
+        {
+            throw new InvalidOperationException("PaymentInfo intent must be TransactionApi for transaction API payment requests.");
+        }
+
+        await UpdatePaymentMetadataAsync(paymentId, paymentInfo.Description, paymentInfo.Metadata);
 
         var response = await SendRequestAsync<MoyasarPaymentResponse>(
             HttpMethod.Post,
             Format(RefundPaymentEndpoint, paymentId),
-            MoyasarRefundRequest.Create(amount));
+            MoyasarRefundRequest.Create(paymentInfo.Amount));
 
         return response!.ToGeneric();
     }
@@ -243,19 +274,17 @@ public sealed class MoyasarPaymentProvider : IPaymentProvider
     /// Attempts to void a payment, if it's not possible, it refunds it.
     /// </summary>
     /// <param name="paymentId">The payment id.</param>
-    /// <param name="amount">The amount to void or refund.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
-    public async Task<PaymentResponse> VoidOrRefundPaymentAsync(string paymentId, decimal amount, string description, Dictionary<string, string>? metadata)
+    public async Task<PaymentResponse> VoidOrRefundPaymentAsync(string paymentId, [NotNull] PaymentInfo paymentInfo)
     {
         try
         {
-            return await VoidPaymentAsync(paymentId, amount, description, metadata);
+            return await VoidPaymentAsync(paymentId, paymentInfo);
         }
         catch (MoyasarException)
         {
-            return await RefundPaymentAsync(paymentId, amount, description, metadata);
+            return await RefundPaymentAsync(paymentId, paymentInfo);
         }
     }
 

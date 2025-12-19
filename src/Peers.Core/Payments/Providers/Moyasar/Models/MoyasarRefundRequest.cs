@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Peers.Core.Common;
 
 namespace Peers.Core.Payments.Providers.Moyasar.Models;
 
@@ -17,16 +16,8 @@ public sealed class MoyasarRefundRequest
     /// <param name="amount">The amount to capture.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static MoyasarRefundRequest Create(decimal amount)
+    public static MoyasarRefundRequest Create(decimal amount) => new()
     {
-        if (amount.GetDecimalPlaces() > 2)
-        {
-            throw new ArgumentException("Amount must be in SAR and have a maximum of 2 decimal places.", nameof(amount));
-        }
-
-        return new()
-        {
-            Amount = (int)(amount * 100),
-        };
-    }
+        Amount = (int)(amount * 100),
+    };
 }

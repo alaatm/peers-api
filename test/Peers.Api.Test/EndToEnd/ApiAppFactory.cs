@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Peers.Core.Background;
-using Peers.Core.Common.Configs;
 using Peers.Core.Communication.Push;
 using Peers.Core.Payments;
 using Peers.Core.Payments.Providers.ClickPay.Configuration;
+using Peers.Modules.Carts.Services;
 using Peers.Modules.Kernel;
 using Peers.Modules.Kernel.Startup;
 
@@ -21,6 +21,7 @@ public class ApiAppFactory : WebApplicationFactory<Program>
 
     public Mock<IPushNotificationService> PushServiceMoq { get; } = new();
     public Mock<IPaymentProvider> PaymentProviderMoq { get; } = new(MockBehavior.Strict);
+    public Mock<IPaymentProcessor> PaymentProcessorMoq { get; } = new(MockBehavior.Strict);
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -49,6 +50,7 @@ public class ApiAppFactory : WebApplicationFactory<Program>
 
             services.Replace(new ServiceDescriptor(typeof(IPushNotificationService), PushServiceMoq.Object));
             services.Replace(new ServiceDescriptor(typeof(IPaymentProvider), PaymentProviderMoq.Object));
+            services.Replace(new ServiceDescriptor(typeof(IPaymentProcessor), PaymentProcessorMoq.Object));
 
             services.AddSingleton(new ClickPayConfig());
         });

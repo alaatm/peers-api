@@ -55,45 +55,32 @@ public sealed class ClickPayHostedPagePaymentRequest
 
     public static ClickPayHostedPagePaymentRequest Create(
         string profileId,
-        string description,
         string lang,
-        decimal amount,
         bool authOnly,
         bool tokenize,
-        string customerPhone,
-        string customerEmail,
         Uri returnUrl,
         Uri callbackUrl,
-        [NotNull] Dictionary<string, string> metadata)
-    {
-        var cartId = metadata.TryGetValue("booking", out var bookingId)
-            ? bookingId
-            : metadata.TryGetValue("customer", out var customer)
-                ? customer
-                : Guid.NewGuid().ToString();
-
-        return new()
+        [NotNull] PaymentInfo paymentInfo) => new()
         {
             ProfileId = profileId,
             TranType = authOnly ? "auth" : "sale",
-            CartId = cartId,
-            CartDescription = description,
-            CartAmount = amount,
+            CartId = paymentInfo.OrderId,
+            CartDescription = paymentInfo.Description,
+            CartAmount = paymentInfo.Amount,
             Lang = lang,
             ReturnUrl = returnUrl,
             CallbackUrl = callbackUrl,
             Customer = new ClickPayCustomerDetails()
             {
-                Phone = customerPhone,
-                Email = customerEmail,
+                Phone = paymentInfo.CustomerPhone!,
+                Email = paymentInfo.CustomerEmail!,
                 Street1 = "Riyadh",
                 City = "Riyadh",
                 Country = "SA",
                 Zip = "12345",
             },
-            Metadata = metadata,
+            Metadata = paymentInfo.Metadata,
             Tokenize = tokenize ? 2 : null,
         };
-    }
 }
 

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Peers.Core.Common;
 
 namespace Peers.Core.Payments.Providers.ClickPay.Models;
 
@@ -43,25 +42,21 @@ public sealed class ClickPayTransactionRequest
     /// Creates a new instance of the <see cref="ClickPayTransactionRequest"/> class for a sale transaction.
     /// </summary>
     /// <param name="profileId">The profile ID.</param>
-    /// <param name="amount">The amount to be charged.</param>
     /// <param name="token">The token of the card to be charged.</param>
-    /// <param name="description">The description of the transaction.</param>
-    /// <param name="metadata">The metadata associated with the transaction.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     public static ClickPayTransactionRequest CreateSale(
         string profileId,
-        decimal amount,
         string token,
-        string description,
-        [NotNull] Dictionary<string, string> metadata) => Create
+        [NotNull] PaymentInfo paymentInfo) => Create
     (
         profileId,
         tranType: "sale",
         tranClass: "recurring",
-        cartId: metadata["booking"],
-        description: description,
-        metadata: metadata,
-        amount: amount,
+        cartId: paymentInfo.OrderId,
+        description: paymentInfo.Description,
+        metadata: paymentInfo.Metadata,
+        amount: paymentInfo.Amount,
         token: token
     );
 
@@ -69,25 +64,21 @@ public sealed class ClickPayTransactionRequest
     /// Creates a new instance of the <see cref="ClickPayTransactionRequest"/> class for an authorization transaction.
     /// </summary>
     /// <param name="profileId">The profile ID.</param>
-    /// <param name="amount">The amount to be authorized.</param>
     /// <param name="token">The token of the card to be authorized.</param>
-    /// <param name="description">The description of the transaction.</param>
-    /// <param name="metadata">The metadata associated with the transaction.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     public static ClickPayTransactionRequest CreateAuthorization(
         string profileId,
-        decimal amount,
         string token,
-        string description,
-        [NotNull] Dictionary<string, string> metadata) => Create
+        [NotNull] PaymentInfo paymentInfo) => Create
     (
         profileId,
         tranType: "auth",
         tranClass: "recurring",
-        cartId: metadata["booking"],
-        description: description,
-        metadata: metadata,
-        amount: amount,
+        cartId: paymentInfo.OrderId,
+        description: paymentInfo.Description,
+        metadata: paymentInfo.Metadata,
+        amount: paymentInfo.Amount,
         token: token
     );
 
@@ -96,24 +87,20 @@ public sealed class ClickPayTransactionRequest
     /// </summary>
     /// <param name="profileId">The profile ID.</param>
     /// <param name="paymentId">The payment ID.</param>
-    /// <param name="amount">The amount to be captured.</param>
-    /// <param name="description">The description of the transaction.</param>
-    /// <param name="metadata">The metadata associated with the transaction.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     public static ClickPayTransactionRequest CreateCapture(
         string profileId,
         string paymentId,
-        decimal amount,
-        string description,
-        Dictionary<string, string>? metadata) => Create
+        [NotNull] PaymentInfo paymentInfo) => Create
     (
         profileId,
         tranType: "capture",
         tranClass: "ecom",
-        cartId: metadata?.TryGetValue("booking", out var value) == true ? value : Guid.NewGuid().ToString(),
-        description: description,
-        metadata: metadata,
-        amount: amount,
+        cartId: paymentInfo.OrderId,
+        description: paymentInfo.Description,
+        metadata: paymentInfo.Metadata,
+        amount: paymentInfo.Amount,
         tranRef: paymentId
     );
 
@@ -122,24 +109,20 @@ public sealed class ClickPayTransactionRequest
     /// </summary>
     /// <param name="profileId">The profile ID.</param>
     /// <param name="paymentId">The payment ID.</param>
-    /// <param name="amount">The amount to be voided. Must be exactly equal to the full authorized amount.</param>
-    /// <param name="description">The description of the transaction.</param>
-    /// <param name="metadata">The metadata associated with the transaction.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     public static ClickPayTransactionRequest CreateVoid(
         string profileId,
         string paymentId,
-        decimal amount,
-        string description,
-        Dictionary<string, string>? metadata) => Create
+        [NotNull] PaymentInfo paymentInfo) => Create
     (
         profileId,
         tranType: "void",
         tranClass: "ecom",
-        cartId: metadata?.TryGetValue("booking", out var value) == true ? value : Guid.NewGuid().ToString(),
-        description: description,
-        metadata: metadata,
-        amount: amount,
+        cartId: paymentInfo.OrderId,
+        description: paymentInfo.Description,
+        metadata: paymentInfo.Metadata,
+        amount: paymentInfo.Amount,
         tranRef: paymentId
     );
 
@@ -148,24 +131,20 @@ public sealed class ClickPayTransactionRequest
     /// </summary>
     /// <param name="profileId">The profile ID.</param>
     /// <param name="paymentId">The payment ID.</param>
-    /// <param name="amount">The amount to be refunded.</param>
-    /// <param name="description">The description of the transaction.</param>
-    /// <param name="metadata">The metadata associated with the transaction.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     public static ClickPayTransactionRequest CreateRefund(
         string profileId,
         string paymentId,
-        decimal amount,
-        string description,
-        Dictionary<string, string>? metadata) => Create
+        [NotNull] PaymentInfo paymentInfo) => Create
     (
         profileId,
         tranType: "refund",
         tranClass: "ecom",
-        cartId: metadata?.TryGetValue("booking", out var value) == true ? value : Guid.NewGuid().ToString(),
-        description: description,
-        metadata: metadata,
-        amount: amount,
+        cartId: paymentInfo.OrderId,
+        description: paymentInfo.Description,
+        metadata: paymentInfo.Metadata,
+        amount: paymentInfo.Amount,
         tranRef: paymentId
     );
 
@@ -206,14 +185,7 @@ public sealed class ClickPayTransactionRequest
         decimal? amount = null,
         string? tranRef = null,
         string? token = null,
-        Dictionary<string, string>? metadata = null)
-    {
-        if (amount?.GetDecimalPlaces() > 2)
-        {
-            throw new ArgumentException("Amount must be in SAR and have a maximum of 2 decimal places.", nameof(amount));
-        }
-
-        return new ClickPayTransactionRequest
+        Dictionary<string, string>? metadata = null) => new()
         {
             ProfileId = profileId,
             TransactionType = tranType,
@@ -225,5 +197,4 @@ public sealed class ClickPayTransactionRequest
             TransactionRef = tranRef,
             Metadata = metadata,
         };
-    }
 }

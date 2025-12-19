@@ -10,6 +10,9 @@ public sealed class ClickPayHostedPageCallbackResponse
     [JsonPropertyName("token")]
     public string Token { get; set; } = default!;
 
+    [JsonPropertyName("cart_id")]
+    public string CartId { get; set; } = default!;
+
     [JsonPropertyName("payment_result")]
     public ClickPayPaymentResult PaymentResult { get; set; } = default!;
 

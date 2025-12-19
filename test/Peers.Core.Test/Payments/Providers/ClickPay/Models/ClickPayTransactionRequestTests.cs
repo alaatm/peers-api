@@ -1,3 +1,4 @@
+using Peers.Core.Payments;
 using Peers.Core.Payments.Providers.ClickPay.Models;
 
 namespace Peers.Core.Test.Payments.Providers.ClickPay.Models;
@@ -12,10 +13,11 @@ public class ClickPayTransactionRequestTests
         var amount = 100.00m;
         var token = "test_token";
         var description = "test_description";
-        var metadata = new Dictionary<string, string> { { "booking", "b123" } };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "b123", description, metadata);
 
         // Act
-        var request = ClickPayTransactionRequest.CreateSale(profileId, amount, token, description, metadata);
+        var request = ClickPayTransactionRequest.CreateSale(profileId, token, info);
 
         // Assert
         Assert.Equal(profileId, request.ProfileId);
@@ -37,10 +39,11 @@ public class ClickPayTransactionRequestTests
         var amount = 100.00m;
         var token = "test_token";
         var description = "test_description";
-        var metadata = new Dictionary<string, string> { { "booking", "b123" } };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "b123", description, metadata);
 
         // Act
-        var request = ClickPayTransactionRequest.CreateAuthorization(profileId, amount, token, description, metadata);
+        var request = ClickPayTransactionRequest.CreateAuthorization(profileId, token, info);
 
         // Assert
         Assert.Equal(profileId, request.ProfileId);
@@ -62,10 +65,11 @@ public class ClickPayTransactionRequestTests
         var paymentId = "test_payment_id";
         var amount = 100.00m;
         var description = "test_description";
-        var metadata = new Dictionary<string, string> { { "booking", "b123" } };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "b123", description, metadata);
 
         // Act
-        var request = ClickPayTransactionRequest.CreateCapture(profileId, paymentId, amount, description, metadata);
+        var request = ClickPayTransactionRequest.CreateCapture(profileId, paymentId, info);
 
         // Assert
         Assert.Equal(profileId, request.ProfileId);
@@ -79,23 +83,6 @@ public class ClickPayTransactionRequestTests
     }
 
     [Fact]
-    public void CreateCapture_creates_capture_request_with_null_metadata()
-    {
-        // Arrange
-        var profileId = "test_profile_id";
-        var paymentId = "test_payment_id";
-        var amount = 100.00m;
-        var description = "test_description";
-
-        // Act
-        var request = ClickPayTransactionRequest.CreateCapture(profileId, paymentId, amount, description, null);
-
-        // Assert
-        Assert.Matches(@"^[{(]?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[)}]?$", request.CartId);
-        Assert.Null(request.Metadata);
-    }
-
-    [Fact]
     public void CreateVoid_creates_void_request()
     {
         // Arrange
@@ -103,10 +90,11 @@ public class ClickPayTransactionRequestTests
         var paymentId = "test_payment_id";
         var amount = 100.00m;
         var description = "test_description";
-        var metadata = new Dictionary<string, string> { { "booking", "b123" } };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "b123", description, metadata);
 
         // Act
-        var request = ClickPayTransactionRequest.CreateVoid(profileId, paymentId, amount, description, metadata);
+        var request = ClickPayTransactionRequest.CreateVoid(profileId, paymentId, info);
 
         // Assert
         Assert.Equal(profileId, request.ProfileId);
@@ -120,23 +108,6 @@ public class ClickPayTransactionRequestTests
     }
 
     [Fact]
-    public void CreateVoid_creates_void_request_with_null_metadata()
-    {
-        // Arrange
-        var profileId = "test_profile_id";
-        var paymentId = "test_payment_id";
-        var amount = 100.00m;
-        var description = "test_description";
-
-        // Act
-        var request = ClickPayTransactionRequest.CreateVoid(profileId, paymentId, amount, description, null);
-
-        // Assert
-        Assert.Matches(@"^[{(]?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[)}]?$", request.CartId);
-        Assert.Null(request.Metadata);
-    }
-
-    [Fact]
     public void CreateRefund_creates_refund_request()
     {
         // Arrange
@@ -144,10 +115,11 @@ public class ClickPayTransactionRequestTests
         var paymentId = "test_payment_id";
         var amount = 100.00m;
         var description = "test_description";
-        var metadata = new Dictionary<string, string> { { "booking", "b123" } };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, "b123", description, metadata);
 
         // Act
-        var request = ClickPayTransactionRequest.CreateRefund(profileId, paymentId, amount, description, metadata);
+        var request = ClickPayTransactionRequest.CreateRefund(profileId, paymentId, info);
 
         // Assert
         Assert.Equal(profileId, request.ProfileId);
@@ -158,21 +130,6 @@ public class ClickPayTransactionRequestTests
         Assert.Equal(metadata, request.Metadata);
         Assert.Equal(amount, request.Amount);
         Assert.Equal("SAR", request.Currency);
-    }
-
-    [Fact]
-    public void CreateRefund_creates_refund_request_with_null_metadata()
-    {
-        // Arrange
-        var profileId = "test_profile_id";
-        var paymentId = "test_payment_id";
-        var amount = 100.00m;
-        var description = "test_description";
-        // Act
-        var request = ClickPayTransactionRequest.CreateRefund(profileId, paymentId, amount, description, null);
-        // Assert
-        Assert.Matches(@"^[{(]?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[)}]?$", request.CartId);
-        Assert.Null(request.Metadata);
     }
 
     [Fact]

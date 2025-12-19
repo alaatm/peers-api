@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Peers.Core.Payments.Models;
 
 /// <summary>
@@ -20,6 +18,10 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
     /// e.g, Auth followed by Capture followed by Refund. Auth is the parent, Capture and Refund will have their Parent Payment ID set to Auth Payment ID.
     /// </remarks>
     public string? ParentPaymentId { get; init; }
+    /// <summary>
+    /// The unique identifier for the order.
+    /// </summary>
+    public required string? OrderId { get; init; }
     /// <summary>
     /// The type of payment operation (e.g., authorization, capture, refund).
     /// </summary>
@@ -43,7 +45,6 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
     /// <summary>
     /// The raw response object from the payment provider.
     /// </summary>
-    [NotMapped]
     public object? ProviderSpecificResponse { get; set; }
     /// <summary>
     /// User-defined errors that occurred after attempting to post-process the payment.
@@ -54,6 +55,7 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
         other is not null &&
         PaymentId == other.PaymentId &&
         ParentPaymentId == other.ParentPaymentId &&
+        OrderId == other.OrderId &&
         Operation == other.Operation &&
         Amount == other.Amount &&
         Currency == other.Currency &&
@@ -64,5 +66,5 @@ public sealed class PaymentResponse : IEquatable<PaymentResponse>
         => obj is PaymentResponse other && Equals(other);
 
     public override int GetHashCode()
-        => HashCode.Combine(PaymentId, ParentPaymentId, Operation, Amount, Currency, Timestamp, IsSuccessful);
+        => HashCode.Combine(PaymentId, ParentPaymentId, OrderId, Operation, Amount, Currency, Timestamp, IsSuccessful);
 }

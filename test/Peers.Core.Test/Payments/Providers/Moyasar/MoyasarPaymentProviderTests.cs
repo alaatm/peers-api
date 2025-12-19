@@ -1,13 +1,13 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using RichardSzalay.MockHttp;
 using Peers.Core.Payments;
 using Peers.Core.Payments.Models;
 using Peers.Core.Payments.Providers.Moyasar;
 using Peers.Core.Payments.Providers.Moyasar.Configuration;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 using Peers.Core.Payments.Providers.Moyasar.Models.Payouts;
+using RichardSzalay.MockHttp;
 
 namespace Peers.Core.Test.Payments.Providers.Moyasar;
 
@@ -35,34 +35,56 @@ public class MoyasarPaymentProviderTests
 
     #region InitiateHostedPageTokenizationAsync
     [Fact]
+    public async Task InitiateHostedPageTokenizationAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForTransactionApi(11, Guid.NewGuid().ToString(), "description");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.InitiateHostedPageTokenizationAsync(null, null, info1, null));
+        Assert.Equal("PaymentInfo intent must be Tokenization for hosted page tokenization requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.InitiateHostedPageTokenizationAsync(null, null, info2, null));
+        Assert.Equal("PaymentInfo intent must be Tokenization for hosted page tokenization requests.", ex.Message);
+    }
+
+    [Fact]
     public async Task InitiateHostedPageTokenizationAsync_builds_correct_script()
     {
         // Arrange
+        var language = "en";
         var returnUrl = new Uri("https://example.com/return");
         var callbackUrl = new Uri("https://example.com/callback");
-        var language = "en";
-        var phone = "1234567890";
-        var email = "info@example.com";
+        var info = PaymentInfo.ForTokenization(555, "1234567890", "info@example.com");
 
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
 
         // Act
-        var response = await provider.InitiateHostedPageTokenizationAsync(returnUrl, callbackUrl, language, phone, email);
+        var response = await provider.InitiateHostedPageTokenizationAsync(returnUrl, callbackUrl, info, language);
 
         // Assert
-        Assert.Equal("""
+        Assert.Equal($$"""
             Moyasar.init({
                 element: '.payment-form',
-                language: 'en',
-                publishable_api_key: 'pk_test',
+                language: '{{language}}',
+                publishable_api_key: '{{_config.PublishableKey}}',
                 amount: 100,
                 currency: 'SAR',
                 methods: ['creditcard'],
                 credit_card: { save_card: true, manual: true },
-                description: "Tokenize customer card",
-                metadata: {"customer":"1234567890"},
-                callback_url: 'https://example.com/return',
-                on_completed: 'https://example.com/callback',
+                description: "{{info.Description}}",
+                metadata: {"{{PaymentInfo.OrderIdKey}}":"555"},
+                callback_url: '{{returnUrl}}',
+                on_completed: async function (payment) {
+                    await fetch("{{callbackUrl}}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payment),
+                    });
+                },
             });
             """, response.Script);
     }
@@ -70,14 +92,20 @@ public class MoyasarPaymentProviderTests
 
     #region InitiateHostedPagePaymentAsync
     [Fact]
-    public async Task InitiateHostedPagePaymentAsync_throws_when_amount_has_more_than_two_decimal_places()
+    public async Task InitiateHostedPagePaymentAsync_throws_on_invalid_paymentIntent()
     {
         // Arrange
+        var info1 = PaymentInfo.ForTokenization(5, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForTransactionApi(11, Guid.NewGuid().ToString(), "description");
+
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => provider.InitiateHostedPagePaymentAsync(1.234m, null!, null!, true, false, null!, null, null, null, null));
-        Assert.Equal("amount", ex.ParamName);
-        Assert.Equal("Amount must be in SAR and have a maximum of 2 decimal places. (Parameter 'amount')", ex.Message);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.InitiateHostedPagePaymentAsync(null, null, info1, default, default, null));
+        Assert.Equal("PaymentInfo intent must be HostedPaymentPage for hosted page payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.InitiateHostedPagePaymentAsync(null, null, info2, default, default, null));
+        Assert.Equal("PaymentInfo intent must be HostedPaymentPage for hosted page payment requests.", ex.Message);
     }
 
     [Fact]
@@ -86,7 +114,7 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(12, null!, null, true, false, null!, null, null, null, null));
+        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(null, default, PaymentInfo.ForHpp(1, "a", "a", "a", "a"), default, default, default));
         Assert.Equal("returnUrl", ex.ParamName);
     }
 
@@ -94,76 +122,103 @@ public class MoyasarPaymentProviderTests
     public async Task InitiateHostedPagePaymentAsync_throws_when_callbackUrl_is_null()
     {
         // Arrange
+        var url = new Uri("https://example.com");
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(12, new Uri("https://example.com"), null!, true, false, null!, null, null, null, null));
+        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(url, null, PaymentInfo.ForHpp(1, "a", "a", "a", "a"), default, default, default));
         Assert.Equal("callbackUrl", ex.ParamName);
     }
 
     [Fact]
-    public async Task InitiateHostedPagePaymentAsync_throws_when_language_is_null()
+    public async Task InitiateHostedPagePaymentAsync_throws_when_paymentInfo_is_null()
     {
         // Arrange
+        var url = new Uri("https://example.com");
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(12, new Uri("https://example.com"), new Uri("https://example.com"), true, false, null!, null, null, null, null));
-        Assert.Equal("language", ex.ParamName);
+        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => provider.InitiateHostedPagePaymentAsync(url, url, null, default, default, default));
+        Assert.Equal("paymentInfo", ex.ParamName);
     }
 
     [Theory]
+    [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public async Task InitiateHostedPagePaymentAsync_throws_when_language_is_empty(string language)
+    public async Task InitiateHostedPagePaymentAsync_throws_when_language_is_null_or_empty(string lang)
     {
         // Arrange
+        var exType = lang is null ? typeof(ArgumentNullException) : typeof(ArgumentException);
+        var url = new Uri("https://example.com");
+        var info = PaymentInfo.ForHpp(1, "a", "a", "a", "a");
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => provider.InitiateHostedPagePaymentAsync(12, new Uri("https://example.com"), new Uri("https://example.com"), true, false, language, null, null, null, null));
-        Assert.Equal("language", ex.ParamName);
+        var ex = await Assert.ThrowsAsync(exType, () => provider.InitiateHostedPagePaymentAsync(url, url, info, default, default, lang));
+        Assert.Contains("language", ex.Message);
     }
 
     [Fact]
     public async Task InitiateHostedPagePaymentAsync_builds_correct_script()
     {
         // Arrange
-        var amount = 12;
         var returnUrl = new Uri("https://example.com/return");
         var callbackUrl = new Uri("https://example.com/callback");
         var authOnly = true;
         var tokenize = false;
         var language = "en";
-        var description = "test description";
-        var metadata = new Dictionary<string, string>
+        var info = PaymentInfo.ForHpp(12, Guid.NewGuid().ToString(), "test description", "+966511111111", "test@example.com", new Dictionary<string, string>
         {
             { "k1", "v1" },
             { "k2", "v2" },
-        };
+        });
 
         var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
 
         // Act
-        var response = await provider.InitiateHostedPagePaymentAsync(amount, returnUrl, callbackUrl, authOnly, tokenize, language, null, null, description, metadata);
+        var response = await provider.InitiateHostedPagePaymentAsync(returnUrl, callbackUrl, info, authOnly, tokenize, language);
 
         // Assert
-        Assert.Equal("""
+        Assert.Equal($$"""
             Moyasar.init({
                 element: '.payment-form',
-                language: 'en',
-                publishable_api_key: 'pk_test',
+                language: '{{language}}',
+                publishable_api_key: '{{_config.PublishableKey}}',
                 amount: 1200,
                 currency: 'SAR',
                 methods: ['creditcard'],
                 credit_card: { save_card: false, manual: true },
-                description: "test description",
-                metadata: {"k1":"v1","k2":"v2"},
-                callback_url: 'https://example.com/return',
-                on_completed: 'https://example.com/callback',
+                description: "{{info.Description}}",
+                metadata: {"k1":"v1","k2":"v2","{{PaymentInfo.OrderIdKey}}":"{{info.OrderId}}"},
+                callback_url: '{{returnUrl}}',
+                on_completed: async function (payment) {
+                    await fetch("{{callbackUrl}}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payment),
+                    });
+                },
             });
             """, response.Script);
     }
     #endregion
 
     #region CreatePaymentAsync
+    [Fact]
+    public async Task CreatePaymentAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForTokenization(1, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.CreatePaymentAsync(default, "token", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.CreatePaymentAsync(default, "token", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+    }
+
     [Theory]
     [InlineData(PaymentSourceType.ApplePay)]
     [InlineData(PaymentSourceType.TokenizedCard)]
@@ -172,23 +227,22 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 56.45m;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusPaid, amount);
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, true, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, true, token, amount, orderId, description, metadata),
             HttpStatusCode.Created, paymentResponse);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.CreatePaymentAsync(paymentSourceType, amount, token, description, metadata);
+        var result = await provider.CreatePaymentAsync(paymentSourceType, token, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -206,11 +260,10 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 56.45m;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var errorResponse = new MoyasarErrorResponse
@@ -221,13 +274,13 @@ public class MoyasarPaymentProviderTests
         };
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, true, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, true, token, amount, orderId, description, metadata),
             HttpStatusCode.BadRequest, errorResponse);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.CreatePaymentAsync(paymentSourceType, amount, token, description, metadata));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.CreatePaymentAsync(paymentSourceType, token, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse.Message, ex.ErrorObject.Message);
@@ -242,25 +295,41 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 12;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, true, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, true, token, amount, orderId, description, metadata),
             HttpStatusCode.Unauthorized, null);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.CreatePaymentAsync(paymentSourceType, amount, token, description, metadata));
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.CreatePaymentAsync(paymentSourceType, token, info));
     }
     #endregion
 
     #region AuthorizePaymentAsync
+    [Fact]
+    public async Task AuthorizePaymentAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForTokenization(1, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.AuthorizePaymentAsync(default, "token", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.AuthorizePaymentAsync(default, "token", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+    }
+
     [Theory]
     [InlineData(PaymentSourceType.ApplePay)]
     [InlineData(PaymentSourceType.TokenizedCard)]
@@ -269,23 +338,22 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 56.45m;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusAuth, amount);
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, false, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, false, token, amount, orderId, description, metadata),
             HttpStatusCode.Created, paymentResponse);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.AuthorizePaymentAsync(paymentSourceType, amount, token, description, metadata);
+        var result = await provider.AuthorizePaymentAsync(paymentSourceType, token, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -303,11 +371,10 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 56.45m;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var errorResponse = new MoyasarErrorResponse
@@ -318,13 +385,13 @@ public class MoyasarPaymentProviderTests
         };
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, false, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, false, token, amount, orderId, description, metadata),
             HttpStatusCode.BadRequest, errorResponse);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.AuthorizePaymentAsync(paymentSourceType, amount, token, description, metadata));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.AuthorizePaymentAsync(paymentSourceType, token, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse.Message, ex.ErrorObject.Message);
@@ -339,31 +406,49 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var token = Guid.NewGuid().ToString();
         var amount = 12;
+        var orderId = Guid.NewGuid().ToString();
         var description = "test";
-        var metadata = new Dictionary<string, string>
-        {
-            { "k", "v" },
-        };
+        var metadata = new Dictionary<string, string> { { "k", "v" } };
+        var info = PaymentInfo.ForTransactionApi(amount, orderId, description, metadata);
         var url = "https://api.moyasar.com/v1/payments";
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
-            BuildTestPaymentRequest(paymentSourceType, false, token, amount, description, metadata),
+            BuildTestPaymentRequest(paymentSourceType, false, token, amount, orderId, description, metadata),
             HttpStatusCode.Unauthorized, null);
 
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.AuthorizePaymentAsync(paymentSourceType, amount, token, description, metadata));
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.AuthorizePaymentAsync(paymentSourceType, token, info));
     }
     #endregion
 
     #region CapturePaymentAsync
     [Fact]
+    public async Task CapturePaymentAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForTokenization(1, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.CapturePaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.CapturePaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+    }
+
+    [Fact]
     public async Task CapturePaymentAsync_returns_paymentResponse_when_successful()
     {
         // Arrange
         var amount = 12;
+        var orderId = Guid.NewGuid().ToString();
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "description");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/capture";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusCapture, amount);
@@ -375,7 +460,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.CapturePaymentAsync(paymentId, amount, null, null);
+        var result = await provider.CapturePaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -390,7 +475,9 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var amount = 12;
+        var orderId = Guid.NewGuid().ToString();
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "desc", new Dictionary<string, string> { { "k", "v" } });
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/capture";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusCapture, amount);
@@ -403,7 +490,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.CapturePaymentAsync(paymentId, amount, "desc", new Dictionary<string, string> { { "k", "v" } });
+        var result = await provider.CapturePaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -418,7 +505,9 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var amount = 56.45m;
+        var orderId = Guid.NewGuid().ToString();
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/capture";
 
         var errorResponse = new MoyasarErrorResponse
@@ -435,7 +524,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.CapturePaymentAsync(paymentId, amount, null, null));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.CapturePaymentAsync(paymentId, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse.Message, ex.ErrorObject.Message);
@@ -447,7 +536,9 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var amount = 12;
+        var orderId = Guid.NewGuid().ToString();
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/capture";
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
@@ -457,16 +548,34 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.CapturePaymentAsync(paymentId, amount, null, null));
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.CapturePaymentAsync(paymentId, info));
     }
     #endregion
 
     #region VoidPaymentAsync
     [Fact]
+    public async Task VoidPaymentAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForTokenization(1, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.VoidPaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.VoidPaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+    }
+
+    [Fact]
     public async Task VoidPaymentAsync_returns_paymentResponse_when_successful()
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusVoid, 0);
@@ -478,7 +587,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.VoidPaymentAsync(paymentId, 0, null, null);
+        var result = await provider.VoidPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -493,6 +602,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc", new Dictionary<string, string> { { "k", "v" } });
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusVoid, 0);
@@ -505,7 +615,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.VoidPaymentAsync(paymentId, 0, "desc", new Dictionary<string, string> { { "k", "v" } });
+        var result = await provider.VoidPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -520,6 +630,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
 
         var errorResponse = new MoyasarErrorResponse
@@ -536,7 +647,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.VoidPaymentAsync(paymentId, 0, null, null));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.VoidPaymentAsync(paymentId, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse.Message, ex.ErrorObject.Message);
@@ -548,6 +659,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
@@ -557,17 +669,35 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.VoidPaymentAsync(paymentId, 0, null, null));
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.VoidPaymentAsync(paymentId, info));
     }
     #endregion
 
     #region RefundPaymentAsync
+    [Fact]
+    public async Task RefundPaymentAsync_throws_on_invalid_paymentIntent()
+    {
+        // Arrange
+        var info1 = PaymentInfo.ForTokenization(1, "1234567890", "info@example.com");
+        var info2 = PaymentInfo.ForHpp(11, Guid.NewGuid().ToString(), "description", "1234567890", "info@example.com");
+
+        var provider = new MoyasarPaymentProvider(new HttpClient(), _config);
+
+        // Act & assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.RefundPaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => provider.RefundPaymentAsync("paymentId", info1));
+        Assert.Equal("PaymentInfo intent must be TransactionApi for transaction API payment requests.", ex.Message);
+    }
+
     [Fact]
     public async Task RefundPaymentAsync_returns_paymentResponse_when_successful()
     {
         // Arrange
         var amount = 98;
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusRefund, amount);
@@ -579,7 +709,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.RefundPaymentAsync(paymentId, amount, null, null);
+        var result = await provider.RefundPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -595,6 +725,7 @@ public class MoyasarPaymentProviderTests
         // Arrange
         var amount = 98;
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(amount, Guid.NewGuid().ToString(), "desc", new Dictionary<string, string> { { "k", "v" } });
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusRefund, amount);
@@ -607,7 +738,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.RefundPaymentAsync(paymentId, amount, "desc", new Dictionary<string, string> { { "k", "v" } });
+        var result = await provider.RefundPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -622,6 +753,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
         var errorResponse = new MoyasarErrorResponse
@@ -638,7 +770,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.RefundPaymentAsync(paymentId, 1, null, null));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.RefundPaymentAsync(paymentId, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse.Message, ex.ErrorObject.Message);
@@ -650,6 +782,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
         var httpMoq = GetHttpMoq(HttpMethod.Post, url,
@@ -659,7 +792,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.RefundPaymentAsync(paymentId, 1, null, null));
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => provider.RefundPaymentAsync(paymentId, info));
     }
     #endregion
 
@@ -944,6 +1077,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var url = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
 
         var paymentResponse = BuildTestPaymentResponse(MoyasarPaymentResponse.StatusVoid, 100);
@@ -955,7 +1089,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.VoidOrRefundPaymentAsync(paymentId, 0, null, null);
+        var result = await provider.VoidOrRefundPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -970,6 +1104,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(100, Guid.NewGuid().ToString(), "desc");
         var voidUrl = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
         var refundUrl = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
@@ -992,7 +1127,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act
-        var result = await provider.VoidOrRefundPaymentAsync(paymentId, 100, null, null);
+        var result = await provider.VoidOrRefundPaymentAsync(paymentId, info);
 
         // Assert
         Assert.Equal(paymentResponse.Id, result.PaymentId);
@@ -1007,6 +1142,7 @@ public class MoyasarPaymentProviderTests
     {
         // Arrange
         var paymentId = Guid.NewGuid().ToString();
+        var info = PaymentInfo.ForTransactionApi(1, Guid.NewGuid().ToString(), "desc");
         var voidUrl = $"https://api.moyasar.com/v1/payments/{paymentId}/void";
         var refundUrl = $"https://api.moyasar.com/v1/payments/{paymentId}/refund";
 
@@ -1033,7 +1169,7 @@ public class MoyasarPaymentProviderTests
         var provider = new MoyasarPaymentProvider(httpMoq.ToHttpClient(), _config);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.VoidOrRefundPaymentAsync(paymentId, 1, null, null));
+        var ex = await Assert.ThrowsAsync<MoyasarException>(() => provider.VoidOrRefundPaymentAsync(paymentId, info));
         Assert.Equal("Moyasar API call failed.", ex.Message);
         Assert.Equal(errorResponse2.Type, ex.ErrorObject.Type);
         Assert.Equal(errorResponse2.Message, ex.ErrorObject.Message);
@@ -1246,13 +1382,17 @@ public class MoyasarPaymentProviderTests
         Year = "2025",
     };
 
-    private static MoyasarPaymentRequest BuildTestPaymentRequest(PaymentSourceType sourceType, bool immediateCapture, string token, decimal amount, string description, Dictionary<string, string> metadata) => new()
+    private static MoyasarPaymentRequest BuildTestPaymentRequest(PaymentSourceType sourceType, bool immediateCapture, string token, decimal amount, string orderId, string description, Dictionary<string, string> metadata)
     {
-        Amount = (int)(amount * 100),
-        Currency = "SAR",
-        Description = description,
-        Metadata = metadata,
-        Source = sourceType is PaymentSourceType.ApplePay
+        metadata[PaymentInfo.OrderIdKey] = orderId;
+
+        return new()
+        {
+            Amount = (int)(amount * 100),
+            Currency = "SAR",
+            Description = description,
+            Metadata = metadata,
+            Source = sourceType is PaymentSourceType.ApplePay
             ? new MoyasarApplePayPaymentSource
             {
                 Manual = immediateCapture ? "false" : "true",
@@ -1264,7 +1404,8 @@ public class MoyasarPaymentProviderTests
                 Token = token,
                 ThreeDSecure = false,
             },
-    };
+        };
+    }
 
     private static MoyasarCaptureRequest BuildTestCaptureRequest(decimal amount) => new()
     {

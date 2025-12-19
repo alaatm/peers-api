@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
@@ -7,13 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Peers.Core;
-using Peers.Core.Identity;
-using Peers.Core.Payments;
+using Peers.Core.Common;
 using Peers.Core.Payments.Providers.ClickPay;
 using Peers.Core.Payments.Providers.ClickPay.Configuration;
-using Peers.Core.Security.Jwt;
-using Peers.Modules.Customers.Domain;
+using Peers.Core.Payments.Providers.Moyasar.Models;
+using Peers.Modules.Carts.Services;
 using Peers.Modules.Kernel;
 
 namespace Peers.Api.Pages.Payments;
@@ -22,27 +19,18 @@ namespace Peers.Api.Pages.Payments;
 [IgnoreAntiforgeryToken]
 public class ResultModel : PageModel
 {
-    private readonly PeersContext _context;
-    private readonly TimeProvider _timeProvider;
-    private readonly IPaymentProvider _paymentProvider;
-    private readonly IIdentityInfo _identity;
     private readonly IMemoryCache _cache;
+    private readonly IPaymentProcessor _paymentProcessor;
 
     public bool Success { get; private set; }
     public string? Message { get; private set; }
 
     public ResultModel(
-        PeersContext context,
-        TimeProvider timeProvider,
-        IPaymentProvider paymentProvider,
-        IIdentityInfo identity,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IPaymentProcessor paymentProcessor)
     {
-        _context = context;
-        _timeProvider = timeProvider;
-        _paymentProvider = paymentProvider;
-        _identity = identity;
         _cache = cache;
+        _paymentProcessor = paymentProcessor;
     }
 
     // This route, along with the POST below are used by mobile clients to receive the payment status.
@@ -50,7 +38,7 @@ public class ResultModel : PageModel
     //
     // 1. Moyasar (GET):
     //    As the final callback to indicate the success or failure of the payment.
-    //    This must be used to determine whether to keep the saved tokenized card (which was received and saved in POST /payments/tokenize) or not.
+    //    This must be used to determine whether to keep the saved tokenized card (which was received and saved in POST /payments/pay) or not.
     //    Possible failures include but not limited to failed 3D Secure authentication, etc.
     //
     // 2. A redirect from /payments/tokenization (GET):
@@ -59,8 +47,6 @@ public class ResultModel : PageModel
     //
     public async Task<PageResult> OnGetAsync(string? id, string? status, string? amount, string? message, bool? paymentProcessFailed)
     {
-        RemoveCachedToken();
-
         if (paymentProcessFailed == true)
         {
             Success = false;
@@ -68,26 +54,13 @@ public class ResultModel : PageModel
         }
         else
         {
-            Success = status == "authorized";
+            Success = status is not MoyasarPaymentResponse.StatusFailed;
             Message = message;
+        }
 
-            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(id);
-
-            if (Success)
-            {
-                // Void the tokenization payment.
-                await _paymentProvider.VoidPaymentAsync(tokenizedCard.PaymentId, 1, "Void tokenization payment", null);
-
-                var response = await _paymentProvider.FetchTokenAsync(tokenizedCard.Token);
-                Debug.Assert(response is not null);
-                customer.ActivatePaymentCard(tokenizedCard, response.CardBrand, response.CardType, response.Expiry, _timeProvider.UtcToday());
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                customer.DeletePaymentCard(tokenizedCard, _timeProvider.UtcNow(), force: true);
-                await _context.SaveChangesAsync();
-            }
+        if (id is not null)
+        {
+            await _paymentProcessor.HandleAsync(id, Request.GetQueryValue(PayModel.SessionIdQueryKey));
         }
 
         return Page();
@@ -95,52 +68,29 @@ public class ResultModel : PageModel
 
     // This route is called from ClickPay (POST):
     // It checks the authenticity of the request check and setting values for client apps to receive notification on the payment status.
-    // The actual payment status is determined by the POST /payments/tokenize.
+    // The actual payment status is determined by the POST /payments/pay.
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!IsValidSignature())
+        if (!IsValidClickPaySignature())
         {
             return BadRequest("Invalid signature");
         }
 
-        RemoveCachedToken();
-
         var form = Request.Form;
         var respMessage = form["respMessage"];
         var respStatus = form["respStatus"];
-        var paymentId = form["tranRef"];
 
         Success = respStatus == "A";
         Message = respMessage;
 
-        if (Success)
-        {
-            var (customer, tokenizedCard) = await GetCustomerAndCardAsync(paymentId);
-
-            // Void the tokenization payment.
-            await _paymentProvider.VoidPaymentAsync(tokenizedCard.PaymentId, 1, "Void tokenization payment", null);
-
-            customer.ActivatePaymentCard(tokenizedCard, null, null, null, _timeProvider.UtcToday());
-            await _context.SaveChangesAsync();
-        }
-
         return Page();
     }
 
-    private void RemoveCachedToken()
-    {
-        if (Request.Query.TryGetValue(TokenIdResolver.TokenIdQueryKey, out var tokenId))
-        {
-            _cache.Remove(TokenIdResolver.GetTokenIdCacheKey(tokenId.ToString()));
-        }
-    }
-
-    private bool IsValidSignature()
+    private bool IsValidClickPaySignature()
     {
         const string SignatureKey = "signature";
 
-        if (!Request.Query.TryGetValue(TokenizeModel.InitiatorQueryKey, out var initiator) ||
-            !string.Equals(initiator, ClickPayPaymentProvider.Name, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(Request.GetQueryValue(PayModel.InitiatorQueryKey), ClickPayPaymentProvider.Name, StringComparison.OrdinalIgnoreCase))
         {
             // Not a ClickPay request, nothing to validate
             return true;
@@ -185,29 +135,5 @@ public class ResultModel : PageModel
 
         // Constant-time compare to prevents timing attacks
         return CryptographicOperations.FixedTimeEquals(computedBytes, incomingBytes);
-    }
-
-    private async Task<(Customer customer, PaymentCard tokenizedCard)> GetCustomerAndCardAsync(string? paymentId)
-    {
-        var customer = await _context
-            .Customers
-            .Include(p => p.PaymentMethods.Where(p => !p.IsDeleted))
-            .FirstAsync(c => c.Id == _identity.Id);
-
-        var cards = customer
-            .PaymentMethods
-            .Where(p => p.Type == PaymentType.Card)
-            .Cast<PaymentCard>();
-
-        if (paymentId is not null)
-        {
-            var tokenizedCard = cards.Single(p => p.PaymentId == paymentId);
-            return (customer, tokenizedCard);
-        }
-        else
-        {
-            Debug.Assert(false, "paymentId is null.");
-            return (null!, null!);
-        }
     }
 }

@@ -13,4 +13,7 @@ internal static partial class LoggerExtensions
 
     [LoggerMessage(LogLevel.Warning, "Unknown payment request callback initiator: {Initiator}", SkipEnabledCheck = true)]
     public static partial void UnknownPaymentRequestInitiator(this ILogger logger, string? initiator);
+
+    [LoggerMessage(LogLevel.Warning, "No active HPP Checkout session '{SessionId}' was found for customer '{CustomerId}'", SkipEnabledCheck = true)]
+    public static partial void CheckoutSessionNotFound(this ILogger logger, string sessionId, int customerId);
 }

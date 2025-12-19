@@ -1,5 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Peers.Core.Common;
 using Peers.Core.Payments.Models;
 
 namespace Peers.Core.Payments.Providers.Moyasar.Models;
@@ -31,28 +31,23 @@ public sealed class MoyasarPaymentRequest
     /// Creates a new instance of <see cref="MoyasarPaymentRequest"/>.
     /// </summary>
     /// <param name="type">The payment source type.</param>
-    /// <param name="amount">The payment amount.</param>
     /// <param name="immediateCapture">Whether the amount should be captured immediately, or not (i.e authorize only).</param>
     /// <param name="token">The card or apple pay token.</param>
-    /// <param name="description">The payment description.</param>
-    /// <param name="metadata">The payment metadata.</param>
+    /// <param name="paymentInfo">The payment information.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    public static MoyasarPaymentRequest Create(PaymentSourceType type, decimal amount, bool immediateCapture, string token, string description, Dictionary<string, string>? metadata)
+    public static MoyasarPaymentRequest Create(PaymentSourceType type, bool immediateCapture, string token, [NotNull] PaymentInfo paymentInfo)
     {
         var manual = immediateCapture ? "false" : "true";
-
-        if (amount.GetDecimalPlaces() > 2)
-        {
-            throw new ArgumentException("Amount must be in SAR and have a maximum of 2 decimal places.", nameof(amount));
-        }
+        var metadata = paymentInfo.Metadata ?? [];
+        metadata[PaymentInfo.OrderIdKey] = paymentInfo.OrderId;
 
         var paymentRequest = new MoyasarPaymentRequest
         {
-            Amount = (int)(amount * 100),
-            Description = description,
-            Metadata = metadata is not null ? new(metadata) : null,
+            Amount = (int)(paymentInfo.Amount * 100),
+            Description = paymentInfo.Description,
+            Metadata = metadata,
         };
 
         if (type is PaymentSourceType.ApplePay)
