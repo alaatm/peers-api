@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="$(DotNetVer)" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.11.8" />
   </ItemGroup>
 
   <ItemGroup>
