@@ -20,15 +20,15 @@ namespace Peers.Modules.Kernel;
 /// </summary>
 public static class WebApplicationExtensions
 {
+    private static readonly byte[] _badRequestResponse = Encoding.UTF8.GetBytes(/*lang=json,strict*/ "{\"status\": 400,\"detail\":\"Bad request.\"}");
+    private static readonly byte[] _serverErrorResponse = Encoding.UTF8.GetBytes(/*lang=json,strict*/ "{\"status\": 500,\"detail\":\"An error has occurred.\"}");
+
     /// <summary>
     /// Adds all required middleware.
     /// </summary>
     /// <param name="app">The web application.</param>
     public static void UsePeers([NotNull] this WebApplication app)
     {
-        var badRequestResponse = Encoding.UTF8.GetBytes(/*lang=json,strict*/ "{\"detail\":\"Bad request.\"}");
-        var serverErrorResponse = Encoding.UTF8.GetBytes(/*lang=json,strict*/ "{\"detail\":\"An error has occurred.\"}");
-
         app.UseDefaultFiles();
         app.MapStaticAssets();
 
@@ -47,12 +47,13 @@ public static class WebApplicationExtensions
                     {
                         context.Response.StatusCode = 400;
                         context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(badRequestResponse);
+                        await context.Response.Body.WriteAsync(_badRequestResponse);
                     }
                     else
                     {
+                        context.Response.StatusCode = 500;
                         context.Response.ContentType = "application/json";
-                        await context.Response.Body.WriteAsync(serverErrorResponse);
+                        await context.Response.Body.WriteAsync(_serverErrorResponse);
                     }
                 }));
         }

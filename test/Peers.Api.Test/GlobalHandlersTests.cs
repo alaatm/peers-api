@@ -29,6 +29,7 @@ public class GlobalHandlersTests : IClassFixture<ApiAppFactory>
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.Equal(400, problem.Status);
         Assert.Equal("Bad request.", problem.Detail);
     }
 
@@ -41,6 +42,7 @@ public class GlobalHandlersTests : IClassFixture<ApiAppFactory>
         // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.Equal(500, problem.Status);
         Assert.Equal("An error has occurred.", problem.Detail);
     }
 }
