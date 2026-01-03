@@ -4,6 +4,7 @@ using Peers.Core.Commands;
 using Peers.Core.Domain;
 using Peers.Core.Http;
 using System.Diagnostics;
+using Peers.Core.Domain.Errors;
 
 namespace Peers.Core.Cqrs.Pipeline;
 
@@ -32,6 +33,12 @@ public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
         {
             _logger.BusinessRulesException(ex);
             return (TResponse)Result.BadRequest(detail: ex.BrokenRule.ErrorTitle, type: ex.BrokenRule.Code, errors: [.. ex.BrokenRule.Errors]);
+        }
+        catch (DomainException ex)
+        {
+            _logger.BusinessRulesException(ex);
+            var error = ex.Error;
+            return (TResponse)Result.BadRequest(detail: error.TitleCode, type: error.Code);
         }
         finally
         {
