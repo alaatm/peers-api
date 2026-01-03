@@ -2,6 +2,14 @@ using Peers.Core.Domain;
 
 namespace Peers.Core.Localization.Infrastructure;
 
+public abstract class DtoBaseNonGeneric
+{
+    /// <summary>
+    /// The ISO 639-1 language code associated with the content.
+    /// </summary>
+    public string LangCode { get; set; } = default!;
+}
+
 /// <summary>
 /// Provides a base class for translation entities associated with a specific entity type and language code.
 /// </summary>
@@ -21,11 +29,10 @@ public abstract class TranslationBase<T, TTr> : ITranslation<T>
     public string LangCode { get; init; } = default!;
 
     public abstract class DtoBase
-        : IIncomingTranslation<TTr>,
+        : DtoBaseNonGeneric,
+          IIncomingTranslation<TTr>,
           IOutgoingTranslation<TTr>
     {
-        public string LangCode { get; set; } = default!;
-
         // write → entity
         public abstract void ApplyTo(TTr target);
 

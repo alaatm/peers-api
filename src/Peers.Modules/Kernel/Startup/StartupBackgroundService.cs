@@ -102,7 +102,7 @@ public sealed class StartupBackgroundService : BackgroundService
 
         string[] allRoles =
         [
-            Roles.Admin, Roles.UsersManager, Roles.SettingsManager, Roles.FinanceAdmin, Roles.Staff,
+            Roles.Admin, Roles.CatalogManager, Roles.UsersManager, Roles.SettingsManager, Roles.FinanceAdmin, Roles.Staff,
         ];
         string[] superRoles = [.. allRoles, Roles.MaintenanceAdmin, Roles.PowerAdmin];
 

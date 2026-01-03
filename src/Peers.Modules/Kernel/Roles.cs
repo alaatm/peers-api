@@ -8,6 +8,7 @@ public static class Roles
 
     // Represents a staff member, regardless of their role.
     public const string Staff = "Staff";
+    public const string CatalogManager = "CatalogManager";
     public const string UsersManager = "UsersManager";
     public const string SettingsManager = "SettingsManager";
     public const string MaintenanceAdmin = "MaintenanceAdmin";
@@ -17,6 +18,7 @@ public static class Roles
     public static string[] Default =>
     [
         Admin,
+        CatalogManager,
         UsersManager,
         SettingsManager,
         MaintenanceAdmin,
