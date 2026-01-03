@@ -20,5 +20,7 @@ public static class ServiceCollectionExtensions
             o.AddOperationTransformer<MultipartJsonEncodingTransformer>();
             o.AddSchemaTransformer<EnumNamesTransformer>();
             o.AddSchemaTransformer<DictionaryKeysTransformer>();
+            o.AddSchemaTransformer<PointSchemaTransformer>();
+            o.AddSchemaTransformer<AttributeInputDtoSchemaTransformer>();
         });
 }

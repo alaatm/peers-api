@@ -4,8 +4,11 @@ using Peers.Core.Localization;
 using Peers.Core.Middlewares.RobotsTxt;
 using Peers.Core.Nafath;
 using Peers.Core.RateLimiting;
+using Peers.Modules.Carts.Endpoints;
+using Peers.Modules.Catalog.Endpoints;
 using Peers.Modules.Customers.Endpoints;
 using Peers.Modules.I18n.Endpoints;
+using Peers.Modules.Listings.Endpoints;
 using Peers.Modules.Media.Endpoints;
 using Peers.Modules.Sellers;
 using Peers.Modules.Sellers.Endpoints;
@@ -75,6 +78,9 @@ public static class WebApplicationExtensions
         protectedGroup
             .MapAccountEndpoints()
             .MapI18nEndpoints()
+            .MapCatalogEndpoints()
+            .MapListingsEndpoints()
+            .MapCartEndpoints()
             .MapCustomerEndpoints()
             .MapSellerEndpoints()
             .MapMediaEndpoints()
