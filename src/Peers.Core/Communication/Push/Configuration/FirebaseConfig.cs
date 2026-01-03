@@ -18,7 +18,7 @@ internal sealed class FirebaseConfigValidator : IValidateOptions<FirebaseConfig>
     {
         try
         {
-            var _ = JsonDocument.Parse(options.ServiceAccountKey ?? "");
+            var _ = JsonDocument.Parse(NormalizeMultilineStrings(options.ServiceAccountKey) ?? "");
         }
         catch (JsonException)
         {
@@ -27,5 +27,8 @@ internal sealed class FirebaseConfigValidator : IValidateOptions<FirebaseConfig>
 
         return ValidateOptionsResult.Success;
     }
+
+    private static string NormalizeMultilineStrings(string json)
+        => json.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal);
 }
 
