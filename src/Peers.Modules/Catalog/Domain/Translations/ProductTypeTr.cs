@@ -8,6 +8,9 @@ public sealed class ProductTypeTr : TranslationBase<ProductType, ProductTypeTr>
 
     public sealed class Dto : DtoBase
     {
+        /// <summary>
+        /// The localized name.
+        /// </summary>
         public string Name { get; set; } = default!;
 
         public override void ApplyTo([NotNull] ProductTypeTr target) => target.Name = Name.Trim();

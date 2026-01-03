@@ -9,6 +9,9 @@ public sealed class EnumAttributeOptionTr : TranslationBase<EnumAttributeOption,
 
     public sealed class Dto : DtoBase
     {
+        /// <summary>
+        /// The localized name of the enum attribute option.
+        /// </summary>
         public string Name { get; set; } = default!;
 
         public override void ApplyTo([NotNull] EnumAttributeOptionTr target) => target.Name = Name.Trim();

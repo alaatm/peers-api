@@ -10,7 +10,13 @@ public sealed class AttributeDefinitionTr : TranslationBase<AttributeDefinition,
 
     public sealed class Dto : DtoBase
     {
+        /// <summary>
+        /// The localized name of the attribute.
+        /// </summary>
         public string Name { get; set; } = default!;
+        /// <summary>
+        /// The localized unit of measurement for the attribute, if applicable.
+        /// </summary>
         public string? Unit { get; set; }
 
         public override void ApplyTo([NotNull] AttributeDefinitionTr target) => (target.Name, target.Unit) = (Name.Trim(), Unit?.Trim());

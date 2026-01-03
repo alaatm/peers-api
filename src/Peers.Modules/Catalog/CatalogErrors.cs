@@ -54,6 +54,11 @@ public static class CatalogErrors
     /// </summary>
     public static DomainError AttrAlreadyExists(string attrKey) => new(Titles.ResourceConflict, "catalog.attr-already-exists", attrKey);
     /// <summary>
+    /// Attribute with position '{0}' already exists.
+    /// </summary>
+    public static DomainError AttrPositionAlreadyExists(int position)
+        => new(Titles.ResourceConflict, "catalog.attr-position-already-exists", position.ToString(CultureInfo.InvariantCulture));
+    /// <summary>
     /// Variant attributes are not allowed for boolean, string, or date kinds.
     /// </summary>
     public static DomainError VariantNotAllowedForBoolStrDate => new(Titles.ValidationFailed, "catalog.variant-not-allowed-for-bool-str-date");
@@ -205,6 +210,11 @@ public static class CatalogErrors
     /// Option '{0}' already exists.
     /// </summary>
     public static DomainError EnumOptAlreadyExists(string code) => new(Titles.ResourceConflict, "catalog.opt-already-exists", code);
+    /// <summary>
+    /// Option with position '{0}' already exists.
+    /// </summary>
+    public static DomainError EnumOptPositionAlreadyExists(int position)
+        => new(Titles.ResourceConflict, "catalog.opt-position-already-exists", position.ToString(CultureInfo.InvariantCulture));
     /// <summary>
     /// Attribute has no dependency; scoped option is not allowed.
     /// </summary>

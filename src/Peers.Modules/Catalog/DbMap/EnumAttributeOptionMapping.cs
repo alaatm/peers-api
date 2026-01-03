@@ -19,6 +19,6 @@ internal sealed class EnumAttributeOptionMapping : IEntityTypeConfiguration<Enum
             .HasForeignKey(p => p.ParentOptionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable(nameof(EnumAttributeOption).Underscore());
+        builder.ToTable(nameof(EnumAttributeOption).Underscore(), "catalog");
     }
 }

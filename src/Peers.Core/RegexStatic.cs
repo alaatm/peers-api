@@ -26,4 +26,6 @@ public static partial class RegexStatic
     public static partial Regex IsSnakeCaseRegex();
     [GeneratedRegex(@"^[12]\d{9}$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex NationalIdRegex();
+    [GeneratedRegex(@"-v\d+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex SlugVersionSuffixRegex();
 }

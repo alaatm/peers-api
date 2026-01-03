@@ -145,7 +145,11 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
     public ProductType CloneAsNextVersion(bool copyAttributes)
     {
         // Create the child under the same parent without copying parent attributes as we want to copy from 'this' (sibling)
-        var next = Parent!.AddChild(Slug, IsSelectable, copyAttributes: false, Version + 1);
+        var newVersion = Version + 1;
+        var newSlug = RegexStatic.SlugVersionSuffixRegex().Replace(Slug, "");
+        newSlug = $"{newSlug}-v{newVersion}";
+
+        var next = Parent!.AddChild(newSlug, IsSelectable, copyAttributes: false, newVersion);
 
         // Copy translations
         foreach (var tr in Translations)
@@ -205,6 +209,11 @@ public sealed class ProductType : Entity, IAggregateRoot, ILocalizable<ProductTy
         if (Attributes.Find(p => p.Key == key) is not null)
         {
             throw new DomainException(E.AttrAlreadyExists(key));
+        }
+
+        if (Attributes.Find(p => p.Position == position) is not null)
+        {
+            throw new DomainException(E.AttrPositionAlreadyExists(position));
         }
 
         if (isVariant &&

@@ -53,6 +53,10 @@ public sealed class EnumAttributeDefinition : AttributeDefinition
         {
             throw new DomainException(E.EnumOptAlreadyExists(code));
         }
+        if (Options.Find(p => p.Position == position) is not null)
+        {
+            throw new DomainException(E.EnumOptPositionAlreadyExists(position));
+        }
 
         if (DependsOn is null &&
             parentCode is not null)
