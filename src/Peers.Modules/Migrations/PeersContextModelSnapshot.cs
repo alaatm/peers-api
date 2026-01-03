@@ -19,7 +19,7 @@ namespace Peers.Modules.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -227,6 +227,93 @@ namespace Peers.Modules.Migrations
                         .IsUnique();
 
                     b.ToTable("cart", (string)null);
+                });
+
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.CheckoutSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("int")
+                        .HasColumnName("cart_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTime>("ExpiresOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("expires_on");
+
+                    b.Property<string>("PaymentId")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("payment_id");
+
+                    b.Property<int?>("PaymentMethodId")
+                        .HasColumnType("int")
+                        .HasColumnName("payment_method_id");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("int")
+                        .HasColumnName("payment_type");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("session_id");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("int")
+                        .HasColumnName("shipping_address_id");
+
+                    b.Property<decimal>("ShippingFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("shipping_fee");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId")
+                        .IsUnique()
+                        .HasFilter("[status] IN (0, 1, 2)");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasFilter("[payment_id] IS NOT NULL");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique();
+
+                    b.HasIndex("ShippingAddressId");
+
+                    b.ToTable("checkout_session", (string)null);
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
@@ -830,6 +917,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("price");
 
+                    b.Property<int>("ReservedQty")
+                        .HasColumnType("int")
+                        .HasColumnName("reserved_qty");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1142,11 +1233,8 @@ namespace Peers.Modules.Migrations
             modelBuilder.Entity("Peers.Modules.Ordering.Domain.Order", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BuyerId")
                         .HasColumnType("int")
@@ -2314,6 +2402,105 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.CheckoutSession", b =>
+                {
+                    b.HasOne("Peers.Modules.Carts.Domain.Cart", "Cart")
+                        .WithMany("CheckoutSessions")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Customers.Domain.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.Customers.Domain.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Peers.Modules.Customers.Domain.CustomerAddress", "ShippingAddress")
+                        .WithMany()
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("Peers.Modules.Carts.Domain.CheckoutSessionLine", "Lines", b1 =>
+                        {
+                            b1.Property<int>("SessionId")
+                                .HasColumnType("int")
+                                .HasColumnName("session_id");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("ListingId")
+                                .HasColumnType("int")
+                                .HasColumnName("listing_id");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("quantity");
+
+                            b1.Property<decimal>("UnitPrice")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("unit_price");
+
+                            b1.Property<int>("VariantId")
+                                .HasColumnType("int")
+                                .HasColumnName("variant_id");
+
+                            b1.HasKey("SessionId", "Id");
+
+                            b1.HasIndex("ListingId");
+
+                            b1.HasIndex("VariantId");
+
+                            b1.HasIndex("SessionId", "VariantId")
+                                .IsUnique();
+
+                            b1.ToTable("checkout_session_line", (string)null);
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.Listing", "Listing")
+                                .WithMany()
+                                .HasForeignKey("ListingId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.WithOwner("Session")
+                                .HasForeignKey("SessionId");
+
+                            b1.HasOne("Peers.Modules.Listings.Domain.ListingVariant", "Variant")
+                                .WithMany()
+                                .HasForeignKey("VariantId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.Navigation("Listing");
+
+                            b1.Navigation("Session");
+
+                            b1.Navigation("Variant");
+                        });
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Lines");
+
+                    b.Navigation("PaymentMethod");
+
+                    b.Navigation("ShippingAddress");
+                });
+
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>
                 {
                     b.HasOne("Peers.Modules.Catalog.Domain.ProductType", "ProductType")
@@ -2763,6 +2950,12 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Peers.Modules.Carts.Domain.CheckoutSession", "CheckoutSession")
+                        .WithOne("Order")
+                        .HasForeignKey("Peers.Modules.Ordering.Domain.Order", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Peers.Modules.Customers.Domain.PaymentMethod", "PaymentMethod")
                         .WithMany()
                         .HasForeignKey("PaymentMethodId");
@@ -2837,6 +3030,8 @@ namespace Peers.Modules.Migrations
                         });
 
                     b.Navigation("Buyer");
+
+                    b.Navigation("CheckoutSession");
 
                     b.Navigation("Lines");
 
@@ -3137,6 +3332,16 @@ namespace Peers.Modules.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("GroupDefinition");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.Cart", b =>
+                {
+                    b.Navigation("CheckoutSessions");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Carts.Domain.CheckoutSession", b =>
+                {
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.Attributes.AttributeDefinition", b =>

@@ -1072,42 +1072,50 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "order",
+                name: "checkout_session",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    buyer_id = table.Column<int>(type: "int", nullable: false),
-                    seller_id = table.Column<int>(type: "int", nullable: false),
-                    number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    placed_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    state = table.Column<int>(type: "int", nullable: false),
-                    items_total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    cancellation_reason = table.Column<int>(type: "int", nullable: true),
+                    session_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    cart_id = table.Column<int>(type: "int", nullable: false),
+                    customer_id = table.Column<int>(type: "int", nullable: false),
+                    shipping_address_id = table.Column<int>(type: "int", nullable: false),
                     payment_method_id = table.Column<int>(type: "int", nullable: true),
+                    payment_id = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    payment_type = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    expires_on = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_order", x => x.id);
+                    table.PrimaryKey("PK_checkout_session", x => x.id);
                     table.ForeignKey(
-                        name: "FK_order_customer_buyer_id",
-                        column: x => x.buyer_id,
-                        principalTable: "customer",
+                        name: "FK_checkout_session_cart_cart_id",
+                        column: x => x.cart_id,
+                        principalTable: "cart",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_checkout_session_customer_address_shipping_address_id",
+                        column: x => x.shipping_address_id,
+                        principalTable: "customer_address",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_order_payment_method_payment_method_id",
+                        name: "FK_checkout_session_customer_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_checkout_session_payment_method_payment_method_id",
                         column: x => x.payment_method_id,
                         principalTable: "payment_method",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "FK_order_seller_seller_id",
-                        column: x => x.seller_id,
-                        principalTable: "seller",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1190,6 +1198,52 @@ namespace Peers.Modules.Migrations
                         principalTable: "language",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "order",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false),
+                    buyer_id = table.Column<int>(type: "int", nullable: false),
+                    seller_id = table.Column<int>(type: "int", nullable: false),
+                    number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    placed_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    state = table.Column<int>(type: "int", nullable: false),
+                    items_total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    shipping_fee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ready_to_ship_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    delivered_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    cancellation_reason = table.Column<int>(type: "int", nullable: true),
+                    payment_method_id = table.Column<int>(type: "int", nullable: true),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_order_checkout_session_id",
+                        column: x => x.id,
+                        principalTable: "checkout_session",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_order_customer_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "customer",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_order_payment_method_payment_method_id",
+                        column: x => x.payment_method_id,
+                        principalTable: "payment_method",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_order_seller_seller_id",
+                        column: x => x.seller_id,
+                        principalTable: "seller",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1276,6 +1330,7 @@ namespace Peers.Modules.Migrations
                     sku_code = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     stock_qty = table.Column<int>(type: "int", nullable: true),
+                    reserved_qty = table.Column<int>(type: "int", nullable: false),
                     is_active = table.Column<bool>(type: "bit", nullable: false),
                     selection_snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
@@ -1327,6 +1382,41 @@ namespace Peers.Modules.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_cart_line_listing_variant_variant_id",
+                        column: x => x.variant_id,
+                        principalTable: "listing_variant",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "checkout_session_line",
+                columns: table => new
+                {
+                    session_id = table.Column<int>(type: "int", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    listing_id = table.Column<int>(type: "int", nullable: false),
+                    variant_id = table.Column<int>(type: "int", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: false),
+                    unit_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_checkout_session_line", x => new { x.session_id, x.id });
+                    table.ForeignKey(
+                        name: "FK_checkout_session_line_checkout_session_session_id",
+                        column: x => x.session_id,
+                        principalTable: "checkout_session",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_checkout_session_line_listing_listing_id",
+                        column: x => x.listing_id,
+                        principalTable: "listing",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_checkout_session_line_listing_variant_variant_id",
                         column: x => x.variant_id,
                         principalTable: "listing_variant",
                         principalColumn: "id",
@@ -1522,6 +1612,57 @@ namespace Peers.Modules.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_cart_line_variant_id",
                 table: "cart_line",
+                column: "variant_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_cart_id",
+                table: "checkout_session",
+                column: "cart_id",
+                unique: true,
+                filter: "[status] IN (0, 1, 2)");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_customer_id",
+                table: "checkout_session",
+                column: "customer_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_payment_id",
+                table: "checkout_session",
+                column: "payment_id",
+                unique: true,
+                filter: "[payment_id] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_payment_method_id",
+                table: "checkout_session",
+                column: "payment_method_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_session_id",
+                table: "checkout_session",
+                column: "session_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_shipping_address_id",
+                table: "checkout_session",
+                column: "shipping_address_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_line_listing_id",
+                table: "checkout_session_line",
+                column: "listing_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_line_session_id_variant_id",
+                table: "checkout_session_line",
+                columns: new[] { "session_id", "variant_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_checkout_session_line_variant_id",
+                table: "checkout_session_line",
                 column: "variant_id");
 
             migrationBuilder.CreateIndex(
@@ -1995,10 +2136,10 @@ namespace Peers.Modules.Migrations
                 name: "cart_line");
 
             migrationBuilder.DropTable(
-                name: "client_app_info");
+                name: "checkout_session_line");
 
             migrationBuilder.DropTable(
-                name: "customer_address");
+                name: "client_app_info");
 
             migrationBuilder.DropTable(
                 name: "device",
@@ -2095,9 +2236,6 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
-                name: "cart");
-
-            migrationBuilder.DropTable(
                 name: "enum_attribute_option");
 
             migrationBuilder.DropTable(
@@ -2137,7 +2275,7 @@ namespace Peers.Modules.Migrations
                 name: "listing");
 
             migrationBuilder.DropTable(
-                name: "payment_method");
+                name: "checkout_session");
 
             migrationBuilder.DropTable(
                 name: "lookup_type",
@@ -2151,10 +2289,19 @@ namespace Peers.Modules.Migrations
                 name: "shipping_profile");
 
             migrationBuilder.DropTable(
-                name: "customer");
+                name: "cart");
+
+            migrationBuilder.DropTable(
+                name: "customer_address");
+
+            migrationBuilder.DropTable(
+                name: "payment_method");
 
             migrationBuilder.DropTable(
                 name: "seller");
+
+            migrationBuilder.DropTable(
+                name: "customer");
 
             migrationBuilder.DropTable(
                 name: "app_user",

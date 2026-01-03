@@ -81,7 +81,8 @@ public static class ApiAppFactoryExtensions
 
         var cart = Cart.Create(buyer, seller, now);
         cart.AddLineItem(galaxyS10, galaxyS10.Variants.First().VariantKey, 1, now);
-        cart.TryCheckout(buyer.AddressList.First(), null, 10, now, now.AddMinutes(10), out var session, out _);
+        cart.TryCheckout(buyer.AddressList.First(), null, 10, now, out var session, out _);
+        session.MarkIntentIssued(now);
 
         context.Carts.Add(cart);
         context.SaveChanges();

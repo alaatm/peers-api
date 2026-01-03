@@ -9,6 +9,7 @@ using Peers.Core.Payments.Providers.ClickPay.Models;
 using Peers.Core.Payments.Providers.Moyasar;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 using Peers.Core.Security.Jwt;
+using Peers.Modules.Carts.Domain;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Ordering.Domain;
 
@@ -410,7 +411,7 @@ public class PayPageTests
         var clickPayResponse = CreateClickPayCallbackResponse(successfull: false);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, null))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}", clickPayResponse);
@@ -432,7 +433,7 @@ public class PayPageTests
         var clickPayResponse = CreateClickPayCallbackResponse(hasToken: false);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, null))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}", clickPayResponse);
@@ -477,7 +478,7 @@ public class PayPageTests
         var clickPayResponse = CreateClickPayCallbackResponse(true);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, null))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}", clickPayResponse);
@@ -500,7 +501,7 @@ public class PayPageTests
 
     #region Payment
     [Fact]
-    public async Task Post_for_moyasar_sets_session_paymentId_if_a_valid_and_existing_session_is_provided()
+    public async Task Post_for_moyasar_marks_session_as_payInProgress_if_a_valid_and_existing_session_is_provided()
     {
         // Arrange
         var checkoutSession = _factory.CreateCheckoutSession();
@@ -516,13 +517,14 @@ public class PayPageTests
         Assert.Equal(HttpStatusCode.OK, page.StatusCode);
 
         var sessionFromDb = _factory.GetSession(checkoutSession.Id);
+        Assert.Equal(CheckoutSessionStatus.Paying, sessionFromDb.Status);
         Assert.Equal(moyasarResponse.Id, sessionFromDb.PaymentId);
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Post_for_moyasar_does_not_set_session_paymentId_if_a_invalid_or_nonExisting_session_is_provided(bool isValidSession)
+    public async Task Post_for_moyasar_does_not_mark_session_as_payInProgress_if_a_invalid_or_nonExisting_session_is_provided(bool isValidSession)
     {
         // Arrange
         var customer = _factory.CreateCustomer("john_doe", "+966511111111");
@@ -538,7 +540,7 @@ public class PayPageTests
     }
 
     [Fact]
-    public async Task Post_for_moyasar_does_not_set_session_paymentId_if_a_session_does_not_belong_to_authenticated_customer()
+    public async Task Post_for_moyasar_does_not_mark_session_as_payInProgress_if_a_session_does_not_belong_to_authenticated_customer()
     {
         // Arrange
         var checkoutSession = _factory.CreateCheckoutSession();
@@ -555,13 +557,15 @@ public class PayPageTests
         Assert.Equal(HttpStatusCode.OK, page.StatusCode);
 
         var sessionFromDb = _factory.GetSession(checkoutSession.Id);
+
+        Assert.Equal(CheckoutSessionStatus.IntentIssued, sessionFromDb.Status);
         Assert.Null(sessionFromDb.PaymentId);
     }
 
     // /////////
 
     [Fact]
-    public async Task Post_for_clickpay_sets_session_paymentId_if_a_valid_and_existing_session_is_provided()
+    public async Task Post_for_clickpay_mark_session_as_payInProgress_if_a_valid_and_existing_session_is_provided()
     {
         // Arrange
         var checkoutSession = _factory.CreateCheckoutSession();
@@ -571,7 +575,7 @@ public class PayPageTests
         var tokenId = _factory.GenerateAndCacheTokenId(customer, out _);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, clickPayResponse.CartId))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}&sid={sid:N}", clickPayResponse);
@@ -580,6 +584,7 @@ public class PayPageTests
         Assert.Equal(HttpStatusCode.OK, page.StatusCode);
 
         var sessionFromDb = _factory.GetSession(checkoutSession.Id);
+        Assert.Equal(CheckoutSessionStatus.Paying, sessionFromDb.Status);
         Assert.Equal(clickPayResponse.TranRef, sessionFromDb.PaymentId);
     }
 
@@ -594,7 +599,7 @@ public class PayPageTests
         var tokenId = _factory.GenerateAndCacheTokenId(customer, out _);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, clickPayResponse.CartId))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}&sid={sid:N}", clickPayResponse);
@@ -607,7 +612,7 @@ public class PayPageTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Post_for_clickpay_does_not_set_session_paymentId_if_a_invalid_or_nonExisting_session_is_provided(bool isValidSession)
+    public async Task Post_for_clickpay_does_not_mark_session_as_payInProgress_if_a_invalid_or_nonExisting_session_is_provided(bool isValidSession)
     {
         // Arrange
         var customer = _factory.CreateCustomer("john_doe", "+966511111111");
@@ -616,7 +621,7 @@ public class PayPageTests
         var clickPayResponse = CreateClickPayCallbackResponse(hasToken: false, sessionId: sid);
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, clickPayResponse.CartId))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}&sid={sid}", clickPayResponse);
@@ -627,7 +632,7 @@ public class PayPageTests
     }
 
     [Fact]
-    public async Task Post_for_clickpay_does_not_set_session_paymentId_if_a_session_does_not_belong_to_authenticated_customer()
+    public async Task Post_for_clickpay_does_not_mark_session_as_payInProgress_if_a_session_does_not_belong_to_authenticated_customer()
     {
         // Arrange
         var checkoutSession = _factory.CreateCheckoutSession();
@@ -638,7 +643,7 @@ public class PayPageTests
         var clickPayResponse = CreateClickPayCallbackResponse(hasToken: false, sessionId: sid.ToString("N"));
         _factory.PaymentProcessorMoq
             .Setup(p => p.HandleAsync(clickPayResponse.TranRef, clickPayResponse.CartId))
-            .Returns(Task.FromResult((Order)null));
+            .Returns(Task.CompletedTask);
 
         // Act
         var page = await _client.PostAsJsonAsync($"/payments/pay?culture=en&ik={ClickPayPaymentProvider.Name}&bti={tokenId}&sid={sid:N}", clickPayResponse);
@@ -647,6 +652,7 @@ public class PayPageTests
         Assert.Equal(HttpStatusCode.OK, page.StatusCode);
 
         var sessionFromDb = _factory.GetSession(checkoutSession.Id);
+        Assert.Equal(CheckoutSessionStatus.IntentIssued, sessionFromDb.Status);
         Assert.Null(sessionFromDb.PaymentId);
         _factory.PaymentProcessorMoq.VerifyAll();
     }

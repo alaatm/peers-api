@@ -7,7 +7,7 @@ namespace Peers.Modules.Carts.Commands;
 
 internal static class CartMutationOperation
 {
-    private static readonly CompositeFormat _cartOperLockName = CompositeFormat.Parse("CARTMOD:{0}-{1}");
+    public static readonly CompositeFormat CartOperLockName = CompositeFormat.Parse("CARTMOD:{0}-{1}");
 
     public static async Task<IResult> ExecuteAsync(
         PeersContext context,
@@ -37,9 +37,9 @@ internal static class CartMutationOperation
 
         return await strategy.ExecuteAsync(async () =>
         {
-            using var transaction = await context.Database.BeginTransactionAsync(ctk);
+            await using var transaction = await context.Database.BeginTransactionAsync(ctk);
 
-            var resource = string.Format(CultureInfo.InvariantCulture, _cartOperLockName, identity.Id, listing.SellerId);
+            var resource = string.Format(CultureInfo.InvariantCulture, CartOperLockName, identity.Id, listing.SellerId);
             if ((await context.AcquireAppLockAsync(transaction, resource, 10_000, ctk)) is < 0 and var rc)
             {
                 return Result.Conflict("Another operation is updating this cart. Please retry shortly.");
@@ -47,12 +47,30 @@ internal static class CartMutationOperation
 
             if (await context.Carts
                 .Include(p => p.Lines)
+                .Include(p => p.CheckoutSessions.Where(p =>
+                        p.Status == CheckoutSessionStatus.Active ||
+                        p.Status == CheckoutSessionStatus.IntentIssued ||
+                        p.Status == CheckoutSessionStatus.Paying))
+                    .ThenInclude(p => p.Lines)
+                    .ThenInclude(p => p.Variant)
                 .SingleOrDefaultAsync(p =>
                     p.BuyerId == identity.Id &&
                     p.SellerId == listing.SellerId, ctk) is not Cart cart)
             {
                 cart = Cart.Create(buyer, listing.Seller, timeProvider.UtcNow());
                 context.Carts.Add(cart);
+            }
+
+            if (cart.CheckoutSessions.SingleOrDefault() is { } nonTerminalSession)
+            {
+                if (nonTerminalSession.Status is CheckoutSessionStatus.Active)
+                {
+                    nonTerminalSession.Invalidate(timeProvider.UtcNow());
+                }
+                else if (nonTerminalSession.Status is CheckoutSessionStatus.IntentIssued or CheckoutSessionStatus.Paying)
+                {
+                    return Result.Conflict("Cannot modify cart with an in-progress checkout session. Please complete or wait for the session to expire before modifying the cart.");
+                }
             }
 
             mutate(cart, listing);

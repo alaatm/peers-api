@@ -14,7 +14,6 @@ using Peers.Core.Payments.Providers.ClickPay;
 using Peers.Core.Payments.Providers.Moyasar;
 using Peers.Core.Payments.Providers.Moyasar.Models;
 using Peers.Core.Security.Jwt;
-using Peers.Modules.Carts.Commands;
 using Peers.Modules.Carts.Domain;
 using Peers.Modules.Carts.Services;
 using Peers.Modules.Customers.Domain;
@@ -120,7 +119,7 @@ public class PayModel : PageModel
                 if (hasSessionId &&
                     await GetCheckoutSession(orderId, false) is { } session)
                 {
-                    session.PaymentId = data.Id;
+                    session.MarkPayInProgress(data.Id, _timeProvider.UtcNow());
                 }
 
                 await _context.SaveChangesAsync();
@@ -146,11 +145,11 @@ public class PayModel : PageModel
                 if (hasSessionId &&
                     await GetCheckoutSession(data.CartId, false) is { } session)
                 {
-                    session.PaymentId = data.TranRef;
+                    session.MarkPayInProgress(data.TranRef, _timeProvider.UtcNow());
                 }
 
                 await _context.SaveChangesAsync();
-                _ = await _paymentProcessor.HandleAsync(data.TranRef!, hasSessionId ? data.CartId : null);
+                await _paymentProcessor.HandleAsync(data.TranRef!, hasSessionId ? data.CartId : null);
 
                 return new OkResult();
             }
@@ -210,7 +209,7 @@ public class PayModel : PageModel
     {
         var key = TokenIdResolver.GenerateTokenIdCacheKey(out var tokenId);
         var jwt = HttpContext.Request.Headers.Authorization.ToString()[7..];
-        _cache.Set(key, jwt, Pay.CheckoutSessionDuration);
+        _cache.Set(key, jwt, CheckoutSession.HppCheckoutSessionDuration);
         return tokenId;
     }
 
@@ -263,7 +262,7 @@ public class PayModel : PageModel
 
         return Guid.TryParse(sessionId, out var parsedSessionId)
             ? await q.FirstOrDefaultAsync(p =>
-                p.Status == CheckoutSessionStatus.Active &&
+                p.Status == CheckoutSessionStatus.IntentIssued &&
                 p.CustomerId == _identity.Id &&
                 p.SessionId == parsedSessionId)
             : null;

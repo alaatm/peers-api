@@ -1,7 +1,6 @@
 using Peers.Core.Domain.Errors;
 using Peers.Modules.Customers.Domain;
 using Peers.Modules.Listings.Domain;
-using Peers.Modules.Ordering.Domain;
 using Peers.Modules.Sellers.Domain;
 using E = Peers.Modules.Carts.CartsErrors;
 
@@ -49,6 +48,10 @@ public sealed class Cart : Entity, IAggregateRoot
     /// The list of line items in the cart.
     /// </summary>
     public List<CartLine> Lines { get; private set; } = default!;
+    /// <summary>
+    /// The list of checkout sessions associated with the cart.
+    /// </summary>
+    public List<CheckoutSession> CheckoutSessions { get; private set; } = default!;
 
     private Cart() { }
 
@@ -69,6 +72,7 @@ public sealed class Cart : Entity, IAggregateRoot
             Buyer = buyer,
             Seller = seller,
             Lines = [],
+            CheckoutSessions = [],
         };
 
     /// <summary>
@@ -162,23 +166,15 @@ public sealed class Cart : Entity, IAggregateRoot
         UpdateLineItemQuantity(cartLine, newQuantity, date);
     }
 
-    /// <summary>
-    /// Attempts to create an order from the current cart lines, validating each item before checkout.
-    /// </summary>
-    /// <remarks>If any cart line fails validation, the method does not create an order and provides error
-    /// details for each invalid line. On successful checkout, the cart is cleared and the provided date is recorded as
-    /// the last modification time.</remarks>
-    /// <param name="date">The date and time to associate with the checkout operation. Typically represents when the checkout is performed.</param>
-    /// <param name="order">When this method returns true, contains the created <see cref="Order"/>; otherwise, false.</param>
-    /// <param name="errors">When this method returns false, contains a dictionary mapping invalid cart lines to error
-    /// codes; otherwise, null.</param>
-    /// <returns>true if the checkout succeeds and an order is created; otherwise, false.</returns>
-    public bool CreateOrder(
-        DateTime date,
-        [NotNullWhen(true)] out Order? order,
+    public bool TryCheckout(
+        CustomerAddress shippingAddress,
+        PaymentMethod? paymentMethod,
+        decimal shippingFee,
+        DateTime time,
+        [NotNullWhen(true)] out CheckoutSession? session,
         [NotNullWhen(false)] out IReadOnlyDictionary<CartLine, string>? errors)
     {
-        order = null;
+        session = null;
         var localErrors = new Dictionary<CartLine, string>();
 
         foreach (var line in Lines)
@@ -200,13 +196,56 @@ public sealed class Cart : Entity, IAggregateRoot
         }
 
         errors = null;
-        order = Order.Create(this);
-
-        Lines.Clear();
-        LastTouchedAt = date;
-
+        session = new CheckoutSession(this, shippingAddress, paymentMethod, shippingFee, time);
+        CheckoutSessions.Add(session);
         return true;
     }
+
+    ///// <summary>
+    ///// Attempts to create an order from the current cart lines, validating each item before checkout.
+    ///// </summary>
+    ///// <remarks>If any cart line fails validation, the method does not create an order and provides error
+    ///// details for each invalid line. On successful checkout, the cart is cleared and the provided date is recorded as
+    ///// the last modification time.</remarks>
+    ///// <param name="date">The date and time to associate with the checkout operation. Typically represents when the checkout is performed.</param>
+    ///// <param name="order">When this method returns true, contains the created <see cref="Order"/>; otherwise, false.</param>
+    ///// <param name="errors">When this method returns false, contains a dictionary mapping invalid cart lines to error
+    ///// codes; otherwise, null.</param>
+    ///// <returns>true if the checkout succeeds and an order is created; otherwise, false.</returns>
+    //public bool CreateOrder(
+    //    DateTime date,
+    //    [NotNullWhen(true)] out Order? order,
+    //    [NotNullWhen(false)] out IReadOnlyDictionary<CartLine, string>? errors)
+    //{
+    //    order = null;
+    //    var localErrors = new Dictionary<CartLine, string>();
+
+    //    foreach (var line in Lines)
+    //    {
+    //        try
+    //        {
+    //            ValidateLine(line.Variant, line.Quantity);
+    //        }
+    //        catch (DomainException ex)
+    //        {
+    //            localErrors[line] = ex.Error.Code;
+    //        }
+    //    }
+
+    //    if (localErrors.Count > 0)
+    //    {
+    //        errors = localErrors;
+    //        return false;
+    //    }
+
+    //    errors = null;
+    //    order = Order.Create(this);
+
+    //    Lines.Clear();
+    //    LastTouchedAt = date;
+
+    //    return true;
+    //}
 
     private void RemoveLineItem(CartLine? line, DateTime date)
     {
