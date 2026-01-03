@@ -1,5 +1,7 @@
 using Humanizer;
 using Peers.Core.Nafath;
+using Peers.Core.Nafath.Configuration;
+using Peers.Core.Nafath.Models;
 using E = Peers.Modules.Sellers.SellersErrors;
 
 namespace Peers.Modules.Sellers.Commands;
@@ -47,18 +49,24 @@ public static class EnrollSeller
 
     public sealed class Handler : ICommandHandler<Command>
     {
+        private readonly NafathConfig _nafathConfig;
         private readonly INafathService _nafath;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IIdentityInfo _identity;
         private readonly ILogger<Handler> _log;
         private readonly IStrLoc _l;
 
         public Handler(
+            NafathConfig nafathConfig,
             INafathService nafath,
+            IServiceProvider serviceProvider,
             IIdentityInfo identity,
             ILogger<Handler> log,
             IStrLoc l)
         {
+            _nafathConfig = nafathConfig;
             _nafath = nafath;
+            _serviceProvider = serviceProvider;
             _identity = identity;
             _log = log;
             _l = l;
@@ -66,6 +74,20 @@ public static class EnrollSeller
 
         public async Task<IResult> Handle([NotNull] Command cmd, CancellationToken ctk)
         {
+            if (_nafathConfig.Bypass)
+            {
+                var nafathIdentity = new NafathIdentity(
+                    cmd.NationalId,
+                    FirstNameAr: "Bypass",
+                    LastNameAr: "Bypass",
+                    FirstNameEn: "Bypass",
+                    LastNameEn: "Bypass",
+                    null);
+
+                await NafathCallback.Handler(_serviceProvider, _identity.Id, nafathIdentity);
+                return Result.Ok(new Response("BYPASS"));
+            }
+
             try
             {
                 var response = await _nafath.SendRequestAsync(cmd.Lang, _identity.Id, cmd.NationalId, ctk);

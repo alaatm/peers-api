@@ -13,6 +13,7 @@ public sealed class NafathConfig : IConfigSection
     public string AppKey { get; set; } = default!;
     public string Issuer { get; set; } = default!;
     public string Audience { get; set; } = default!;
+    public bool Bypass { get; set; }
 }
 
 internal sealed class NafathConfigValidator : IValidateOptions<NafathConfig>
