@@ -77,7 +77,7 @@ public sealed class Seller : Entity, ISystemUser, IAggregateRoot
     /// <param name="rate">The seller-managed rate to apply to shipments using this profile. Cannot be null.</param>
     /// <param name="freeShippingPolicy">The free shipping policy to associate with this profile. May be null if no free shipping policy is required.</param>
     /// <exception cref="DomainException">Thrown if a shipping profile with the specified name already exists.</exception>
-    public void CreateShippingProfile(
+    public ShippingProfile CreateShippingProfile(
         [NotNull] string name,
         [NotNull] Point originLocation,
         [NotNull] SellerManagedRate rate,
@@ -98,5 +98,6 @@ public sealed class Seller : Entity, ISystemUser, IAggregateRoot
 
         profile.Validate();
         ShippingProfiles.Add(profile);
+        return profile;
     }
 }
