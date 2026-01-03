@@ -17,6 +17,12 @@ public static class EndpointRouteBuilderExtensions
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<EnrollSeller.Response>(StatusCodes.Status200OK);
 
+        gSellers.MapPost("/shipping-profiles", (IMediator mediator, CreateShippingProfile.Command cmd)
+            => mediator.Send(cmd))
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<EnrollSeller.Response>(StatusCodes.Status201Created);
+
         return ep;
     }
 }

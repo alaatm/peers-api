@@ -1,24 +1,28 @@
 using NetTopologySuite.Geometries;
+using Peers.Core.Cqrs.Pipeline;
 using Peers.Core.Geo;
+using Peers.Modules;
 using Peers.Modules.Carts.Domain;
 using Peers.Modules.Carts.Services;
 
-namespace Peers.Modules.Carts.Queries;
+namespace Peers.Modules.Carts.Commands;
 
-public static class GetCart
+public static class Checkout
 {
     private static readonly IResult _emptyResult = Result.Ok(new Response(0, false, []));
     private static readonly Point _defaultLocation = GeometryHelper.CreatePoint(24.752077613768105, 46.672593596226065);
 
     /// <summary>
-    /// Retrieve the shopping cart for the current buyer and specified seller.
+    /// Retrieves the shopping cart for the current buyer and specified seller.
     /// </summary>
     /// <param name="SellerId">The unique identifier of the seller.</param>
+    /// <param name="CustomerAddressId">The unique identifier of the customer's address to use for shipping calculations. If null, the customer's default address will be used.</param>
     /// <param name="UserLocation">The geographical location of the user, used for shipping calculations only when the customer has no default address.</param>
     [Authorize(Roles = Roles.Customer)]
-    public sealed record Query(
+    public sealed record Command(
         int SellerId,
-        Point? UserLocation) : IQuery;
+        int? CustomerAddressId,
+        Point? UserLocation) : ICommand, IValidatable;
 
     /// <summary>
     /// Represents the result of a cart operation, including shipping fee information and the items in the
@@ -48,32 +52,53 @@ public static class GetCart
             decimal UnitPrice);
     }
 
-    public sealed class Handler : ICommandHandler<Query>
+    public sealed class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleFor(p => p.SellerId).GreaterThan(0);
+            RuleFor(p => p.CustomerAddressId).GreaterThan(0).When(p => p.CustomerAddressId.HasValue);
+        }
+    }
+
+    public sealed class Handler : ICommandHandler<Command>
     {
         private readonly PeersContext _context;
         private readonly IShippingCalculator _shippingCalculator;
         private readonly IIdentityInfo _identity;
+        private readonly IStrLoc _l;
 
         public Handler(
             PeersContext context,
             IShippingCalculator shippingCalculator,
-            IIdentityInfo identity)
+            IIdentityInfo identity,
+            IStrLoc l)
         {
             _context = context;
             _shippingCalculator = shippingCalculator;
             _identity = identity;
+            _l = l;
         }
 
-        public async Task<IResult> Handle([NotNull] Query cmd, CancellationToken ctk)
+        public async Task<IResult> Handle([NotNull] Command cmd, CancellationToken ctk)
         {
             if (await _context.Carts
-                .Include(p => p.Buyer).ThenInclude(p => p.AddressList.Where(p => p.IsDefault))
+                .Include(p => p.Buyer).ThenInclude(p => p.AddressList.Where(p => p.IsDefault || p.Id == cmd.CustomerAddressId))
                 .Include(p => p.Lines)
                 .SingleOrDefaultAsync(p =>
                     p.BuyerId == _identity.Id &&
                     p.SellerId == cmd.SellerId, ctk) is not Cart cart)
             {
                 return _emptyResult;
+            }
+
+            var deliveryAddress = cmd.CustomerAddressId != null
+                ? cart.Buyer.AddressList.Find(p => p.Id == cmd.CustomerAddressId)?.Address.Location
+                : cart.Buyer.GetDefaultAddress()?.Location ?? cmd.UserLocation ?? _defaultLocation;
+
+            if (deliveryAddress is null)
+            {
+                return Result.BadRequest(_l["The provided customer address does not exist"]);
             }
 
             var lines = new Response.CartLineDto[cart.Lines.Count];
@@ -87,8 +112,6 @@ public static class GetCart
                     line.Quantity,
                     line.UnitPrice);
             }
-
-            var deliveryAddress = cart.Buyer.GetDefaultAddress()?.Location ?? cmd.UserLocation ?? _defaultLocation;
 
             var shippingCalcResult = await _shippingCalculator.CalculateAsync(cart, deliveryAddress, ctk);
             var requiresQuote = shippingCalcResult.Outcome is ShippingCalculationOutcome.QuoteRequired;
