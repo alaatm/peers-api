@@ -9,7 +9,13 @@ public sealed class ListingTr : TranslationBase<Listing, ListingTr>
 
     public sealed class Dto : DtoBase
     {
+        /// <summary>
+        /// The localized listing title.
+        /// </summary>
         public string Title { get; set; } = default!;
+        /// <summary>
+        /// The localized listing description.
+        /// </summary>
         public string? Description { get; set; }
 
         public override void ApplyTo([NotNull] ListingTr target) => (target.Title, target.Description) = (Title.Trim(), Description?.Trim());

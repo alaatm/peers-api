@@ -1,5 +1,8 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
+using Peers.Core.Cqrs.Pipeline;
 using Peers.Core.Domain.Errors;
+using Peers.Modules.Catalog.Domain.Attributes;
 using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Commands;
@@ -21,9 +24,9 @@ public static class SetAttributes
     /// <param name="Attributes">A dictionary mapping attribute keys to their corresponding input values, specifying the attributes and variant axes to set for the listing.</param>
     [Authorize(Roles = Roles.Seller)]
     public record Command(
-        int ListingId,
+        [property: JsonIgnore()] int ListingId,
         string SnapshotId,
-        Dictionary<string, Command.AttributeInputDto> Attributes)
+        Dictionary<string, Command.AttributeInputDto> Attributes) : ICommand, IValidatable
     {
         /// <summary>
         /// Discriminated input for setting listing attributes and variant axes.
@@ -38,7 +41,7 @@ public static class SetAttributes
         /// </list>
         /// </remarks>
         /// <example>
-        /// { "color": ["black","white"], "pack_size": [24,54,72], "size": [[100,300],[150,400]] }
+        /// { "condition": "new", "color": ["black","white"], "pack_size": [24,54,72], "size": [[100,300],[150,400]] }
         /// </example>
         public abstract record AttributeInputDto
         {
@@ -170,6 +173,61 @@ public static class SetAttributes
 
                 public override string ToString() => $"[ {string.Join(", ", Value)} ]";
             }
+        }
+    }
+
+    /// <summary>
+    /// Represents the result of the set attributes operation.
+    /// </summary>
+    /// <param name="SnapshotId">
+    /// The new unique identifier of the listing snapshot.
+    /// This value must be passed for further updates on the listing.
+    /// </param>
+    public sealed record Response(string SnapshotId);
+
+    public sealed class Validator : AbstractValidator<Command>
+    {
+        public Validator([NotNull] IStrLoc l)
+        {
+            RuleFor(p => p.ListingId).GreaterThan(0);
+            RuleFor(p => p.SnapshotId).NotEmpty();
+            RuleFor(p => p.Attributes).NotEmpty();
+        }
+    }
+
+    public sealed class Handler : ICommandHandler<Command>
+    {
+        private readonly PeersContext _context;
+        private readonly TimeProvider _timeProvider;
+
+        public Handler(
+            PeersContext context,
+            TimeProvider timeProvider)
+        {
+            _context = context;
+            _timeProvider = timeProvider;
+        }
+
+        public async Task<IResult> Handle([NotNull] Command cmd, CancellationToken ctk)
+        {
+            if (await _context.Listings
+                .AsSplitQuery()
+                .Include(p => p.Variants)
+                .Include(p => p.Attributes)
+                .Include(p => p.ProductType).ThenInclude(p => p.Index)
+                .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((EnumAttributeDefinition)p).Options)
+                .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)
+                .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.Options)
+                .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ParentLinks)
+                .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ChildLinks)
+                .FirstOrDefaultAsync(p => p.Id == cmd.ListingId, ctk) is not { } listing)
+            {
+                return Result.BadRequest(detail: "Invalid listing.");
+            }
+
+            listing.SetAttributes(cmd.SnapshotId, cmd.Attributes, 100, 100, _timeProvider.UtcNow());
+            await _context.SaveChangesAsync(ctk);
+            return Result.Ok(new Response(listing.Snapshot.SnapshotId));
         }
     }
 }

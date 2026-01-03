@@ -255,6 +255,22 @@ public static class ListingErrors
     /// </summary>
     public static DomainError LogisticsRequiredForPhysicalProducts => new(Titles.CannotApplyOperation, "listing.logistics-required-for-physical-products");
 
+    /// <summary>
+    /// Insufficient stock available for SKU '{0}'. Requested quantity: {1}, Available quantity: {2}.
+    /// </summary>
+    public static DomainError InsufficientStockAvailable(string sku, int requestedQty, int availableQty)
+        => new(Titles.CannotApplyOperation, "listing.insufficient-stock-available", sku, requestedQty, availableQty);
+    /// <summary>
+    /// Cannot release more reserved stock than currently reserved for SKU '{0}'. Release quantity: {1}, Reserved quantity: {2}.
+    /// </summary>
+    public static DomainError ExcessReservedStockRelease(string sku, int releaseQty, int reservedQty)
+        => new(Titles.CannotApplyOperation, "listing.excess-reserved-stock-release", sku, releaseQty, reservedQty);
+    /// <summary>
+    /// Cannot commit more reserved stock than currently reserved for SKU '{0}'. Commit quantity: {1}, Reserved quantity: {2}.
+    /// </summary>
+    public static DomainError ExcessReservedStockCommit(string sku, int commitQty, int reservedQty)
+        => new(Titles.CannotApplyOperation, "listing.excess-reserved-stock-commit", sku, commitQty, reservedQty);
+
     public static class Logistics
     {
         /// <summary>

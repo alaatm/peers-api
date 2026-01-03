@@ -29,10 +29,10 @@ public partial class ListingVariant
         }
         //
 
-        if (Attributes is null || Attributes.Count == 0)
-        {
-            throw StateError("Missing or no attributes definitions defined.");
-        }
+        //if (Attributes is null || Attributes.Count == 0)
+        //{
+        //    throw StateError("Missing or no attribute definitions defined.");
+        //}
 
         // No duplicate defs
         if (Attributes.Select(a => a.AttributeDefinition).Distinct().Count() != Attributes.Count)

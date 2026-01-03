@@ -5,6 +5,7 @@ using Peers.Modules.Catalog.Domain;
 using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Listings.Domain.Logistics;
 using Peers.Modules.Listings.Domain.Snapshots;
+using E = Peers.Modules.Listings.ListingErrors;
 
 namespace Peers.Modules.Listings.Domain;
 
@@ -44,6 +45,10 @@ public sealed partial class ListingVariant : Entity, IDebuggable
     /// </summary>
     public int? StockQty { get; private set; }
     /// <summary>
+    /// The quantity of stock that is reserved for pending orders and not available for purchase.
+    /// </summary>
+    public int ReservedQty { get; private set; }
+    /// <summary>
     /// The activation status of this variant. If true, the variant is available for purchase; if false, it is inactive.
     /// </summary>
     public bool IsActive { get; private set; }
@@ -68,6 +73,11 @@ public sealed partial class ListingVariant : Entity, IDebuggable
     /// The list of attributes that define this variant, each representing a specific attribute option
     /// </summary>
     public List<ListingVariantAttribute> Attributes { get; private set; } = default!;
+
+    /// <summary>
+    /// Returns the available quantity for this variant, calculated as StockQty minus ReservedQty.
+    /// </summary>
+    public int? AvailableQty => StockQty.HasValue ? StockQty.Value - ReservedQty : null;
 
     private ListingVariant() { }
 
@@ -170,12 +180,50 @@ public sealed partial class ListingVariant : Entity, IDebuggable
     {
         ArgumentOutOfRangeException.ThrowIfNegative(quantity);
 
-        if (!StockQty.HasValue)
+        if (!AvailableQty.HasValue)
         {
             return true;
         }
 
-        return IsActive && StockQty.Value >= quantity;
+        return IsActive && AvailableQty.Value >= quantity;
+    }
+
+    public void ReserveStock(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
+        if (!HasStockAvailable(quantity))
+        {
+            throw new DomainException(E.InsufficientStockAvailable(SkuCode, quantity, AvailableQty!.Value));
+        }
+
+        ReservedQty += quantity;
+    }
+
+    public void ReleaseReservedStock(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
+        if (quantity > ReservedQty)
+        {
+            throw new DomainException(E.ExcessReservedStockRelease(SkuCode, quantity, ReservedQty));
+        }
+
+        ReservedQty -= quantity;
+    }
+
+    public void CommitReservedStock(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
+        if (quantity > ReservedQty)
+        {
+            throw new DomainException(E.ExcessReservedStockCommit(SkuCode, quantity, ReservedQty));
+        }
+
+        if (StockQty.HasValue)
+        {
+            StockQty -= quantity;
+        }
+
+        ReservedQty -= quantity;
     }
 
     /// <summary>

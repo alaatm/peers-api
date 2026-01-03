@@ -6,6 +6,7 @@ using Peers.Core.Communication.Email;
 using Peers.Core.Communication.Push;
 using Peers.Core.Communication.Sms;
 using Peers.Core.Data;
+using Peers.Core.Geo;
 using Peers.Core.GoogleServices;
 using Peers.Core.Localization;
 using Peers.Core.Media;
@@ -20,6 +21,7 @@ using Peers.Modules.Carts.Services;
 using Peers.Modules.Kernel.OpenApi;
 using Peers.Modules.Kernel.Pipelines;
 using Peers.Modules.Kernel.Startup;
+using Peers.Modules.Listings.Commands;
 using Peers.Modules.Users.Domain;
 using Peers.Modules.Users.Services;
 
@@ -99,6 +101,12 @@ public static class ServiceCollectionExtensions
         //    p.SerializerOptions.PropertyNameCaseInsensitive = GlobalJsonOptions.Default.PropertyNameCaseInsensitive;
         //    p.SerializerOptions.PropertyNamingPolicy = GlobalJsonOptions.Default.PropertyNamingPolicy;
         //});
+        services.ConfigureHttpJsonOptions(o =>
+        {
+            o.SerializerOptions.Converters.Add(new PointToLonLatConverter());
+            o.SerializerOptions.Converters.Add(new AttributeInputDtoJsonConverter());
+            // (optional) other System.Text.Json settings here
+        });
 
         services
             .AddLocalizationWithTracking()
@@ -122,7 +130,7 @@ public static class ServiceCollectionExtensions
             .AddMessageBroker()
             .AddBackgroundJobs()
             .AddThumbnailGenerator()
-            .AddShippingCalculator()
+            .AddCartServices()
             .AddNafath(config)
             .TryAddSingleton(TimeProvider.System);
 

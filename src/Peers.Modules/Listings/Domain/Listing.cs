@@ -170,9 +170,10 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             State = ListingState.Draft,
             Attributes = [],
             Variants = [],
+            Translations = [],
         };
 
-        seller.Listings.Add(listing);
+        (seller.Listings ??= []).Add(listing);
         return listing;
     }
 
