@@ -16,10 +16,14 @@ public static partial class BuildContextExtensions
     public static void CleanArtifacts(this BuildContext context)
     {
         context.LogInformation("Cleaning artifacts.");
-        context.CleanDirectories($"{context.Solution.SrcRoot}/**/bin/{context.Args.BuildConfiguration}");
-        context.CleanDirectories($"{context.Solution.SrcRoot}/**/obj/{context.Args.BuildConfiguration}");
-        context.CleanDirectories($"{context.Solution.TestRoot}/**/bin/{context.Args.BuildConfiguration}");
-        context.CleanDirectories($"{context.Solution.TestRoot}/**/obj/{context.Args.BuildConfiguration}");
+        // context.CleanDirectories($"{context.Solution.SrcRoot}/**/bin/{context.Args.BuildConfiguration}");
+        // context.CleanDirectories($"{context.Solution.SrcRoot}/**/obj/{context.Args.BuildConfiguration}");
+        // context.CleanDirectories($"{context.Solution.TestRoot}/**/bin/{context.Args.BuildConfiguration}");
+        // context.CleanDirectories($"{context.Solution.TestRoot}/**/obj/{context.Args.BuildConfiguration}");
+        context.CleanDirectories($"{context.Solution.SrcRoot}/**/bin/");
+        context.CleanDirectories($"{context.Solution.SrcRoot}/**/obj/");
+        context.CleanDirectories($"{context.Solution.TestRoot}/**/bin/");
+        context.CleanDirectories($"{context.Solution.TestRoot}/**/obj/");
         context.CleanDirectory(context.Coverage.Root);
         context.CleanDirectory(context.PackOutput.Root);
         context.CleanDirectory(context.Migrations.Root);

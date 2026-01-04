@@ -1,5 +1,7 @@
 using System.Collections.Frozen;
 using Peers.Modules.Customers.Domain;
+using Peers.Modules.Listings.Domain;
+using Peers.Modules.Ordering.Domain;
 
 namespace Peers.Modules.Media.Domain;
 
@@ -33,6 +35,7 @@ public static class MediaMaps
             [MediaType.ProfilePicture] = MediaCategory.Image,
             [MediaType.ListingImage] = MediaCategory.Image,
             [MediaType.ListingVariantImage] = MediaCategory.Image,
+            [MediaType.ShipmentProof] = MediaCategory.Image,
         }.ToFrozenDictionary();
 
     public static readonly FrozenDictionary<MediaType, string> MediaTypeToEntity =
@@ -41,5 +44,6 @@ public static class MediaMaps
             [MediaType.ProfilePicture] = nameof(Customer),
             [MediaType.ListingImage] = nameof(Listing),
             [MediaType.ListingVariantImage] = nameof(ListingVariant),
+            [MediaType.ShipmentProof] = nameof(Shipment),
         }.ToFrozenDictionary();
 }

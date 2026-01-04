@@ -17,4 +17,8 @@ public enum MediaType
     /// Represents an image associated with a specific variant of a product listing.
     /// </summary>
     ListingVariantImage,
+    /// <summary>
+    /// Represents evidence or documentation confirming that a shipment has been sent.
+    /// </summary>
+    ShipmentProof,
 }
