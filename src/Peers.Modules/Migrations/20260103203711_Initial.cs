@@ -494,6 +494,34 @@ namespace Peers.Modules.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "lookup_type_tr",
+                schema: "i18n",
+                columns: table => new
+                {
+                    entity_id = table.Column<int>(type: "int", nullable: false),
+                    lang_code = table.Column<string>(type: "varchar(2)", unicode: false, maxLength: 2, nullable: false),
+                    name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookup_type_tr", x => new { x.entity_id, x.lang_code });
+                    table.ForeignKey(
+                        name: "FK_lookup_type_tr_language_lang_code",
+                        column: x => x.lang_code,
+                        principalSchema: "i18n",
+                        principalTable: "language",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_lookup_type_tr_lookup_type_entity_id",
+                        column: x => x.entity_id,
+                        principalSchema: "lookup",
+                        principalTable: "lookup_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "user_notification",
                 columns: table => new
                 {
@@ -1016,6 +1044,7 @@ namespace Peers.Modules.Migrations
 
             migrationBuilder.CreateTable(
                 name: "enum_attribute_option",
+                schema: "catalog",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -1038,6 +1067,7 @@ namespace Peers.Modules.Migrations
                     table.ForeignKey(
                         name: "FK_enum_attribute_option_enum_attribute_option_parent_option_id",
                         column: x => x.parent_option_id,
+                        principalSchema: "catalog",
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
@@ -1188,6 +1218,7 @@ namespace Peers.Modules.Migrations
                     table.ForeignKey(
                         name: "FK_enum_attribute_option_tr_enum_attribute_option_entity_id",
                         column: x => x.entity_id,
+                        principalSchema: "catalog",
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -1273,6 +1304,7 @@ namespace Peers.Modules.Migrations
                     table.ForeignKey(
                         name: "FK_listing_attribute_enum_attribute_option_enum_attribute_option_id",
                         column: x => x.enum_attribute_option_id,
+                        principalSchema: "catalog",
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
@@ -1450,6 +1482,7 @@ namespace Peers.Modules.Migrations
                     table.ForeignKey(
                         name: "FK_listing_variant_attribute_enum_attribute_option_enum_attribute_option_id",
                         column: x => x.enum_attribute_option_id,
+                        principalSchema: "catalog",
                         principalTable: "enum_attribute_option",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
@@ -1731,18 +1764,21 @@ namespace Peers.Modules.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_enum_attribute_option_enum_attribute_definition_id_code",
+                schema: "catalog",
                 table: "enum_attribute_option",
                 columns: new[] { "enum_attribute_definition_id", "code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_enum_attribute_option_enum_attribute_definition_id_position",
+                schema: "catalog",
                 table: "enum_attribute_option",
                 columns: new[] { "enum_attribute_definition_id", "position" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_enum_attribute_option_parent_option_id",
+                schema: "catalog",
                 table: "enum_attribute_option",
                 column: "parent_option_id");
 
@@ -1880,6 +1916,12 @@ namespace Peers.Modules.Migrations
                 table: "lookup_type",
                 column: "key",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lookup_type_tr_lang_code",
+                schema: "i18n",
+                table: "lookup_type_tr",
+                column: "lang_code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_media_file_approved",
@@ -2176,6 +2218,10 @@ namespace Peers.Modules.Migrations
                 schema: "i18n");
 
             migrationBuilder.DropTable(
+                name: "lookup_type_tr",
+                schema: "i18n");
+
+            migrationBuilder.DropTable(
                 name: "media_file",
                 schema: "dbo");
 
@@ -2236,7 +2282,8 @@ namespace Peers.Modules.Migrations
                 schema: "id");
 
             migrationBuilder.DropTable(
-                name: "enum_attribute_option");
+                name: "enum_attribute_option",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
                 name: "lookup_option",

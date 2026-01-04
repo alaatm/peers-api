@@ -35,6 +35,8 @@ public static class Clone
                 .Include(p => p.Parent)
                 .Include(p => p.Attributes).ThenInclude(p => p.Translations)
                 .Include(p => p.Attributes).ThenInclude(p => (p as EnumAttributeDefinition)!.Options).ThenInclude(p => p.Translations)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType.ParentLinks)
                 .Include(p => p.Translations)
                 .FirstOrDefaultAsync(p => p.Id == cmd.Id, ctk) is not { } pt)
             {

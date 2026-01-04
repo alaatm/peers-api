@@ -1,6 +1,1167 @@
-@Peers.Api.Server_HostAddress = http://localhost:5185
+@HostAddress = https://localhost:7135
+@Api = {{HostAddress}}/api/v1
 
-GET {{Peers.Api.Server_HostAddress}}/weatherforecast/
-Accept: application/json
+# @name login
+POST {{Api}}/oauth/token
+Content-Type: application/json
+
+{
+  "createToken": {
+    "username": "alaa@peers.net",
+    "password": "P@ssword",
+    "grantType": 1
+  }
+}
 
 ###
+
+POST {{Api}}/lookup-types
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "g_brand",
+  "constraintMode": 0,
+  "allowVariant": false,
+  "names": [
+    { "name": "Brand", "langCode": "en" },
+    { "name": "العلامة التجارية", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "g_model",
+  "constraintMode": 0,
+  "allowVariant": false,
+  "names": [
+    { "name": "Model", "langCode": "en" },
+    { "name": "الطراز", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "g_color",
+  "constraintMode": 0,
+  "allowVariant": true,
+  "names": [
+    { "name": "Color", "langCode": "en" },
+    { "name": "اللون", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "g_ram_size",
+  "constraintMode": 0,
+  "allowVariant": true,
+  "names": [
+    { "name": "RAM Size", "langCode": "en" },
+    { "name": "حجم الذاكرة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_brand/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_apple",
+  "names": [
+      { "name": "Apple", "langCode": "en" },
+      { "name": "أبل", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_brand/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_samsung",
+  "names": [
+      { "name": "Samsung", "langCode": "en" },
+      { "name": "سامسونج", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_iphone_17",
+  "names": [
+      { "name": "iPhone 17", "langCode": "en" },
+      { "name": "آيفون 17", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_iphone_17_pro",
+  "names": [
+      { "name": "iPhone 17 Pro", "langCode": "en" },
+      { "name": "آيفون 17 برو", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_iphone_17_pro_max",
+  "names": [
+      { "name": "iPhone 17 Pro Max", "langCode": "en" },
+      { "name": "آيفون 17 برو ماكس", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_macbook_pro_16",
+  "names": [
+      { "name": "MacBook Pro 16", "langCode": "en" },
+      { "name": "ماك بوك برو 16", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_galaxy_s25",
+  "names": [
+      { "name": "Galaxy S25", "langCode": "en" },
+      { "name": "جالاكسي S25", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_galaxy_s25_plus",
+  "names": [
+      { "name": "Galaxy S25 Plus", "langCode": "en" },
+      { "name": "جالاكسي S25 بلس", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_galaxy_s25_ultra",
+  "names": [
+      { "name": "Galaxy S25 Ultra", "langCode": "en" },
+      { "name": "جالاكسي S25 ألترا", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_dux1e_4k_tv",
+  "names": [
+      { "name": "Dux1E 4K TV", "langCode": "en" },
+      { "name": "دوكس1 إي 4K تي في", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_mist_blue",
+  "names": [
+      { "name": "Mist Blue", "langCode": "en" },
+      { "name": "أزرق ضبابي", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_lavender",
+  "names": [
+      { "name": "Lavender", "langCode": "en" },
+      { "name": "لافندر", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_white",
+  "names": [
+      { "name": "White", "langCode": "en" },
+      { "name": "أبيض", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_black",
+  "names": [
+      { "name": "Black", "langCode": "en" },
+      { "name": "أسود", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_cosmic_orange",
+  "names": [
+      { "name": "Cosmic Orange", "langCode": "en" },
+      { "name": "برتقالي كوني", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_deep_blue",
+  "names": [
+      { "name": "Deep Blue", "langCode": "en" },
+      { "name": "أزرق عميق", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_silver",
+  "names": [
+      { "name": "Silver", "langCode": "en" },
+      { "name": "فضي", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_silver_shadow",
+  "names": [
+      { "name": "Silver Shadow", "langCode": "en" },
+      { "name": "ظل فضي", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_icyblue",
+  "names": [
+      { "name": "Icy Blue", "langCode": "en" },
+      { "name": "أزرق جليدي", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_mint",
+  "names": [
+      { "name": "Mint", "langCode": "en" },
+      { "name": "نعناع", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_navy",
+  "names": [
+      { "name": "Navy", "langCode": "en" },
+      { "name": "بحري", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_titanium_silver_blue",
+  "names": [
+      { "name": "Titanium Silver Blue", "langCode": "en" },
+      { "name": "تيتانيوم فضي أزرق", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_titanium_black",
+  "names": [
+      { "name": "Titanium Black", "langCode": "en" },
+      { "name": "تيتانيوم أسود", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_titanium_grey",
+  "names": [
+      { "name": "Titanium Grey", "langCode": "en" },
+      { "name": "تيتانيوم رمادي", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_titanium_silver_white",
+  "names": [
+      { "name": "Titanium Silver White", "langCode": "en" },
+      { "name": "تيتانيوم فضي أبيض", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_gold",
+  "names": [
+      { "name": "Gold", "langCode": "en" },
+      { "name": "ذهب", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_color/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_phantom_black",
+  "names": [
+      { "name": "Phantom Black", "langCode": "en" },
+      { "name": "فانتوم أسود", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_256gb",
+  "names": [
+      { "name": "256GB", "langCode": "en" },
+      { "name": "256 جيجابايت", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_512gb",
+  "names": [
+      { "name": "512GB", "langCode": "en" },
+      { "name": "512 جيجابايت", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "g_1tb",
+  "names": [
+      { "name": "1TB", "langCode": "en" },
+      { "name": "1 تيرابايت", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_brand/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_model",
+  "parentOptionCode": "g_apple",
+  "childOptionCodes": ["g_iphone_17", "g_iphone_17_pro", "g_iphone_17_pro_max", "g_macbook_pro_16"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_brand/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_model",
+  "parentOptionCode": "g_samsung",
+  "childOptionCodes": ["g_galaxy_s25", "g_galaxy_s25_plus", "g_galaxy_s25_ultra", "g_dux1e_4k_tv"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_iphone_17",
+  "childOptionCodes": ["g_mist_blue", "g_lavender", "g_white", "g_black"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_iphone_17_pro",
+  "childOptionCodes": ["g_cosmic_orange", "g_deep_blue", "g_silver"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_iphone_17_pro_max",
+  "childOptionCodes": ["g_cosmic_orange", "g_deep_blue", "g_silver", "g_gold"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_galaxy_s25",
+  "childOptionCodes": ["g_silver_shadow", "g_icyblue", "g_mint", "g_navy"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_galaxy_s25_plus",
+  "childOptionCodes": ["g_silver_shadow", "g_icyblue", "g_mint", "g_navy"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_galaxy_s25_ultra",
+  "childOptionCodes": ["g_titanium_silver_blue", "g_titanium_black", "g_titanium_grey", "g_titanium_silver_white", "g_phantom_black"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_iphone_17",
+  "childOptionCodes": ["g_256gb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_iphone_17_pro",
+  "childOptionCodes": ["g_256gb", "g_512gb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_iphone_17_pro_max",
+  "childOptionCodes": ["g_256gb", "g_512gb", "g_1tb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_galaxy_s25",
+  "childOptionCodes": ["g_256gb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_galaxy_s25_plus",
+  "childOptionCodes": ["g_256gb", "g_512gb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_model/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_ram_size",
+  "parentOptionCode": "g_galaxy_s25_ultra",
+  "childOptionCodes": ["g_256gb", "g_512gb", "g_1tb"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_256gb",
+  "childOptionCodes": ["g_mist_blue", "g_lavender", "g_white", "g_black", "g_cosmic_orange", "g_deep_blue", "g_silver", "g_silver_shadow", "g_icyblue", "g_mint", "g_navy", "g_titanium_silver_blue", "g_titanium_black", "g_titanium_grey", "g_titanium_silver_white"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_512gb",
+  "childOptionCodes": ["g_cosmic_orange", "g_deep_blue", "g_silver", "g_silver_shadow", "g_icyblue", "g_mint", "g_navy", "g_titanium_silver_blue", "g_titanium_black", "g_titanium_grey", "g_titanium_silver_white"]
+}
+
+###
+
+POST {{Api}}/lookup-types/g_ram_size/links
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "childLookupTypeKey": "g_color",
+  "parentOptionCode": "g_1tb",
+  "childOptionCodes": ["g_gold", "g_phantom_black"]
+}
+
+###
+
+POST {{Api}}/catalog
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "kind": 0,
+  "names": [
+    { "name": "Electronics", "langCode": "en" },
+    { "name": "إلكترونيات", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "brand",
+  "kind": 7,
+  "isRequired": true,
+  "isVariant": false,
+  "position": 1,
+  "lookupTypeKey": "g_brand",
+  "names": [
+    { "name": "Brand", "langCode": "en" },
+    { "name": "الماركة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "condition",
+  "kind": 6,
+  "isRequired": true,
+  "isVariant": false,
+  "position": 2,
+  "names": [
+    { "name": "Condition", "langCode": "en" },
+    { "name": "الحالة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/attributes/condition/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "new",
+  "position": 1,
+  "names": [
+    { "name": "New", "langCode": "en" },
+    { "name": "جديد", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/attributes/condition/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "used",
+  "position": 2,
+  "names": [
+    { "name": "Used", "langCode": "en" },
+    { "name": "مستعمل", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/attributes/condition/options
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "code": "refurbished",
+  "position": 3,
+  "names": [
+    { "name": "Refurbished", "langCode": "en" },
+    { "name": "مجددة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/1/publish
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+}
+
+###
+
+POST {{Api}}/catalog/1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "isSelectable": true,
+  "copyAttributes": true,
+  "names": [
+    { "name": "Mobile Phones", "langCode": "en" },
+    { "name": "هواتف محمولة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "kind": 7,
+  "isRequired": true,
+  "isVariant": false,
+  "position": 3,
+  "lookupTypeKey": "g_model",
+  "names": [
+    { "name": "Model", "langCode": "en" },
+    { "name": "الطراز", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "color",
+  "kind": 7,
+  "isRequired": true,
+  "isVariant": true,
+  "position": 4,
+  "lookupTypeKey": "g_color",
+  "names": [
+    { "name": "Color", "langCode": "en" },
+    { "name": "اللون", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "ram_size",
+  "kind": 7,
+  "isRequired": true,
+  "isVariant": true,
+  "position": 5,
+  "lookupTypeKey": "g_ram_size",
+  "names": [
+    { "name": "RAM Size", "langCode": "en" },
+    { "name": "حجم الذاكرة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_iphone_17"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_iphone_17_pro"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_iphone_17_pro_max"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_galaxy_s25"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_galaxy_s25_plus"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes/model/allowed-lookups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "model",
+  "code": "g_galaxy_s25_ultra"
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "screen_size",
+  "kind": 1,
+  "isRequired": false,
+  "isVariant": false,
+  "position": 6,
+  "names": [
+    { "name": "Screen Size", "langCode": "en" },
+    { "name": "حجم الشاشة", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "battery_capacity",
+  "kind": 0,
+  "isRequired": false,
+  "isVariant": false,
+  "position": 7,
+  "names": [
+    { "name": "Battery Capacity", "langCode": "en" },
+    { "name": "سعة البطارية", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "has_5g",
+  "kind": 3,
+  "isRequired": false,
+  "isVariant": false,
+  "position": 8,
+  "names": [
+    { "name": "Has 5G", "langCode": "en" },
+    { "name": "يدعم 5G", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+  "key": "release_date",
+  "kind": 4,
+  "isRequired": false,
+  "isVariant": false,
+  "position": 9,
+  "names": [
+    { "name": "Release Date", "langCode": "en" },
+    { "name": "تاريخ الاطلاق", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/catalog/2/publish
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{
+}
+
+###
+
+POST {{Api}}/account/enroll
+Content-Type: application/json
+
+{
+  "enroll": {
+    "username": "alaam",
+    "phoneNumber": "+966506494560"
+  }
+}
+
+###
+
+# @name enroll
+POST {{Api}}/account/enroll
+Content-Type: application/json
+
+{
+  "enrollConfirm": {
+    "otp": "0000",
+    "username": "alaam",
+    "phoneNumber": "+966506494560",
+    "preferredLanguage": "en"
+  }
+}
+
+###
+
+POST {{Api}}/sellers/enroll
+Content-Type: application/json
+Authorization: Bearer {{enroll.response.body.$.token}}
+
+{
+  "nationalId": "1111111111"
+}
+
+###
+
+POST {{Api}}/oauth/token
+Content-Type: application/json
+
+{
+  "signIn": {
+    "username": "alaam",
+    "phoneNumber": "+966506494560"
+  }
+}
+
+###
+
+# @name loginSeller
+POST {{Api}}/oauth/token
+Content-Type: application/json
+
+{
+  "createToken": {
+    "username": "alaam",
+    "password": "0000",
+    "grantType": 0
+  }
+}
+
+###
+
+# @name listingCreate
+POST {{Api}}/listings
+Content-Type: application/json
+Authorization: Bearer {{loginSeller.response.body.$.token}}
+
+{
+  "productTypeId": 2,
+  "fulfillment": {
+    "method": 1,
+    "outboundPaidBy": 1,
+    "returnPaidBy": null,
+    "nonReturnable": true,
+    "orderQtyPolicy": null,
+    "serviceArea": null
+  },
+  "shippingProfileId": null,
+  "hashtag": "samsung-galaxy-s25-ultra-1tb-phantom-black",
+  "price": 2499,
+  "names": [
+    { "title": "Samsung Galaxy S25 Ultra — 256GB/512GB/1TB — Multi Color", "description": "Brand-new, sealed. Local warranty.", "langCode": "en" },
+    { "title": "سامسونج جالاكسي إس 25 ألترا — 256 جيجابايت/512 جيجابايت/1 تيرابايت — متعدد الألوان", "description": "جديد تمامًا، مغلف. ضمان محلي.", "langCode": "ar" }
+  ]
+}
+
+###
+
+POST {{Api}}/listings/2/attributes
+Content-Type: application/json
+Authorization: Bearer {{loginSeller.response.body.$.token}}
+
+{
+  "snapshotId": "8ea64871-88b7-4229-be4c-ec349bd51a59",
+  "attributes": {
+    "brand": "g_samsung",
+    "model": "g_galaxy_s25_ultra",
+    "color": ["g_titanium_silver_blue", "g_titanium_black", "g_titanium_grey", "g_titanium_silver_white", "g_phantom_black"],
+    "ram_size": ["g_256gb", "g_512gb", "g_1tb"],
+    "screen_size": 6.8,
+    "battery_capacity": 5000,
+    "has_5g": true,
+    "release_date": "2024-02-01",
+    "condition": "new"
+  }
+}
+
+###
+
+POST {{Api}}/listings/2/variants/logistics-profile
+Content-Type: application/json
+Authorization: Bearer {{loginSeller.response.body.$.token}}
+
+{
+  "profile": {
+    "dimensions": {
+      "length": 100,
+      "width": 100,
+      "height": 25,
+      "longestSide": 50,
+      "girth": 23,
+      "volumeCubic": 5
+    },
+    "weight": 1,
+    "fragile": false,
+    "hazmat": false,
+    "temperatureControl": 0
+  }
+}
+###
+
+POST {{Api}}/listings/2/publish
+Content-Type: application/json
+Authorization: Bearer {{loginSeller.response.body.$.token}}
+
+{
+}

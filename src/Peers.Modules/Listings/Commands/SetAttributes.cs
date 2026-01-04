@@ -19,12 +19,12 @@ public static class SetAttributes
     /// satisfy the constraints and definitions of the product type, such as valid codes, numeric ranges, and group
     /// member order.
     /// </remarks>
-    /// <param name="ListingId">The unique identifier of the product listing to update.</param>
+    /// <param name="Id">The unique identifier of the product listing to update.</param>
     /// <param name="SnapshotId">The snapshot identifier of the listing. This must match the listing's current snapshot ID to ensure consistency.</param>
     /// <param name="Attributes">A dictionary mapping attribute keys to their corresponding input values, specifying the attributes and variant axes to set for the listing.</param>
     [Authorize(Roles = Roles.Seller)]
     public record Command(
-        [property: JsonIgnore()] int ListingId,
+        [property: JsonIgnore()] int Id,
         string SnapshotId,
         Dictionary<string, Command.AttributeInputDto> Attributes) : ICommand, IValidatable
     {
@@ -189,7 +189,7 @@ public static class SetAttributes
     {
         public Validator([NotNull] IStrLoc l)
         {
-            RuleFor(p => p.ListingId).GreaterThan(0);
+            RuleFor(p => p.Id).GreaterThan(0);
             RuleFor(p => p.SnapshotId).NotEmpty();
             RuleFor(p => p.Attributes).NotEmpty();
         }
@@ -220,7 +220,7 @@ public static class SetAttributes
                 .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.Options)
                 .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ParentLinks)
                 .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ChildLinks)
-                .FirstOrDefaultAsync(p => p.Id == cmd.ListingId, ctk) is not { } listing)
+                .FirstOrDefaultAsync(p => p.Id == cmd.Id, ctk) is not { } listing)
             {
                 return Result.BadRequest(detail: "Invalid listing.");
             }

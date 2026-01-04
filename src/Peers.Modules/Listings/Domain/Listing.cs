@@ -677,7 +677,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         return axes;
     }
 
-    public void Publish()
+    public void Publish(DateTime date)
     {
         // TODO: Add flag that indicates if the seller has reviewed SKUs prices as they inherit from listing base price by default
         // and fail if set to false
@@ -695,7 +695,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
 
         ValidateForPublish();
         State = ListingState.Published;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = date;
     }
 
     public void SetFulfillmentPreferences([NotNull] FulfillmentPreferences prefs)
@@ -724,7 +724,7 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SetLogistics(string sku, [NotNull] LogisticsProfile profile)
+    public void SetLogistics(string? sku, [NotNull] LogisticsProfile profile)
     {
         if (State is not ListingState.Draft)
         {
@@ -736,13 +736,28 @@ public sealed partial class Listing : Entity, IAggregateRoot, ILocalizable<Listi
             throw new DomainException(E.LogisticsApplyOnlyToPhysicalListings);
         }
 
-        if (Variants.Find(v => v.SkuCode == sku) is not { } variant)
+        ListingVariant? variant = null;
+
+        if (!string.IsNullOrWhiteSpace(sku) &&
+            (variant = Variants.Find(v => v.SkuCode == sku)) is null)
         {
             throw new DomainException(E.VariantNotFound(sku));
         }
 
         profile.Validate();
-        variant.SetLogistics(profile);
+
+        if (variant is null)
+        {
+            foreach (var v in Variants)
+            {
+                v.SetLogistics(profile);
+            }
+        }
+        else
+        {
+            variant.SetLogistics(profile);
+        }
+
         UpdatedAt = DateTime.UtcNow;
     }
 

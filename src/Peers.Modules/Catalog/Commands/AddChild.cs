@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Peers.Core.Cqrs.Pipeline;
 using Peers.Core.Localization.Infrastructure;
 using Peers.Modules.Catalog.Domain;
+using Peers.Modules.Catalog.Domain.Attributes;
 using Peers.Modules.Catalog.Domain.Translations;
 
 namespace Peers.Modules.Catalog.Commands;
@@ -44,7 +45,11 @@ public static class AddChild
             if (await _context
                 .ProductTypes
                 .Include(p => p.Children)
-                .Include(p => p.Attributes)
+                .Include(p => p.Attributes).ThenInclude(p => p.Translations)
+                .Include(p => p.Attributes).ThenInclude(p => (p as EnumAttributeDefinition)!.Options).ThenInclude(p => p.Translations)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType.ParentLinks)
+                .Include(p => p.Translations)
                 .FirstOrDefaultAsync(p => p.Id == cmd.ParentId, ctk) is not { } parent)
             {
                 return Result.NotFound();

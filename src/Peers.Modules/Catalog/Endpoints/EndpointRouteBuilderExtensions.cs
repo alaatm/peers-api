@@ -16,13 +16,13 @@ public static class EndpointRouteBuilderExtensions
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
-            .Produces(StatusCodes.Status201Created);
+            .Produces<IdObj>(StatusCodes.Status201Created);
 
         gCatalog.MapPost("/{id:int}/clone", (IMediator mediator, int id, Clone.Command cmd)
             => mediator.Send(cmd with { Id = id }))
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status201Created)
+            .Produces<IdObj>(StatusCodes.Status201Created)
             .AddOpenApiOperationTransformer((operation, context, ct) =>
             {
                 var param = operation.Parameters?.First(p => p.Name == "id");
@@ -34,23 +34,11 @@ public static class EndpointRouteBuilderExtensions
             => mediator.Send(cmd with { ParentId = id }))
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status201Created)
+            .Produces<IdObj>(StatusCodes.Status201Created)
             .AddOpenApiOperationTransformer((operation, context, ct) =>
             {
                 var param = operation.Parameters?.First(p => p.Name == "id");
                 param?.Description = "The ID of the parent product type under which the new child type will be created.";
-                return Task.CompletedTask;
-            });
-
-        gCatalog.MapPost("/{id:int}/publish", (IMediator mediator, int id, Publish.Command cmd)
-            => mediator.Send(cmd with { Id = id }))
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status200OK)
-            .AddOpenApiOperationTransformer((operation, context, ct) =>
-            {
-                var param = operation.Parameters?.First(p => p.Name == "id");
-                param?.Description = "The ID of the product type to publish.";
                 return Task.CompletedTask;
             });
 
@@ -95,6 +83,34 @@ public static class EndpointRouteBuilderExtensions
                 var param2 = operation.Parameters?.First(p => p.Name == "key");
                 param2?.Description = "The key of the group attribute definition to which the member will be added.";
 
+                return Task.CompletedTask;
+            });
+
+        gCatalog.MapPost("/{id:int}/attributes/{key}/allowed-lookups", (IMediator mediator, int id, string key, AddAllowedLookup.Command cmd)
+            => mediator.Send(cmd with { Id = id, Key = key }))
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status200OK)
+            .AddOpenApiOperationTransformer((operation, context, ct) =>
+            {
+                var param1 = operation.Parameters?.First(p => p.Name == "id");
+                param1?.Description = "The ID of the product type to which the attribute belongs.";
+
+                var param2 = operation.Parameters?.First(p => p.Name == "key");
+                param2?.Description = "The key of the lookup attribute definition to which the option will be added to the allowed set.";
+
+                return Task.CompletedTask;
+            });
+
+        gCatalog.MapPost("/{id:int}/publish", (IMediator mediator, int id, Publish.Command cmd)
+            => mediator.Send(cmd with { Id = id }))
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status200OK)
+            .AddOpenApiOperationTransformer((operation, context, ct) =>
+            {
+                var param = operation.Parameters?.First(p => p.Name == "id");
+                param?.Description = "The ID of the product type to publish.";
                 return Task.CompletedTask;
             });
 

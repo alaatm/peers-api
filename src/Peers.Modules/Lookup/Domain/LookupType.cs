@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Peers.Core.Domain.Errors;
+using Peers.Core.Localization.Infrastructure;
+using Peers.Modules.Lookup.Domain.Translations;
 using E = Peers.Modules.Lookup.LookupErrors;
 
 namespace Peers.Modules.Lookup.Domain;
@@ -13,7 +15,7 @@ namespace Peers.Modules.Lookup.Domain;
 /// - Uniqueness: <c>Key</c> is unique; values under this type enforce their own (TypeId, Key) uniqueness.
 /// </remarks>
 [DebuggerDisplay("{D,nq}")]
-public sealed class LookupType : Entity, IAggregateRoot
+public sealed class LookupType : Entity, ILocalizable<LookupType, LookupTypeTr>, IAggregateRoot
 {
     /// <summary>
     /// Stable ASCII key/slug for this type (e.g., "brand", "model").
@@ -46,6 +48,10 @@ public sealed class LookupType : Entity, IAggregateRoot
     /// The list of links where this type is the child.
     /// </summary>
     public List<LookupLink> ChildLinks { get; private set; } = default!;
+    /// <summary>
+    /// The list of translations associated with this lookup type.
+    /// </summary>
+    public List<LookupTypeTr> Translations { get; set; } = default!;
 
     private LookupType()
     {
@@ -63,7 +69,7 @@ public sealed class LookupType : Entity, IAggregateRoot
         LookupConstraintMode constraintMode,
         bool allowVariant)
     {
-        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(key))
+        if (!RegexStatic.LookupKeyOrCodeRegex().IsMatch(key))
         {
             throw new DomainException(E.KeyFormatInvalid(key));
         }
@@ -74,21 +80,23 @@ public sealed class LookupType : Entity, IAggregateRoot
         Options = [];
         ParentLinks = [];
         ChildLinks = [];
+        Translations = [];
     }
 
     /// <summary>
     /// Creates a new option with the specified code and adds it to the collection of options.
     /// </summary>
     /// <param name="code">The code that uniquely identifies the option to create. Must be in snake_case format.</param>
-    public void CreateOption(string code)
+    public LookupOption CreateOption(string code)
     {
-        if (!RegexStatic.IsSnakeCaseRegex().IsMatch(code))
+        if (!RegexStatic.LookupKeyOrCodeRegex().IsMatch(code))
         {
             throw new DomainException(E.KeyFormatInvalid(code));
         }
 
         var option = new LookupOption(code, this);
-        Options.Add(option);
+        (Options ??= []).Add(option);
+        return option;
     }
 
     /// <summary>
@@ -135,7 +143,7 @@ public sealed class LookupType : Entity, IAggregateRoot
             };
 
             ParentLinks.Add(link);
-            childType.ChildLinks.Add(link);
+            (childType.ChildLinks ??= []).Add(link);
             existing.Add(childOptCode);
         }
     }

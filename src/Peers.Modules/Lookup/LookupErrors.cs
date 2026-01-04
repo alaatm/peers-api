@@ -14,7 +14,7 @@ public static class LookupErrors
     /// </summary>
     public static DomainError ChildOptNotFound(string code, string key) => new(Titles.NotFound, "lookup.opt-not-found", code, key);
     /// <summary>
-    /// Key '{0}' must be in lower_snake format.
+    /// Key '{0}' must be in lower_snake format and has a "g_" prefix.
     /// </summary>
     public static DomainError KeyFormatInvalid(string key) => new(Titles.ValidationFailed, "common.key-format-invalid", key);
 }

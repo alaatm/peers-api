@@ -31,8 +31,12 @@ public static class Publish
         {
             if (await _context
                 .ProductTypes
-                .Include(p => p.Attributes)
-                    .ThenInclude(p => ((EnumAttributeDefinition)p).Options)
+                .AsSplitQuery()
+                .Include(p => p.Attributes).ThenInclude(p => ((EnumAttributeDefinition)p).Options)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.Options)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ParentLinks).ThenInclude(p => p.ChildType)
+                .Include(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ChildLinks).ThenInclude(p => p.ParentType)
                 .FirstOrDefaultAsync(p => p.Id == cmd.Id, ctk) is not { } pt)
             {
                 return Result.NotFound();

@@ -28,4 +28,6 @@ public static partial class RegexStatic
     public static partial Regex NationalIdRegex();
     [GeneratedRegex(@"-v\d+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
     public static partial Regex SlugVersionSuffixRegex();
+    [GeneratedRegex(@"^g_[a-z0-9_]+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    public static partial Regex LookupKeyOrCodeRegex();
 }

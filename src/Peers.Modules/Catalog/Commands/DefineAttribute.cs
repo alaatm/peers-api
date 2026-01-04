@@ -18,7 +18,7 @@ public static class DefineAttribute
     /// <param name="IsRequired">A value indicating whether the attribute is required for catalog items.</param>
     /// <param name="IsVariant">A value indicating whether the attribute is used to define product variants.</param>
     /// <param name="Position">The display order of the attribute among other attributes. Lower values indicate higher priority in display.</param>
-    /// <param name="LookupTypeId">The identifier of the lookup type associated with the attribute, if applicable. Specify <see langword="null"/> if the attribute does not use a lookup.</param>
+    /// <param name="LookupTypeKey">The key of the lookup type associated with the attribute, if applicable. Specify <see langword="null"/> if the attribute does not use a lookup.</param>
     /// <param name="Unit">The unit of measurement for the attribute, if applicable. Specify <see langword="null"/> if the attribute does not have a unit.</param>
     /// <param name="Min">The minimum allowed value for the attribute, if applicable. Specify <see langword="null"/> if there is no minimum constraint.</param>
     /// <param name="Max">The maximum allowed value for the attribute, if applicable. Specify <see langword="null"/> if there is no maximum constraint.</param>
@@ -33,7 +33,7 @@ public static class DefineAttribute
         bool IsRequired,
         bool IsVariant,
         int Position,
-        int? LookupTypeId,
+        string? LookupTypeKey,
         string? Unit,
         decimal? Min,
         decimal? Max,
@@ -58,6 +58,7 @@ public static class DefineAttribute
             if (await _context
                 .ProductTypes
                 .Include(p => p.Attributes)
+                    .ThenInclude(p => ((LookupAttributeDefinition)p).LookupType.ParentLinks)
                 .FirstOrDefaultAsync(p => p.Id == cmd.Id, ctk) is not { } pt)
             {
                 return Result.NotFound();
@@ -65,15 +66,16 @@ public static class DefineAttribute
 
             LookupType? lookupType = null;
 
-            if (cmd.LookupTypeId is not null)
+            if (!string.IsNullOrWhiteSpace(cmd.LookupTypeKey))
             {
                 lookupType = await _context
                     .LookupTypes
-                    .FirstOrDefaultAsync(lt => lt.Id == cmd.LookupTypeId, ctk);
+                    .Include(p => p.ParentLinks)
+                    .FirstOrDefaultAsync(lt => lt.Key == cmd.LookupTypeKey, ctk);
 
                 if (lookupType is null)
                 {
-                    return Result.BadRequest(detail: $"Lookup type with ID '{cmd.LookupTypeId}' was not found.");
+                    return Result.BadRequest(detail: "Lookup type not found.");
                 }
             }
 

@@ -411,7 +411,7 @@ namespace Peers.Modules.Migrations
                     b.HasIndex("EnumAttributeDefinitionId", "Position")
                         .IsUnique();
 
-                    b.ToTable("enum_attribute_option", (string)null);
+                    b.ToTable("enum_attribute_option", "catalog");
                 });
 
             modelBuilder.Entity("Peers.Modules.Catalog.Domain.ProductType", b =>
@@ -1135,6 +1135,31 @@ namespace Peers.Modules.Migrations
                     b.HasIndex("LangCode");
 
                     b.ToTable("lookup_option_tr", "i18n");
+                });
+
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupTypeTr", b =>
+                {
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("LangCode")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("lang_code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("name");
+
+                    b.HasKey("EntityId", "LangCode");
+
+                    b.HasIndex("LangCode");
+
+                    b.ToTable("lookup_type_tr", "i18n");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
@@ -2924,6 +2949,21 @@ namespace Peers.Modules.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Peers.Modules.Lookup.Domain.Translations.LookupTypeTr", b =>
+                {
+                    b.HasOne("Peers.Modules.Lookup.Domain.LookupType", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Peers.Modules.I18n.Domain.Language", null)
+                        .WithMany()
+                        .HasForeignKey("LangCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
                 {
                     b.HasOne("Peers.Modules.Customers.Domain.Customer", "Customer")
@@ -3391,6 +3431,8 @@ namespace Peers.Modules.Migrations
                     b.Navigation("Options");
 
                     b.Navigation("ParentLinks");
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("Peers.Modules.Media.Domain.MediaFile", b =>
