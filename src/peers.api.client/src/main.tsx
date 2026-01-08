@@ -4,7 +4,6 @@ import { createRoot } from 'react-dom/client';
 import { AuthProvider } from '@/Auth';
 import { LangProvider } from '@/Language';
 import ConfigWrapper from './ConfigWrapper.tsx';
-import '@ant-design/v5-patch-for-react-19';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import 'dayjs/locale/ar';
 import './icons.ts';
@@ -13,11 +12,11 @@ import './index.css';
 dayjs.extend(quarterOfYear);
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AuthProvider>
-      <LangProvider>
-        <ConfigWrapper />
-      </LangProvider>
-    </AuthProvider>
-  </StrictMode>,
+    <StrictMode>
+        <AuthProvider>
+            <LangProvider>
+                <ConfigWrapper />
+            </LangProvider>
+        </AuthProvider>
+    </StrictMode>,
 )
