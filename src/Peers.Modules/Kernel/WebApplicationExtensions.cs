@@ -39,7 +39,7 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.MapScalarApiReference(p => p.Title = "Peers API Reference");
+            app.MapScalarApiReference("api-docs", p => p.Title = "Peers API Reference");
         }
         else
         {
