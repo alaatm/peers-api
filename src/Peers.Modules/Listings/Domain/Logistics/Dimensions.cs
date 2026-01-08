@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Peers.Core.Domain.Errors;
 using E = Peers.Modules.Listings.ListingErrors;
 
@@ -17,14 +18,17 @@ public sealed record Dimensions(
     /// <summary>
     /// The longest side of the object in centimeters.
     /// </summary>
+    [JsonIgnore]
     public double LongestSide => double.Max(Length, double.Max(Width, Height));
     /// <summary>
     /// The girth of the object in centimeters.
     /// </summary>
+    [JsonIgnore]
     public double Girth => Length + (2 * (Width + Height));
     /// <summary>
     /// The volume of the object in cubic centimeters.
     /// </summary>
+    [JsonIgnore]
     public double VolumeCubic => Length * Width * Height;
 
     /// <summary>

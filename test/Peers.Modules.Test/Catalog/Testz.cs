@@ -21,6 +21,8 @@
 //        await SeedLookupsAsync();
 //        await SeedProductTypeAsync();
 //        await SeedListingAsync();
+//        await SetLogisticsAsync();
+//        await PublishListingAsync();
 //    }
 
 //    public Task SeedLookupsAsync() => ExecuteDbContextAsync(async db =>
@@ -173,7 +175,7 @@
 //        var listing = Listing.Create(
 //            seller: seller,
 //            productType: pt,
-//                fulfillment: new FulfillmentPreferences(FulfillmentMethod.PlatformManaged, null, null, null, null, null),
+//                fulfillment: new FulfillmentPreferences(FulfillmentMethod.PlatformManaged, ShippingCostPayer.Seller, null, true, null, null),
 //            title: "Samsung Galaxy S25 Ultra — 256GB/512GB/1TB — Multi Color",
 //            description: "Brand-new, sealed. Local warranty.",
 //            hashtag: "samsung-galaxy-s25-ultra-1tb-phantom-black",
@@ -215,7 +217,40 @@
 //        //    ["release_date"] = new Date(new DateOnly(2024, 2, 1)),
 //        //    ["condition"] = new OptionCodeOrScalarString("new"),
 //        //});
-//        listing.Publish();
+//    });
+
+//    public Task SetLogisticsAsync() => ExecuteDbContextAsync(async db =>
+//    {
+//        var profile = new LogisticsProfile(
+//            new Dimensions(15, 7, 0.8),
+//            0.230,
+//            false,
+//            false,
+//            TemperatureControl.None);
+
+//        var listing = await db.Listings
+//            .Include(p => p.ProductType)
+//            .Include(p => p.Variants)
+//            .FirstOrDefaultAsync(p => p.Hashtag == "samsung-galaxy-s25-ultra-1tb-phantom-black");
+
+//        listing.SetLogistics(null, profile);
+//        await db.SaveChangesAsync();
+//    });
+
+//    public Task PublishListingAsync() => ExecuteDbContextAsync(async db =>
+//    {
+//        var listing = await db.Listings
+//            .AsSplitQuery()
+//            .Include(p => p.Attributes)
+//            .Include(p => p.Variants).ThenInclude(p => p.Attributes)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Index)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((EnumAttributeDefinition)p).Options)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.Options)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ParentLinks)
+//            .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).LookupType).ThenInclude(p => p.ChildLinks)
+//            .FirstOrDefaultAsync(p => p.Hashtag == "samsung-galaxy-s25-ultra-1tb-phantom-black");
+//        listing.Publish(DateTime.UtcNow);
 //        await db.SaveChangesAsync();
 //    });
 
@@ -228,7 +263,7 @@
 //        }
 
 //        var nafathIdentity = new NafathIdentity("1111111111", null, null, null, null, null);
-//        u = Seller.Create(AppUser.CreateTwoFactorAccount(DateTime.UtcNow, username, phoneNumber, "en"), nafathIdentity);
+//        u = Seller.Create(AppUser.CreateTwoFactorAccount(DateTime.UtcNow, username, phoneNumber, "en"), nafathIdentity, DateTime.UtcNow);
 //        db.Sellers.Add(u);
 //        return u;
 //    }

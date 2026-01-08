@@ -37,7 +37,7 @@ public static class Publish
             if (await _context.Listings
                 .AsSplitQuery()
                 .Include(p => p.Attributes)
-                .Include(p => p.Variants)
+                .Include(p => p.Variants).ThenInclude(p => p.Attributes)
                 .Include(p => p.ProductType).ThenInclude(p => p.Index)
                 .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((EnumAttributeDefinition)p).Options)
                 .Include(p => p.ProductType).ThenInclude(p => p.Attributes).ThenInclude(p => ((LookupAttributeDefinition)p).AllowedOptions)

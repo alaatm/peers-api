@@ -14,7 +14,7 @@ using Peers.Modules.Kernel;
 namespace Peers.Modules.Migrations
 {
     [DbContext(typeof(PeersContext))]
-    [Migration("20260103203759_ProductTypeLineageFunc")]
+    [Migration("20260108223216_ProductTypeLineageFunc")]
     partial class ProductTypeLineageFunc
     {
         /// <inheritdoc />
@@ -915,6 +915,10 @@ namespace Peers.Modules.Migrations
                         .HasColumnType("int")
                         .HasColumnName("listing_id");
 
+                    b.Property<string>("Logistics")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("logistics");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
@@ -950,42 +954,6 @@ namespace Peers.Modules.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("variant_key");
-
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "Logistics", "Peers.Modules.Listings.Domain.ListingVariant.Logistics#LogisticsProfile", b1 =>
-                        {
-                            b1.Property<bool>("Fragile")
-                                .HasColumnType("bit")
-                                .HasColumnName("logi_fragile");
-
-                            b1.Property<bool>("Hazmat")
-                                .HasColumnType("bit")
-                                .HasColumnName("logi_hazmat");
-
-                            b1.Property<int>("TemperatureControl")
-                                .HasColumnType("int")
-                                .HasColumnName("logi_temperature_control");
-
-                            b1.Property<decimal>("Weight")
-                                .HasColumnType("decimal(10,3)")
-                                .HasColumnName("logi_weight");
-
-                            b1.ComplexProperty(typeof(Dictionary<string, object>), "Dimensions", "Peers.Modules.Listings.Domain.ListingVariant.Logistics#LogisticsProfile.Dimensions#Dimensions", b2 =>
-                                {
-                                    b2.IsRequired();
-
-                                    b2.Property<double>("Height")
-                                        .HasColumnType("float")
-                                        .HasColumnName("logi_dim_height");
-
-                                    b2.Property<double>("Length")
-                                        .HasColumnType("float")
-                                        .HasColumnName("logi_dim_length");
-
-                                    b2.Property<double>("Width")
-                                        .HasColumnType("float")
-                                        .HasColumnName("logi_dim_width");
-                                });
-                        });
 
                     b.HasKey("Id");
 

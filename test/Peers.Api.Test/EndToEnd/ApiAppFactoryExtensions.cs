@@ -75,7 +75,7 @@ public static class ApiAppFactoryExtensions
             ["brand"] = new SetAttributes.Command.AttributeInputDto.OptionCodeOrScalarString("samsung"),
         }, 10, 10, now);
         galaxyS10.SetLogistics(galaxyS10.Variants.First().SkuCode, new(new Dimensions(1, 1, 1), 1, false, false, TemperatureControl.None));
-        galaxyS10.Publish();
+        galaxyS10.Publish(DateTime.UtcNow);
 
         context.SaveChanges();
 

@@ -1365,14 +1365,8 @@ namespace Peers.Modules.Migrations
                     reserved_qty = table.Column<int>(type: "int", nullable: false),
                     is_active = table.Column<bool>(type: "bit", nullable: false),
                     selection_snapshot = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    logi_fragile = table.Column<bool>(type: "bit", nullable: true),
-                    logi_hazmat = table.Column<bool>(type: "bit", nullable: true),
-                    logi_temperature_control = table.Column<int>(type: "int", nullable: true),
-                    logi_weight = table.Column<decimal>(type: "decimal(10,3)", nullable: true),
-                    logi_dim_height = table.Column<double>(type: "float", nullable: true),
-                    logi_dim_length = table.Column<double>(type: "float", nullable: true),
-                    logi_dim_width = table.Column<double>(type: "float", nullable: true)
+                    logistics = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    row_version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
                 },
                 constraints: table =>
                 {
